@@ -1,0 +1,28 @@
+# Entornos
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Variables de entorno: solo se versiona la plantilla
+.env
+.env.*
+!.env.example
+
+# Descargas crudas de las APIs (se regeneran con la ingesta)
+data/raw/*
+!data/raw/.gitkeep
+
+# App
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# Sistema
+Thumbs.db
+Desktop.ini
+.DS_Store

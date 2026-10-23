@@ -1,0 +1,25 @@
+# Versiones exactas, probadas con Python 3.13.
+# Ingesta
+requests==2.34.2
+python-dotenv==1.2.4
+
+# Datos y modelo
+pandas==3.0.6
+numpy==2.5.4
+scikit-learn==1.9.1
+scipy==1.16.3
+
+# Notebooks
+matplotlib==3.11.2
+seaborn==0.13.2
+jupyter==1.1.1
+nbconvert==7.17.2
+ipykernel==7.4.0
+
+# Calidad
+pytest==9.1.1
+responses==0.26.3
+ruff==0.17.1
+
+# El propio paquete (src/radar), para poder usar `python -m radar...`
+-e .
