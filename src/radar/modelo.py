@@ -76,7 +76,9 @@ def preparar_variables(
     for col in [c for c in df.columns if c.startswith("resenas_") and c.endswith("d")]:
         out[f"log_{col}"] = np.log1p(out[col])
     out["log_precio"] = np.log1p(out["precio_usd"].astype(float))
-    out["gratis"] = out["gratis"].astype(float)
+    # Del precio y no de `is_free`: la app solo conoce el precio que escribe
+    # el usuario, y ambas cosas coinciden en la muestra.
+    out["gratis"] = (out["precio_usd"] == 0).astype(float)
     if generos is not None:
         out["genero"] = out["genero_principal"].where(
             out["genero_principal"].isin(generos), "Otros"
