@@ -1,0 +1,188 @@
+import type { Metadata } from "next";
+
+import SinDatos from "@/components/SinDatos";
+import { datosMercado, datosPrevio, datosRadar } from "@/lib/datos";
+import { decimal, entero, fecha, porcentaje } from "@/lib/formato";
+import type { ModeloJson } from "@/lib/tipos";
+
+export const metadata: Metadata = { title: "Metodología" };
+export const dynamic = "force-dynamic";
+
+const NOMBRE_MODELO: Record<string, string> = {
+  mediana: "Mediana (sin información)",
+  ratio_cohorte: "Ratio típico de la cohorte",
+  ridge: "Regresión Ridge",
+  gradient_boosting: "Gradient boosting",
+};
+
+function TablaCandidatos({ m }: { m: ModeloJson }) {
+  const filas = Object.entries(m.cv_mae_log).sort((a, b) => a[1].mean - b[1].mean);
+  return (
+    <table>
+      <caption>
+        Error medio en log (MAE) en validación cruzada temporal dentro del entrenamiento. Se
+        elige el menor; el test no interviene.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Candidato</th>
+          <th scope="col" className="num">MAE (media ± desv.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filas.map(([nombre, v]) => (
+          <tr key={nombre}>
+            <th scope="row">
+              {NOMBRE_MODELO[nombre] ?? nombre}
+              {nombre === m.tipo ? " ✓" : ""}
+            </th>
+            <td className="num">
+              {decimal(v.mean, 3)} ± {decimal(v.std, 3)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+export default async function PaginaMetodologia() {
+  let radar, previo, mercado;
+  try {
+    [radar, previo, mercado] = await Promise.all([datosRadar(), datosPrevio(), datosMercado()]);
+  } catch {
+    return <SinDatos titulo="Metodología" />;
+  }
+  const dias = radar.dias_lectura;
+  const tam = radar.modelos[String(dias[0])].tamanos;
+  const pm = previo.modelo;
+
+  return (
+    <>
+      <h1>Cómo funciona</h1>
+      <p className="entradilla">
+        Qué datos usa la aplicación, cómo se han preparado, cómo se ha evaluado cada modelo y
+        qué no puede decir.
+      </p>
+
+      <h2>Datos</h2>
+      <div className="panel">
+        <ul>
+          <li>
+            <strong>Muestra:</strong> juegos con más de 30 y menos de 10.000 reseñas entre los
+            ~25.000 con más propietarios de SteamSpy, lanzados entre el{" "}
+            {fecha(mercado.rango_lanzamientos.desde)} y el {fecha(mercado.rango_lanzamientos.hasta)}.
+            Quedan {entero(mercado.juegos_aptos)} de {entero(mercado.juegos_descargados)}{" "}
+            descargados (los motivos de exclusión están en la pestaña Mercado).
+          </li>
+          <li>
+            <strong>Fecha de lanzamiento y precio:</strong> ficha oficial de la tienda de Steam.
+            El precio es el de lista (sin descuento) en dólares.
+          </li>
+          <li>
+            <strong>Reseñas:</strong> todas las reseñas públicas de cada juego vía la API de
+            Steam, agregadas por día. Del texto y del autor no se guarda nada.
+          </li>
+        </ul>
+      </div>
+
+      <h2>El radar</h2>
+      <div className="panel">
+        <p>
+          Objetivo: reseñas acumuladas en los 30 primeros días, en escala logarítmica (un error
+          de «el doble» pesa lo mismo con 50 reseñas que con 5.000). Variables: reseñas y
+          porcentaje de positivas hasta el día de lectura, precio y género; nada posterior a
+          ese día. Partición por fecha de lanzamiento: {tam.train} juegos de entrenamiento,{" "}
+          {tam.calibracion} de calibración y {tam.test} de test (los más recientes).
+        </p>
+        <div className="tabla">
+          <table>
+            <caption>Resultado en test, sobre lanzamientos que el modelo no vio.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Lectura</th>
+                <th scope="col">Modelo elegido</th>
+                <th scope="col" className="num">Factor de error típico</th>
+                <th scope="col" className="num">Dentro de ×2</th>
+                <th scope="col" className="num">MAE log</th>
+                <th scope="col" className="num">MAE log del ratio de cohorte</th>
+                <th scope="col" className="num">Cobertura del 90 %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dias.map((d) => {
+                const m = radar.modelos[String(d)];
+                const ratio = m.tipo === "ratio_cohorte" ? m.metricas_test : m.baselines_test.ratio_cohorte;
+                return (
+                  <tr key={d}>
+                    <th scope="row">Día {d}</th>
+                    <td>{NOMBRE_MODELO[m.tipo]}</td>
+                    <td className="num">×{decimal(m.metricas_test.factor_error_tipico, 2)}</td>
+                    <td className="num">{porcentaje(m.metricas_test.dentro_de_x2)}</td>
+                    <td className="num">{decimal(m.metricas_test.mae_log, 3)}</td>
+                    <td className="num">{ratio ? decimal(ratio.mae_log, 3) : "—"}</td>
+                    <td className="num">
+                      {m.metricas_test.cobertura_90 !== undefined ? porcentaje(m.metricas_test.cobertura_90) : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="nota">
+          «Factor de error típico» es la desviación del juego mediano: ×1,5 significa que la
+          estimación queda entre dos tercios y vez y media del valor real. El rango del 90 % es
+          conformal: el cuantil de los errores en el bloque de calibración.
+        </p>
+        {dias.map((d) => (
+          <details key={d}>
+            <summary>Candidatos comparados para el día {d}</summary>
+            <div className="tabla">
+              <TablaCandidatos m={radar.modelos[String(d)]} />
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <h2>Antes de lanzar</h2>
+      <div className="panel">
+        <p>
+          Mismo método con lo que se sabe antes de publicar: precio, género y mes. En test, el
+          modelo elegido ({NOMBRE_MODELO[pm.tipo]}) tiene un MAE en log de{" "}
+          {decimal(pm.metricas_test.mae_log, 3)} frente a{" "}
+          {pm.baselines_test.mediana ? decimal(pm.baselines_test.mediana.mae_log, 3) : "—"} de la
+          mediana
+          {pm.metricas_test.spearman !== null &&
+            ` y una correlación de rangos de ${decimal(pm.metricas_test.spearman, 2)}`}
+          . Con ese margen la app no da una cifra individual antes del lanzamiento: muestra el
+          rango de juegos parecidos.
+        </p>
+        <TablaCandidatos m={pm} />
+      </div>
+
+      <h2>Limitaciones</h2>
+      <div className="panel">
+        <ul>
+          <li>
+            Las reseñas miden actividad, no ventas. Hay juegos que venden mucho con pocas
+            reseñas y al revés.
+          </li>
+          <li>
+            La muestra parte de los juegos con más propietarios según SteamSpy: los
+            lanzamientos que casi nadie compró están infrarrepresentados, y los éxitos con más
+            de 10.000 reseñas quedan fuera a propósito.
+          </li>
+          <li>
+            Los juegos que salieron de acceso anticipado se excluyen: su «lanzamiento» no parte
+            de cero.
+          </li>
+          <li>
+            El rango del 90 % se cumple en promedio, no en cada juego: uno de cada diez puede
+            quedar fuera.
+          </li>
+        </ul>
+      </div>
+    </>
+  );
+}
