@@ -26,3 +26,6 @@ next-env.d.ts
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Metadatos del paquete instalado en modo editable
+*.egg-info/
