@@ -53,13 +53,20 @@ MAX_CARACTERES = 1400  # unas 350 palabras: cabe de sobra en el contexto del mod
 SECCIONES_EXCLUIDAS = {"Convención de commits", "Licencia"}
 
 ESTADOS = {
-    "apto": "apto para el modelo",
-    "sin_resenas_en_30d": "excluido: ninguna reseña en inglés en su primer mes",
-    "fase_previa_publica": (
-        "excluido: más del 5 % de sus reseñas son anteriores a la fecha oficial "
-        "(salió de acceso anticipado)"
+    "apto": "apto, entra en la muestra analizada",
+    "sin_resenas_en_30d": (
+        "excluido, no entra en la muestra analizada ni en el entrenamiento porque "
+        "no tuvo ninguna reseña en inglés en su primer mes"
     ),
-    "sin_precio_usd": "excluido: sin precio en dólares",
+    "fase_previa_publica": (
+        "excluido, no entra en la muestra analizada ni en el entrenamiento porque "
+        "más del 5 % de sus reseñas son anteriores a la fecha oficial (salió de "
+        "acceso anticipado)"
+    ),
+    "sin_precio_usd": (
+        "excluido, no entra en la muestra analizada ni en el entrenamiento porque "
+        "no tiene precio en dólares"
+    ),
 }
 
 
@@ -147,36 +154,44 @@ def _usd(valor: float) -> str:
 
 
 def ficha(juego: pd.Series, lecturas: pd.Series | None, en_test: bool) -> str:
-    """Texto de un juego con las cifras que alguien preguntaría sobre él."""
+    """Texto de un juego con las cifras que alguien preguntaría sobre él.
+
+    Evita las palabras de la documentación («modelo», «radar», «día»): las
+    fichas son cortas y, si las repitieran, BM25 las pondría por delante de la
+    documentación en las preguntas generales.
+    """
     lineas = [
         f"{juego['nombre']} (appid {juego['appid']}) se lanzó en Steam el "
         f"{juego['fecha_lanzamiento']}.",
         f"Precio: {_usd(juego['precio_usd'])}. Género principal: "
         f"{juego['genero_principal']}. Géneros: {str(juego['generos']).replace('|', ', ')}.",
         f"Desarrollador: {juego['desarrollador']}. Editor: {juego['editor']}.",
-        f"Estado en la muestra: {ESTADOS.get(juego['estado'], juego['estado'])}.",
+        f"Estado: {ESTADOS.get(juego['estado'], juego['estado'])}.",
     ]
     if lecturas is not None:
-        partes = []
-        for dia in config.DIAS_LECTURA:
-            texto = f"día {dia}: {int(lecturas[f'resenas_{dia}d'])}"
-            pct = lecturas[f"pct_positivas_{dia}d"]
-            if pd.notna(pct):
-                texto += f" ({_pct(pct)} positivas)"
-            partes.append(texto)
+        resenas = [
+            f"{int(lecturas[f'resenas_{dia}d'])} a los {dia} días"
+            for dia in config.DIAS_LECTURA
+        ]
         lineas.append(
-            "Reseñas en inglés acumuladas: "
-            + "; ".join(partes)
-            + f"; día 30: {int(lecturas['resenas_30d'])}."
+            f"Reseñas en inglés acumuladas: {', '.join(resenas)} y "
+            f"{int(lecturas['resenas_30d'])} a los 30 días."
         )
+        positivas = [
+            f"{_pct(lecturas[f'pct_positivas_{dia}d'])} a los {dia} días"
+            for dia in config.DIAS_LECTURA
+            if pd.notna(lecturas[f"pct_positivas_{dia}d"])
+        ]
+        if positivas:
+            lineas.append(f"Reseñas positivas: {', '.join(positivas)}.")
     elif pd.notna(juego["resenas_30d"]):
         lineas.append(
             f"Reseñas en inglés en sus primeros 30 días: {int(juego['resenas_30d'])}."
         )
     if en_test:
         lineas.append(
-            "Forma parte del conjunto de test: el modelo no lo vio al entrenar y "
-            f"se puede probar en el radar con el enlace /?juego={juego['appid']}&dia=7."
+            "Está en el conjunto de test (no se usó para entrenar). "
+            f"Enlace para probarlo: /?juego={juego['appid']}"
         )
     return "\n".join(lineas)
 

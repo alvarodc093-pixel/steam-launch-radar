@@ -66,10 +66,12 @@ def test_ficha_con_lecturas_y_en_test():
     texto = rag.ficha(_juego(), lecturas, en_test=True)
     assert "9,99 $" in texto
     assert "Action, Indie" in texto
-    assert "día 3: 10 (90 % positivas)" in texto
-    assert "día 7: 30;" in texto  # sin porcentaje si no lo hay
-    assert "día 30: 120" in texto
-    assert "/?juego=10&dia=7" in texto
+    assert "10 a los 3 días, 30 a los 7 días, 60 a los 14 días y 120 a los 30" in texto
+    # Sin porcentaje del día 7, se omite en lugar de inventarlo.
+    assert "Reseñas positivas: 90 % a los 3 días, 80 % a los 14 días." in texto
+    assert "/?juego=10" in texto
+    for palabra in ("modelo", "radar", "día "):
+        assert palabra not in texto
 
 
 def test_ficha_de_un_excluido():

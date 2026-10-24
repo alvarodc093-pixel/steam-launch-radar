@@ -135,7 +135,7 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
 
 `src/radar/rag.py` construye el índice y `app/src/lib/rag.ts` hace la recuperación.
 
-- **Corpus:** 4.109 fragmentos. 40 salen del README y de las celdas de texto de los
+- **Corpus:** 4.114 fragmentos. 45 salen del README y de las celdas de texto de los
   notebooks, cortados por secciones, y el resto son una ficha por juego descargado con
   sus cifras (precio, géneros, estudio, reseñas los días 3, 7, 14 y 30, y por qué se
   excluyó si es el caso).
@@ -152,9 +152,9 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
 
 | Búsqueda               | Acierto@1 | Acierto@6 | MRR  |
 | ---------------------- | --------- | --------- | ---- |
-| Palabras (BM25)        | 78 %      | 100 %     | 0,87 |
-| Embeddings             | 67 %      | 100 %     | 0,77 |
-| Híbrida (la de la app) | 78 %      | 100 %     | 0,88 |
+| Palabras (BM25)        | 78 %      | 100 %     | 0,89 |
+| Embeddings             | 61 %      | 94 %      | 0,73 |
+| Híbrida (la de la app) | 83 %      | 100 %     | 0,89 |
 
 Con la búsqueda híbrida, las 19 respuestas sobre el proyecto contienen el dato
 esperado y citan su fuente, y las 3 preguntas ajenas se rechazan.

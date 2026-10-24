@@ -32,9 +32,13 @@ const MODOS: Record<ModoBusqueda, string> = {
   semantica: "búsqueda por embeddings",
 };
 
-/** Negritas de Markdown (**así**), lo único que suelen usar los modelos aquí. */
+/**
+ * Negritas de Markdown (**así**), lo único que suelen usar los modelos aquí.
+ * gpt-oss cita con su propio formato (【4†L13-L16】): se deja como [4].
+ */
 function conNegritas(texto: string) {
   return texto
+    .replace(/【(\d+)[^】]*】/g, "[$1]")
     .split(/(\*\*[^*]+\*\*)/g)
     .map((parte, i) =>
       parte.startsWith("**") && parte.endsWith("**") ? (
