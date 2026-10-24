@@ -81,6 +81,8 @@ def resumen(carpeta: Path) -> str:
 
 
 def main() -> int:
+    # En Windows la consola usa cp1252 y el resumen acabaría mal codificado al redirigirlo.
+    sys.stdout.reconfigure(encoding="utf-8")
     try:
         sys.stdout.write(resumen(config.DIR_APP_DATOS))
     except FileNotFoundError as exc:
