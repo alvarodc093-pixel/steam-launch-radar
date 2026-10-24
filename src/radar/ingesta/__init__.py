@@ -1,1 +1,1 @@
-"""Descarga de datos de Steam y SteamSpy."""
+"""Descarga de datos públicos de la tienda de Steam."""

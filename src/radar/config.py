@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -18,9 +18,14 @@ DIR_APP_DATOS = RAIZ / "app" / "data"
 # Muestra: lanzamientos con la ventana de 30 días ya cerrada y con un volumen
 # de reseñas que se puede descargar entero (el radar está pensado para
 # estudios pequeños y medianos, no para los éxitos con cientos de miles).
-LANZAMIENTO_DESDE = date(2024, 1, 1)
+# La API de reseñas sin clave solo sirve el último año: un juego lanzado
+# antes tiene su primer mes fuera de alcance.
+HISTORICO_API_DIAS = 365
+DIAS_MARGEN_INICIO = 5  # colchón por zonas horarias y por la fecha de descarga
 DIAS_MARGEN = 45  # hasta hoy - 45 días: la ventana de 30 días está cerrada
-RESENAS_MIN = 30
+# Mínimo en todos los idiomas: la API solo sirve las de inglés (más o menos
+# una de cada cuatro), y con menos de 50 apenas quedarían datos que leer.
+RESENAS_MIN = 50
 RESENAS_MAX = 10_000
 
 DIAS_VENTANA = 30
@@ -29,3 +34,9 @@ DIAS_LECTURA = (3, 7, 14)
 
 CONTACTO = os.getenv("CONTACTO_USER_AGENT", "").strip()
 USER_AGENT = "steam-launch-radar/1.0" + (f" (+{CONTACTO})" if CONTACTO else "")
+
+
+def ventana_lanzamientos(hoy: date) -> tuple[date, date]:
+    """Lanzamientos cuyo primer mes completo se puede descargar hoy."""
+    desde = hoy - timedelta(days=HISTORICO_API_DIAS - DIAS_MARGEN_INICIO)
+    return desde, hoy - timedelta(days=DIAS_MARGEN)

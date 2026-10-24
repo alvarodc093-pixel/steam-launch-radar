@@ -86,6 +86,7 @@ def construir_juegos(fichas: list[dict], resenas: list[dict]) -> pd.DataFrame:
                 "resenas_api": r.get("total_api"),
                 "resenas_descargadas": r.get("descargadas", 0),
                 "descarga_completa": bool(r.get("completo")),
+                "descargado_en": r.get("descargado_en"),
             }
         )
     juegos = pd.DataFrame(filas)
@@ -125,10 +126,20 @@ def marcar_aptos(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFrame:
         r30.reindex(juegos["appid"]).fillna(0).astype(int).to_numpy()
     )
 
+    # La API solo sirve el último año de reseñas (ver ingesta/resenas.py): si
+    # el lanzamiento queda antes, su primer mes está incompleto aunque la
+    # paginación haya terminado bien.
+    descarga = pd.to_datetime(juegos["descargado_en"], utc=True).dt.tz_localize(None)
+    limite = descarga.dt.normalize() - pd.Timedelta(
+        days=config.HISTORICO_API_DIAS - config.DIAS_MARGEN_INICIO
+    )
+    fuera = (juegos["fecha_lanzamiento"] < limite).fillna(False).to_numpy()
+
     estado = np.full(len(juegos), "apto", dtype=object)
     estado[juegos["pct_previas"] > MAX_PCT_PREVIAS] = "fase_previa_publica"
     estado[juegos["resenas_30d"] == 0] = "sin_resenas_en_30d"
     estado[juegos["precio_usd"].isna()] = "sin_precio_usd"
+    estado[fuera] = "fuera_del_historico_api"
     estado[~juegos["descarga_completa"]] = "descarga_incompleta"
     juegos["estado"] = estado
     return juegos
@@ -176,8 +187,20 @@ def construir_dataset(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFra
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    fichas = _leer_json(config.DIR_RAW / "fichas")
-    resenas = _leer_json(config.DIR_RAW / "resenas")
+    # Solo los candidatos de la última búsqueda: la caché puede guardar fichas
+    # de ejecuciones anteriores con otra ventana de fechas.
+    vigentes = {
+        c["appid"]
+        for c in json.loads(
+            (config.DIR_RAW / "candidatos.json").read_text(encoding="utf-8")
+        )
+    }
+    fichas = [
+        f for f in _leer_json(config.DIR_RAW / "fichas") if f["appid"] in vigentes
+    ]
+    resenas = [
+        r for r in _leer_json(config.DIR_RAW / "resenas") if r["appid"] in vigentes
+    ]
     juegos = construir_juegos(fichas, resenas)
     diarias = construir_diarias(resenas, juegos)
     juegos = marcar_aptos(juegos, diarias)

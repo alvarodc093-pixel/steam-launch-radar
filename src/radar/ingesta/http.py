@@ -1,6 +1,6 @@
 """Cliente HTTP con espera entre peticiones y reintentos.
 
-Steam y SteamSpy no publican un límite exacto para estos endpoints, pero
+Steam no publica un límite exacto para estos endpoints, pero
 cortan con 429 o 5xx si se les pide demasiado rápido. Por eso cada fuente
 fija su ritmo y aquí se respeta `Retry-After` y se reintenta con espera
 creciente antes de dar el dato por perdido.

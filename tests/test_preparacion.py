@@ -123,3 +123,23 @@ def test_positividad_vacia_sin_resenas() -> None:
     ds = prep.construir_dataset(prep.marcar_aptos(juegos, diarias), diarias)
     assert ds.loc[0, "resenas_3d"] == 0
     assert np.isnan(ds.loc[0, "pct_positivas_3d"])
+
+
+def test_lanzamiento_fuera_del_historico_de_la_api() -> None:
+    resenas = [
+        {
+            **_resenas(1, {"2025-03-01": [5, 0]}),
+            "descargado_en": "2025-04-15T10:00:00+00:00",
+        },
+        {
+            **_resenas(2, {"2025-03-01": [5, 0]}),
+            "descargado_en": "2026-04-15T10:00:00+00:00",
+        },
+    ]
+    fichas = [_ficha(1, "2025-03-01"), _ficha(2, "2025-03-01")]
+    juegos = prep.construir_juegos(fichas, resenas)
+    juegos = prep.marcar_aptos(juegos, prep.construir_diarias(resenas, juegos))
+    assert juegos.set_index("appid")["estado"].to_dict() == {
+        1: "apto",
+        2: "fuera_del_historico_api",  # descargado 13 meses después
+    }
