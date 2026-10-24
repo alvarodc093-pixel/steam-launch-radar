@@ -50,10 +50,10 @@ def test_variables_del_radar_no_miran_el_futuro() -> None:
     assert not any("resenas" in v for v in m.VARIABLES_PREVIAS.todas)
 
 
-def test_ratio_cohorte_aprende_el_desplazamiento() -> None:
+def test_ratio_tipico_aprende_el_desplazamiento() -> None:
     x = pd.DataFrame({"log_r": np.log1p([10.0, 20.0, 40.0])})
     y = x["log_r"].to_numpy() + np.log(3)
-    pred = m.RatioCohorte("log_r").fit(x, y).predict(x)
+    pred = m.RatioTipico("log_r").fit(x, y).predict(x)
     np.testing.assert_allclose(pred, y)
 
 

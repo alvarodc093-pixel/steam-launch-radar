@@ -50,7 +50,7 @@ export function predecirLog(m: ModeloJson, fila: Fila): number {
   switch (m.tipo) {
     case "mediana":
       return m.mediana!;
-    case "ratio_cohorte":
+    case "ratio_tipico":
       return (fila[m.ratio!.columna] as number) + m.ratio!.desplazamiento;
     case "ridge": {
       const x = vector(m, fila);

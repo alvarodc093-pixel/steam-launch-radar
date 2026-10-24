@@ -151,7 +151,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.paso in (None, "candidatos"):
         candidatos = paso_candidatos(hoy)
     else:
-        candidatos = _leer(config.DIR_RAW / "candidatos.json")
+        ruta = config.DIR_RAW / "candidatos.json"
+        if not ruta.exists():
+            logger.error("Falta %s: ejecuta antes el paso de candidatos.", ruta)
+            return 1
+        candidatos = _leer(ruta)
     if args.paso in (None, "fichas"):
         paso_fichas(candidatos)
     if args.paso in (None, "resenas"):

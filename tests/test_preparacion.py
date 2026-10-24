@@ -12,7 +12,7 @@ from radar import preparacion as prep
 def test_genero_principal_salta_los_genericos() -> None:
     assert prep.genero_principal(["Indie", "Free To Play", "RPG", "Action"]) == "RPG"
     assert prep.genero_principal(["Indie"]) == "Indie"
-    assert prep.genero_principal([]) == "Casual"
+    assert prep.genero_principal([]) == prep.SIN_GENERO
 
 
 @pytest.mark.parametrize(

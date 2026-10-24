@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 const NOMBRE_MODELO: Record<string, string> = {
   mediana: "Mediana (sin información)",
-  ratio_cohorte: "Ratio típico de la cohorte",
+  ratio_tipico: "Ratio típico de la muestra",
   ridge: "Regresión Ridge",
   gradient_boosting: "Gradient boosting",
 };
@@ -115,14 +115,14 @@ export default async function PaginaMetodologia() {
                 <th scope="col" className="num">Factor de error típico</th>
                 <th scope="col" className="num">Dentro de ×2</th>
                 <th scope="col" className="num">MAE log</th>
-                <th scope="col" className="num">MAE log del ratio de cohorte</th>
+                <th scope="col" className="num">MAE log del ratio típico</th>
                 <th scope="col" className="num">Cobertura del 90 %</th>
               </tr>
             </thead>
             <tbody>
               {dias.map((d) => {
                 const m = radar.modelos[String(d)];
-                const ratio = m.tipo === "ratio_cohorte" ? m.metricas_test : m.baselines_test.ratio_cohorte;
+                const ratio = m.tipo === "ratio_tipico" ? m.metricas_test : m.baselines_test.ratio_tipico;
                 return (
                   <tr key={d}>
                     <th scope="row">Día {d}</th>

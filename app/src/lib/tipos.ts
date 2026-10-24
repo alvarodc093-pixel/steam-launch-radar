@@ -18,7 +18,7 @@ export interface Arbol {
 }
 
 export interface ModeloJson {
-  tipo: "mediana" | "ratio_cohorte" | "ridge" | "gradient_boosting";
+  tipo: "mediana" | "ratio_tipico" | "ridge" | "gradient_boosting";
   numericas: string[];
   categoricas: string[];
   generos: string[];

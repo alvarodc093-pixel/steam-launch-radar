@@ -36,7 +36,7 @@ def _vector(js: dict, fila: dict) -> list[float]:
 def evaluar_json(js: dict, fila: dict) -> float:
     if js["tipo"] == "mediana":
         return js["mediana"]
-    if js["tipo"] == "ratio_cohorte":
+    if js["tipo"] == "ratio_tipico":
         return fila[js["ratio"]["columna"]] + js["ratio"]["desplazamiento"]
     x = _vector(js, fila)
     if js["tipo"] == "ridge":
@@ -80,7 +80,7 @@ def datos() -> pd.DataFrame:
 
 
 @pytest.mark.parametrize(
-    "tipo", ["mediana", "ratio_cohorte", "ridge", "gradient_boosting"]
+    "tipo", ["mediana", "ratio_tipico", "ridge", "gradient_boosting"]
 )
 def test_json_reproduce_a_sklearn(datos, tipo) -> None:  # noqa: ANN001
     variables = m.variables_radar(7)

@@ -119,18 +119,19 @@ class Mediana(BaseEstimator, RegressorMixin):
         return np.full(len(x), self.valor_)
 
 
-class RatioCohorte(BaseEstimator, RegressorMixin):
+class RatioTipico(BaseEstimator, RegressorMixin):
     """Baseline del radar: reseñas a 30 días = reseñas al día k × ratio típico.
 
     Es la regla que aplicaría alguien con una hoja de cálculo: «a la semana
-    un juego suele llevar el X % de lo que tendrá al mes». En log es sumar
-    la mediana de log1p(r30) − log1p(rk) del train.
+    un juego suele llevar el X % de lo que tendrá al mes». El ratio es uno
+    solo para toda la muestra de entrenamiento (en log, la mediana de
+    log1p(r30) − log1p(rk)); no distingue géneros ni precios.
     """
 
     def __init__(self, columna: str) -> None:
         self.columna = columna
 
-    def fit(self, x: pd.DataFrame, y: np.ndarray) -> RatioCohorte:
+    def fit(self, x: pd.DataFrame, y: np.ndarray) -> RatioTipico:
         self.desplazamiento_ = float(
             np.median(np.asarray(y) - x[self.columna].to_numpy())
         )
@@ -161,7 +162,7 @@ def candidatos(
 ) -> dict[str, BaseEstimator]:
     modelos: dict[str, BaseEstimator] = {"mediana": Mediana()}
     if columna_ratio:
-        modelos["ratio_cohorte"] = RatioCohorte(columna_ratio)
+        modelos["ratio_tipico"] = RatioTipico(columna_ratio)
     modelos["ridge"] = Pipeline(
         [("pre", _preproceso(variables, escalar=True)), ("modelo", Ridge(alpha=1.0))]
     )
@@ -185,7 +186,7 @@ def candidatos(
 # --- evaluación -------------------------------------------------------------
 
 
-def metricas(y_real: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+def metricas(y_real: np.ndarray, y_pred: np.ndarray) -> dict[str, float | None]:
     """Errores en log1p y su lectura en reseñas (factor de error típico)."""
     y_real, y_pred = np.asarray(y_real), np.asarray(y_pred)
     error_abs = np.abs(y_real - y_pred)
@@ -236,7 +237,7 @@ class Resultado:
     cv: pd.DataFrame
     q90: float
     test: dict[str, Any]
-    test_baselines: dict[str, dict[str, float]]
+    test_baselines: dict[str, dict[str, float | None]]
     tamanos: dict[str, int]
 
 

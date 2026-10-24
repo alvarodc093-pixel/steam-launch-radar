@@ -93,7 +93,7 @@ deciden el producto:
 - **Objetivo:** log(1 + reseñas en inglés a 30 días).
 - **Partición por fecha de lanzamiento:** 1.811 juegos de entrenamiento, 604 de
   calibración y 604 de test (los más recientes, de julio a septiembre de 2026).
-- **Candidatos:** la mediana, el ratio típico de la cohorte (la regla de la hoja de
+- **Candidatos:** la mediana, el ratio típico de la muestra (la regla de la hoja de
   cálculo), Ridge y gradient boosting. Se elige por validación cruzada temporal dentro
   del entrenamiento; el test se usa una sola vez.
 - **Intervalo del 90 %:** conformal, con el cuantil de los errores en el bloque de
@@ -104,8 +104,8 @@ Resultado en test, sobre lanzamientos que el modelo no vio:
 | Lectura | Modelo elegido | Factor de error típico | Dentro de ×2 | Cobertura del rango del 90 % |
 | --- | --- | --- | --- | --- |
 | Día 3 | Ridge | ×1,34 | 92 % | 93 % |
-| Día 7 | Ratio de la cohorte | ×1,21 | 98 % | 92 % |
-| Día 14 | Ratio de la cohorte | ×1,09 | 99,5 % | 93 % |
+| Día 7 | Ratio típico | ×1,21 | 98 % | 92 % |
+| Día 14 | Ratio típico | ×1,09 | 99,5 % | 93 % |
 | Antes de lanzar | Gradient boosting | ×2,56 (la mediana: ×2,39) | 37 % | 92 % |
 
 «Factor de error típico» es la desviación en el juego mediano: ×1,21 significa que la

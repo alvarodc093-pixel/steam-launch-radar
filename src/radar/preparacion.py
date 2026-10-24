@@ -2,7 +2,8 @@
 
 Salidas en data/processed/ (se versionan: son agregados sin datos personales):
     juegos.csv            una fila por juego descargado, con su estado
-    resenas_diarias.csv   reseñas por juego y día desde el lanzamiento (0-89)
+    resenas_diarias.csv   reseñas por juego y día relativo al lanzamiento
+                          (del día −30 al 89)
     dataset_radar.csv     una fila por juego apto para el modelo
 
 Uso:
@@ -48,11 +49,15 @@ def banda_precio(precio: float | None) -> str | None:
     return None  # pragma: no cover - el último tope es infinito
 
 
+SIN_GENERO = "Sin género"
+
+
 def genero_principal(generos: list[str]) -> str:
+    """Primer género específico; si solo hay genéricos, el primero de ellos."""
     especificos = [g for g in generos if g not in GENEROS_GENERICOS]
     if especificos:
         return especificos[0]
-    return "Casual" if not generos else generos[0]
+    return generos[0] if generos else SIN_GENERO
 
 
 def _leer_json(carpeta: Path) -> list[dict]:
@@ -191,9 +196,12 @@ def cargar_crudo() -> tuple[list[dict], list[dict]]:
     La caché puede guardar descargas de ejecuciones anteriores con otra
     ventana de fechas; solo cuentan los juegos de candidatos.json.
     """
-    candidatos = json.loads(
-        (config.DIR_RAW / "candidatos.json").read_text(encoding="utf-8")
-    )
+    ruta = config.DIR_RAW / "candidatos.json"
+    if not ruta.exists():
+        raise FileNotFoundError(
+            f"No existe {ruta}: ejecuta antes la ingesta (python -m radar.ingesta)."
+        )
+    candidatos = json.loads(ruta.read_text(encoding="utf-8"))
     vigentes = {c["appid"] for c in candidatos}
     fichas = [
         f for f in _leer_json(config.DIR_RAW / "fichas") if f["appid"] in vigentes
@@ -207,6 +215,9 @@ def cargar_crudo() -> tuple[list[dict], list[dict]]:
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     fichas, resenas = cargar_crudo()
+    if not fichas or not resenas:
+        logger.error("La caché de data/raw está vacía: no hay nada que preparar.")
+        return 1
     juegos = construir_juegos(fichas, resenas)
     diarias = construir_diarias(resenas, juegos)
     juegos = marcar_aptos(juegos, diarias)

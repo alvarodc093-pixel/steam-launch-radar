@@ -1038,7 +1038,7 @@ appid,nombre,fecha_lanzamiento,precio_usd,gratis,genero_principal,generos,es_ind
 2950710,Dosa Divas,2026-04-14,19.99,False,Action,Action|Adventure|Indie|RPG,True,Outerloop Games,Outerloop Games,51,51,True,2026-10-24T01:37:00+00:00,hasta_20,0.0,34,apto
 2950790,IRON NEST: Heavy Turret Simulator,2026-08-06,19.99,False,Action,Action|Indie|Simulation,True,Nick Nieuwoudt,Nick Nieuwoudt,8159,8158,True,2026-10-24T01:37:36+00:00,hasta_20,0.0,7065,apto
 2951690,Sonic Rumble Party,2025-11-05,0.0,True,Action,Action|Free To Play,False,SEGA,SEGA,0,0,True,2026-10-24T01:37:37+00:00,gratis,0.0,0,sin_resenas_en_30d
-2952180,Dragon Front: Adventures,2025-11-06,19.99,False,Casual,,False,"High Voltage Software, Inc.","High Voltage Software, Inc.",23,23,True,2026-10-24T01:37:38+00:00,hasta_20,0.0,13,apto
+2952180,Dragon Front: Adventures,2025-11-06,19.99,False,Sin género,,False,"High Voltage Software, Inc.","High Voltage Software, Inc.",23,23,True,2026-10-24T01:37:38+00:00,hasta_20,0.0,13,apto
 2953520,The End of History,2025-12-10,28.0,False,RPG,Indie|RPG|Simulation|Early Access,True,Tatamibeya,WorldMap,40,40,True,2026-10-24T01:37:38+00:00,hasta_40,0.0,27,apto
 2955720,Panthalassa,2026-05-17,13.99,False,Adventure,Adventure|Casual|Indie,True,Meia Calça,Meia Calça,88,88,True,2026-10-24T01:37:39+00:00,hasta_20,0.0,58,apto
 2956640,Game with Friends,2026-03-27,5.99,False,Massively Multiplayer,Massively Multiplayer|Simulation|Early Access,False,Beaf Studio,Beaf Studio,3,3,True,2026-10-24T01:37:40+00:00,hasta_10,0.0,3,apto
@@ -1602,7 +1602,7 @@ appid,nombre,fecha_lanzamiento,precio_usd,gratis,genero_principal,generos,es_ind
 3429890,Devil of the Plague,2026-05-01,9.99,False,Action,Action|Adventure|Indie|Strategy|Early Access,True,SoulByte Games,SoulByte Games,83,83,True,2026-10-24T01:59:14+00:00,hasta_10,0.0,41,apto
 3430260,WRATH: Aeon of Ruin VR - Brutal Edition,2026-04-09,19.99,False,Action,Action,False,Team Beef,Flat2VR Studios,90,90,True,2026-10-24T01:59:15+00:00,hasta_20,0.0,67,apto
 3430340,Dice A Million,2026-02-25,12.99,False,Strategy,Indie|Strategy,True,countlessnights,2 Left Thumbs,699,699,True,2026-10-24T01:59:18+00:00,hasta_20,0.0,450,apto
-3430470,PLATiNA :: LAB,2026-09-09,19.99,False,Casual,,False,HIGH-END Games,HIGH-END Games,140,77,True,2026-10-24T01:59:19+00:00,hasta_20,0.6623376623376623,24,fase_previa_publica
+3430470,PLATiNA :: LAB,2026-09-09,19.99,False,Sin género,,False,HIGH-END Games,HIGH-END Games,140,77,True,2026-10-24T01:59:19+00:00,hasta_20,0.6623376623376623,24,fase_previa_publica
 3431680,Car Factory Empire,2025-11-03,8.99,False,Racing,Indie|Racing|Simulation|Strategy|Early Access,True,RDS Games,RDS Games,18,18,True,2026-10-24T01:59:20+00:00,hasta_10,0.0,9,apto
 3432480,Shards of Order,2026-07-28,9.99,False,Adventure,Adventure|Indie|RPG|Strategy,True,Fardust,Awaken Realms,366,366,True,2026-10-24T01:59:22+00:00,hasta_10,0.0,284,apto
 3432650,追曙,2026-05-11,7.99,False,Adventure,Adventure|Indie,True,悄语灯,悄语灯,4,4,True,2026-10-24T01:59:23+00:00,hasta_10,0.0,3,apto
@@ -3108,7 +3108,7 @@ appid,nombre,fecha_lanzamiento,precio_usd,gratis,genero_principal,generos,es_ind
 4215730,HoloDungeon: Koyori vs HollowLive in Honsha Tower,2026-01-29,12.99,False,RPG,Indie|RPG|Early Access,True,VELUX STUDIO,holo Indie,1,1,True,2026-10-24T02:41:12+00:00,hasta_20,0.0,1,apto
 4215780,Hidden Things Beach Elves,2026-04-03,0.0,True,Casual,Casual|Indie|Free To Play,True,Galysh Company,Galysh Company,0,0,True,2026-10-24T02:41:13+00:00,gratis,0.0,0,sin_resenas_en_30d
 4216070,DEMON WORK WALK ～hello work poke park 葛葉の魔界大作戦～,2026-04-02,0.0,True,Action,Action|Free To Play,False,MELPOT,Abyss Walker,0,0,True,2026-10-24T02:41:13+00:00,gratis,0.0,0,sin_resenas_en_30d
-4216180,IGNOBLE,2026-08-12,6.99,False,Casual,,False,Retromagine,Retromagine,94,94,True,2026-10-24T02:41:14+00:00,hasta_10,0.0,81,apto
+4216180,IGNOBLE,2026-08-12,6.99,False,Sin género,,False,Retromagine,Retromagine,94,94,True,2026-10-24T02:41:14+00:00,hasta_10,0.0,81,apto
 4216280,Dverghold,2026-07-29,16.99,False,RPG,RPG|Early Access,False,Team Sorgarn,AIP,129,129,True,2026-10-24T02:41:15+00:00,hasta_20,0.0,75,apto
 4216400,DEDA,2026-02-13,3.0,False,Action,Action|Indie,True,deepins corp.,deepins corp.,20,20,True,2026-10-24T02:41:16+00:00,hasta_10,0.0,15,apto
 4216630,NIGHTBELL,2026-01-10,3.99,False,Adventure,Adventure|Indie|Simulation,True,TrueGames,TrueGames,40,40,True,2026-10-24T02:41:17+00:00,hasta_10,0.0,22,apto
