@@ -1,0 +1,172 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "name": "detalle_tabla",
+  "position": {
+    "x": 16,
+    "y": 96,
+    "z": 2,
+    "width": 1248,
+    "height": 608,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "juegos"
+                    }
+                  },
+                  "Property": "nombre"
+                }
+              },
+              "queryRef": "juegos.nombre",
+              "nativeQueryRef": "nombre"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "juegos"
+                    }
+                  },
+                  "Property": "genero_principal"
+                }
+              },
+              "queryRef": "juegos.genero_principal",
+              "nativeQueryRef": "genero_principal"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "lecturas"
+                    }
+                  },
+                  "Property": "lectura"
+                }
+              },
+              "queryRef": "lecturas.lectura",
+              "nativeQueryRef": "lectura"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "resenas_lectura"
+                }
+              },
+              "queryRef": "predicciones.resenas_lectura",
+              "nativeQueryRef": "resenas_lectura"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "estimacion"
+                }
+              },
+              "queryRef": "predicciones.estimacion",
+              "nativeQueryRef": "estimacion"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "rango_inferior"
+                }
+              },
+              "queryRef": "predicciones.rango_inferior",
+              "nativeQueryRef": "rango_inferior"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "rango_superior"
+                }
+              },
+              "queryRef": "predicciones.rango_superior",
+              "nativeQueryRef": "rango_superior"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "resenas_30d_reales"
+                }
+              },
+              "queryRef": "predicciones.resenas_30d_reales",
+              "nativeQueryRef": "resenas_30d_reales"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "dentro_rango"
+                }
+              },
+              "queryRef": "predicciones.dentro_rango",
+              "nativeQueryRef": "dentro_rango"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Juegos de test: lo que estimó el radar y lo que pasó (dentro_rango = 1 si acertó)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

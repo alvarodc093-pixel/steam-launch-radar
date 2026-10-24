@@ -1,0 +1,124 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "name": "modelo_dispersion",
+  "position": {
+    "x": 16,
+    "y": 232,
+    "z": 5,
+    "width": 760,
+    "height": 472,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "scatterChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "juegos"
+                    }
+                  },
+                  "Property": "nombre"
+                }
+              },
+              "queryRef": "juegos.nombre",
+              "nativeQueryRef": "nombre"
+            }
+          ]
+        },
+        "X": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "Estimación"
+                }
+              },
+              "queryRef": "predicciones.Estimación",
+              "nativeQueryRef": "Estimación"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "predicciones"
+                    }
+                  },
+                  "Property": "Reseñas reales"
+                }
+              },
+              "queryRef": "predicciones.Reseñas reales",
+              "nativeQueryRef": "Reseñas reales"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Estimación frente a lo que pasó (escala logarítmica)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "categoryAxis": [
+        {
+          "properties": {
+            "axisScale": {
+              "expr": {
+                "Literal": {
+                  "Value": "'log'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "axisScale": {
+              "expr": {
+                "Literal": {
+                  "Value": "'log'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

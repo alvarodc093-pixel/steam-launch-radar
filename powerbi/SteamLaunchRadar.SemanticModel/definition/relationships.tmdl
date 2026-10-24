@@ -1,0 +1,19 @@
+relationship c471de9d-b831-54cf-b7fe-97d3d8fcdd54
+	fromColumn: juegos.fecha_lanzamiento
+	toColumn: calendario.fecha
+
+relationship a8753ecf-9ee0-59c0-9d1c-bdb38b40f693
+	fromColumn: curva_diaria.appid
+	toColumn: juegos.appid
+
+relationship 03675961-02d3-5e2c-b03d-b3912afe4414
+	fromColumn: predicciones.appid
+	toColumn: juegos.appid
+
+relationship f286acd1-6995-5324-8887-365ad90c960b
+	fromColumn: predicciones.dia_lectura
+	toColumn: lecturas.dia_lectura
+
+relationship a9923c71-6df6-586e-9233-c2f802d9a4b8
+	fromColumn: metricas.dia_lectura
+	toColumn: lecturas.dia_lectura

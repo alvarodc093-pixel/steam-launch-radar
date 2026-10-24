@@ -1,0 +1,16 @@
+dia_lectura,modelo,elegido,mae_log,factor_error,dentro_x2,cv_mae_log
+3,Ridge,Sí,0.3408,1.336,0.9189,0.3852
+3,Mediana (baseline),No,1.2125,2.392,0.4056,1.2797
+3,Ratio típico,No,0.3585,1.333,0.8957,0.391
+3,Gradient boosting,No,0.332,1.294,0.9106,0.39
+7,Ratio típico,Sí,0.2196,1.21,0.9801,0.2329
+7,Mediana (baseline),No,1.2125,2.392,0.4056,1.2797
+7,Ridge,No,0.2131,1.188,0.9801,0.2336
+7,Gradient boosting,No,0.2108,1.187,0.9801,0.236
+14,Ratio típico,Sí,0.1133,1.091,0.995,0.1283
+14,Mediana (baseline),No,1.2125,2.392,0.4056,1.2797
+14,Ridge,No,0.1144,1.095,0.995,0.1317
+14,Gradient boosting,No,0.1133,1.091,0.9934,0.1297
+0,Gradient boosting,Sí,1.1433,2.56,0.3791,1.1622
+0,Mediana (baseline),No,1.2125,2.392,0.4056,1.2797
+0,Ridge,No,1.1391,2.549,0.3891,1.1867

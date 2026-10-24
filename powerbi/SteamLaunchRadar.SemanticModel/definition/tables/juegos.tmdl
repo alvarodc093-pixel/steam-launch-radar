@@ -1,0 +1,139 @@
+table juegos
+	lineageTag: 8dda527d-4bff-5aa8-a011-5262fcc8e077
+
+	/// Juegos descargados del buscador de Steam.
+	measure 'Lanzamientos' = COUNTROWS(juegos)
+		formatString: #,0
+		lineageTag: a077a5aa-74b2-52c4-b965-0d8bcf9ade02
+
+	/// Juegos que entran en el modelo tras la limpieza.
+	measure 'Lanzamientos aptos' = CALCULATE(COUNTROWS(juegos), juegos[estado] = "apto")
+		formatString: #,0
+		lineageTag: da8d2336-053a-52f6-864e-d6d05be190db
+
+	/// Parte de los juegos descargados que se excluye en el preprocesamiento.
+	measure '% excluidos' = DIVIDE([Lanzamientos] - [Lanzamientos aptos], [Lanzamientos])
+		formatString: 0.0 %
+		lineageTag: a0ef914f-b319-5090-9362-793593e395e7
+
+	/// Reseñas en inglés al cumplir 30 días del juego mediano.
+	measure 'Mediana reseñas 30 días' = CALCULATE(MEDIAN(juegos[resenas_30d]), juegos[estado] = "apto")
+		formatString: #,0
+		lineageTag: f7e544e2-9a68-5982-84d2-f9422e3ae2ee
+
+	/// Porcentaje de reseñas positivas en la primera semana del juego mediano.
+	measure 'Mediana positivas 7 días' = CALCULATE(MEDIAN(juegos[pct_positivas_7d]), juegos[estado] = "apto")
+		formatString: 0 %
+		lineageTag: 94d63692-8d4b-5b6e-924e-f506dbac25e3
+
+	column appid
+		dataType: int64
+		formatString: 0
+		lineageTag: a678967a-138b-5fc6-9375-b62d8cd28be9
+		summarizeBy: none
+		sourceColumn: appid
+
+	column nombre
+		dataType: string
+		lineageTag: fcd42051-05f0-529f-970f-8375c89721ce
+		summarizeBy: none
+		sourceColumn: nombre
+
+	column fecha_lanzamiento
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 5b498434-f280-5cbb-892f-92ccb0c15684
+		summarizeBy: none
+		sourceColumn: fecha_lanzamiento
+
+	column precio_usd
+		dataType: double
+		formatString: #,0.00 $
+		lineageTag: 9016d35a-261f-57d1-8289-c5ca99767e84
+		summarizeBy: none
+		sourceColumn: precio_usd
+
+	column banda_precio
+		dataType: string
+		lineageTag: a50f3fd8-4499-5a9d-9351-b464ec88b530
+		summarizeBy: none
+		sourceColumn: banda_precio
+		sortByColumn: banda_orden
+
+	column banda_orden
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 655b874e-2b3e-5834-9f65-fa5d55efae4f
+		summarizeBy: none
+		sourceColumn: banda_orden
+
+	column genero_principal
+		dataType: string
+		lineageTag: 23a9be35-a125-5716-a6d9-027d8809f96e
+		summarizeBy: none
+		sourceColumn: genero_principal
+
+	column es_indie
+		dataType: string
+		lineageTag: b31cedb6-75ee-582b-8079-a7d002d702cd
+		summarizeBy: none
+		sourceColumn: es_indie
+
+	column desarrollador
+		dataType: string
+		lineageTag: fd2c3708-3cff-588d-b64f-4add8224715f
+		summarizeBy: none
+		sourceColumn: desarrollador
+
+	column editor
+		dataType: string
+		lineageTag: 08003e38-d21d-5ea7-bc74-a613a61c7684
+		summarizeBy: none
+		sourceColumn: editor
+
+	column estado
+		dataType: string
+		lineageTag: 3d12fc99-d878-527f-9fa4-e32c7b56a2e7
+		summarizeBy: none
+		sourceColumn: estado
+
+	column estado_descripcion
+		dataType: string
+		lineageTag: 2d4b59fe-1387-5f91-8dc0-a06af12bb038
+		summarizeBy: none
+		sourceColumn: estado_descripcion
+
+	column resenas_30d
+		dataType: int64
+		formatString: #,0
+		lineageTag: 9a176a01-ed10-5d7f-b56b-80a83fb21115
+		summarizeBy: none
+		sourceColumn: resenas_30d
+
+	column pct_positivas_7d
+		dataType: double
+		formatString: 0 %
+		lineageTag: f50be4b5-05c1-521d-af29-ba65a21a6f03
+		summarizeBy: none
+		sourceColumn: pct_positivas_7d
+
+	column conjunto
+		dataType: string
+		lineageTag: 7537e08e-3af4-5621-a0f8-ff2e07644828
+		summarizeBy: none
+		sourceColumn: conjunto
+
+	partition juegos = m
+		mode: import
+		source =
+				let
+				    Ruta = OrigenDatos & "juegos.csv",
+				    Contenido = if Text.StartsWith(Ruta, "http") then Web.Contents(Ruta) else File.Contents(Ruta),
+				    Origen = Csv.Document(Contenido, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"appid", Int64.Type}, {"nombre", type text}, {"fecha_lanzamiento", type date}, {"precio_usd", type number}, {"banda_precio", type text}, {"banda_orden", Int64.Type}, {"genero_principal", type text}, {"es_indie", type text}, {"desarrollador", type text}, {"editor", type text}, {"estado", type text}, {"estado_descripcion", type text}, {"resenas_30d", Int64.Type}, {"pct_positivas_7d", type number}, {"conjunto", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

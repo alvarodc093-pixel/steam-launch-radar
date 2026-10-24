@@ -1,0 +1,96 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "name": "mercado_por_genero",
+  "position": {
+    "x": 16,
+    "y": 468,
+    "z": 7,
+    "width": 616,
+    "height": 236,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "juegos"
+                    }
+                  },
+                  "Property": "genero_principal"
+                }
+              },
+              "queryRef": "juegos.genero_principal",
+              "nativeQueryRef": "genero_principal"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "juegos"
+                    }
+                  },
+                  "Property": "Mediana reseñas 30 días"
+                }
+              },
+              "queryRef": "juegos.Mediana reseñas 30 días",
+              "nativeQueryRef": "Mediana reseñas 30 días"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "juegos"
+                  }
+                },
+                "Property": "Mediana reseñas 30 días"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Reseñas a 30 días por género (mediana)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

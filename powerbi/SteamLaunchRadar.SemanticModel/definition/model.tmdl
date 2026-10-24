@@ -1,0 +1,14 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-ES
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+ref table juegos
+ref table calendario
+ref table lecturas
+ref table curva_diaria
+ref table predicciones
+ref table metricas

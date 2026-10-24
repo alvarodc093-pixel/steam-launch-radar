@@ -1,0 +1,49 @@
+table calendario
+	lineageTag: cd3ca618-067f-5d44-af85-19781401a836
+
+	column fecha
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 5e567e29-b49d-5504-b561-e146d837a7b7
+		summarizeBy: none
+		sourceColumn: fecha
+
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 43f2e0a0-8deb-543e-9b1f-a4a4ebab3782
+		summarizeBy: none
+		sourceColumn: anio
+
+	column mes
+		dataType: string
+		lineageTag: a7bfd51e-1214-5f65-b242-660f6d1e8320
+		summarizeBy: none
+		sourceColumn: mes
+
+	column trimestre
+		dataType: string
+		lineageTag: 57a7d73c-7cd8-5bf8-88ff-1d55cdab2111
+		summarizeBy: none
+		sourceColumn: trimestre
+
+	column dia_semana
+		dataType: int64
+		formatString: 0
+		lineageTag: 182b5274-a3c0-5540-a875-869d821703f6
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+	partition calendario = m
+		mode: import
+		source =
+				let
+				    Ruta = OrigenDatos & "calendario.csv",
+				    Contenido = if Text.StartsWith(Ruta, "http") then Web.Contents(Ruta) else File.Contents(Ruta),
+				    Origen = Csv.Document(Contenido, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"fecha", type date}, {"anio", Int64.Type}, {"mes", type text}, {"trimestre", type text}, {"dia_semana", Int64.Type}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

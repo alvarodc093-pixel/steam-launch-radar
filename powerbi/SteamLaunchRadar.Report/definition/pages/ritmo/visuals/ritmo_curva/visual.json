@@ -1,0 +1,96 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "name": "ritmo_curva",
+  "position": {
+    "x": 16,
+    "y": 232,
+    "z": 5,
+    "width": 1248,
+    "height": 472,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "curva_diaria"
+                    }
+                  },
+                  "Property": "dia"
+                }
+              },
+              "queryRef": "curva_diaria.dia",
+              "nativeQueryRef": "dia"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "curva_diaria"
+                    }
+                  },
+                  "Property": "% del mes recibido"
+                }
+              },
+              "queryRef": "curva_diaria.% del mes recibido",
+              "nativeQueryRef": "% del mes recibido"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "curva_diaria"
+                  }
+                },
+                "Property": "dia"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Parte de las reseñas del primer mes que ya ha llegado, día a día (juego mediano)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

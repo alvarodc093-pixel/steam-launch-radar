@@ -1,0 +1,72 @@
+table curva_diaria
+	lineageTag: d66c2e74-c2c9-52f1-b7a9-0c98167dc54c
+
+	/// Parte de las reseñas del primer mes que ya ha llegado (juego mediano).
+	measure '% del mes recibido' = MEDIAN(curva_diaria[fraccion_mes])
+		formatString: 0 %
+		lineageTag: 18a8d037-d52c-51a8-b932-5d014e2c10d5
+
+	/// Parte del mes que ya ha llegado el día 3 (juego mediano).
+	measure 'Recibido día 3' = CALCULATE([% del mes recibido], curva_diaria[dia] = 3)
+		formatString: 0 %
+		lineageTag: c3c09cda-0ff1-56ac-8ded-bfdf012f7d48
+
+	/// Parte del mes que ya ha llegado el día 7 (juego mediano).
+	measure 'Recibido día 7' = CALCULATE([% del mes recibido], curva_diaria[dia] = 7)
+		formatString: 0 %
+		lineageTag: b19377c6-4bf0-51d7-9eb5-02beaa556e61
+
+	/// Parte del mes que ya ha llegado el día 14 (juego mediano).
+	measure 'Recibido día 14' = CALCULATE([% del mes recibido], curva_diaria[dia] = 14)
+		formatString: 0 %
+		lineageTag: f03f972a-fdc8-53d4-8aff-60ac4574efa7
+
+	column appid
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: d4f5c5fa-109f-5aa1-8380-86b6b1a2bf47
+		summarizeBy: none
+		sourceColumn: appid
+
+	column dia
+		dataType: int64
+		formatString: 0
+		lineageTag: 9dc680c9-82e0-5842-acc1-37819ed64139
+		summarizeBy: none
+		sourceColumn: dia
+
+	column resenas
+		dataType: int64
+		formatString: #,0
+		lineageTag: 6967e138-141b-5261-814f-925cee3807e6
+		summarizeBy: none
+		sourceColumn: resenas
+
+	column resenas_acumuladas
+		dataType: int64
+		formatString: #,0
+		lineageTag: 1d6b7124-4e80-5ebc-97af-37c74c0add63
+		summarizeBy: none
+		sourceColumn: resenas_acumuladas
+
+	column fraccion_mes
+		dataType: double
+		formatString: 0 %
+		lineageTag: 4acf841c-cc20-5e5d-9504-d9f3b8f9b6bd
+		summarizeBy: none
+		sourceColumn: fraccion_mes
+
+	partition curva_diaria = m
+		mode: import
+		source =
+				let
+				    Ruta = OrigenDatos & "curva_diaria.csv",
+				    Contenido = if Text.StartsWith(Ruta, "http") then Web.Contents(Ruta) else File.Contents(Ruta),
+				    Origen = Csv.Document(Contenido, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"appid", Int64.Type}, {"dia", Int64.Type}, {"resenas", Int64.Type}, {"resenas_acumuladas", Int64.Type}, {"fraccion_mes", type number}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

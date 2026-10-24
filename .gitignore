@@ -33,3 +33,7 @@ Desktop.ini
 # Cobertura de tests
 .coverage
 htmlcov/
+
+# Power BI Desktop: ajustes locales y caché de datos del proyecto .pbip
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/cache.abf

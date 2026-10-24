@@ -1,0 +1,126 @@
+table predicciones
+	lineageTag: d309ae50-29e7-59df-8060-e5a21ddb46ce
+
+	/// Lanzamientos más recientes, que el modelo no vio al entrenar.
+	measure 'Juegos de test' = DISTINCTCOUNT(predicciones[appid])
+		formatString: #,0
+		lineageTag: df2e4167-18b7-5d9a-a0af-c77761ee60a1
+
+	/// exp(mediana del error en log): ×1,21 es un 21 % de desviación.
+	measure 'Factor de error típico' = ```
+			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
+			RETURN CALCULATE(EXP(MEDIAN(predicciones[error_log])), lecturas[dia_lectura] = d)
+			```
+		formatString: 0.00
+		lineageTag: fbd711f8-c205-5525-8ef0-dcbc5edad126
+
+	/// Juegos cuyo valor real cae dentro del rango del 90 %.
+	measure 'Cobertura del rango' = ```
+			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
+			RETURN CALCULATE(AVERAGE(predicciones[dentro_rango]), lecturas[dia_lectura] = d)
+			```
+		formatString: 0 %
+		lineageTag: c685055b-1013-5b50-9065-636be9febdba
+
+	/// Estimaciones entre la mitad y el doble del valor real.
+	measure 'Dentro de x2' = ```
+			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
+			RETURN CALCULATE(AVERAGEX(predicciones, IF(predicciones[error_log] <= LN(2), 1, 0)), lecturas[dia_lectura] = d)
+			```
+		formatString: 0 %
+		lineageTag: 7d31a0fa-a3b9-5987-a8a1-760732e028e9
+
+	/// Reseñas a 30 días que estimó el radar.
+	measure 'Estimación' = ```
+			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
+			RETURN CALCULATE(AVERAGE(predicciones[estimacion]), lecturas[dia_lectura] = d)
+			```
+		formatString: #,0
+		lineageTag: b6eb2d0d-4393-559d-857d-ac99e04949f6
+
+	/// Reseñas que tuvo de verdad al cumplir 30 días.
+	measure 'Reseñas reales' = ```
+			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
+			RETURN CALCULATE(AVERAGE(predicciones[resenas_30d_reales]), lecturas[dia_lectura] = d)
+			```
+		formatString: #,0
+		lineageTag: f1607b69-e379-550d-bde3-e59b56ed0e95
+
+	column appid
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 8434e494-c268-5e61-870a-681aca8951dc
+		summarizeBy: none
+		sourceColumn: appid
+
+	column dia_lectura
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: faeec15c-281d-509c-9113-e36183e9fd23
+		summarizeBy: none
+		sourceColumn: dia_lectura
+
+	column resenas_lectura
+		dataType: int64
+		formatString: #,0
+		lineageTag: 2f2d1308-9678-57f6-8127-2fe11700f648
+		summarizeBy: none
+		sourceColumn: resenas_lectura
+
+	column estimacion
+		dataType: double
+		formatString: #,0
+		lineageTag: 457db6c0-ece9-59ce-8415-8b6544a71a8d
+		summarizeBy: none
+		sourceColumn: estimacion
+
+	column rango_inferior
+		dataType: double
+		formatString: #,0
+		lineageTag: 1e976e82-ba71-528a-a40b-5bf27476a94f
+		summarizeBy: none
+		sourceColumn: rango_inferior
+
+	column rango_superior
+		dataType: double
+		formatString: #,0
+		lineageTag: e6a8fc29-3075-5af2-b940-55a1291e2ed7
+		summarizeBy: none
+		sourceColumn: rango_superior
+
+	column resenas_30d_reales
+		dataType: int64
+		formatString: #,0
+		lineageTag: 3173bb81-8fbd-578f-9362-eecdff175f38
+		summarizeBy: none
+		sourceColumn: resenas_30d_reales
+
+	column error_log
+		dataType: double
+		formatString: 0.000
+		lineageTag: 54dcbe64-bee1-555e-8e34-630ba711f2f9
+		summarizeBy: none
+		sourceColumn: error_log
+
+	column dentro_rango
+		dataType: int64
+		formatString: 0
+		lineageTag: 665de27d-409f-5642-9dc4-0f626ac191c2
+		summarizeBy: none
+		sourceColumn: dentro_rango
+
+	partition predicciones = m
+		mode: import
+		source =
+				let
+				    Ruta = OrigenDatos & "predicciones.csv",
+				    Contenido = if Text.StartsWith(Ruta, "http") then Web.Contents(Ruta) else File.Contents(Ruta),
+				    Origen = Csv.Document(Contenido, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"appid", Int64.Type}, {"dia_lectura", Int64.Type}, {"resenas_lectura", Int64.Type}, {"estimacion", type number}, {"rango_inferior", type number}, {"rango_superior", type number}, {"resenas_30d_reales", Int64.Type}, {"error_log", type number}, {"dentro_rango", Int64.Type}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
