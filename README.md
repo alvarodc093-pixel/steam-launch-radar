@@ -7,7 +7,7 @@ primeros 3, 7 o 14 días, estima cuántas tendrá el juego al cumplir 30 y dice 
 está por encima, en línea o por debajo de lo habitual en su género. Antes del
 lanzamiento, en lugar de inventar una cifra, enseña el rango de juegos parecidos.
 
-**Aplicación:** _pendiente de publicar en Vercel (ver [Despliegue](#despliegue-en-vercel))._
+**Aplicación:** <https://steam-launch-radar.vercel.app>
 
 ![Radar con un lanzamiento real del conjunto de test](docs/capturas/radar.png)
 

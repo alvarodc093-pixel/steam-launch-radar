@@ -168,7 +168,9 @@ h3 {
 
 @media (max-width: 760px) {
   .dos-columnas {
-    grid-template-columns: 1fr;
+    /* minmax(0, …): sin él, el desplegable con nombres largos ensancha la
+       columna y la página se sale de la pantalla en el móvil. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -188,6 +190,14 @@ h3 {
 .nota {
   color: var(--suave);
   font-size: 0.9rem;
+}
+
+/* Campos de texto y desplegables al ancho de su columna: el desplegable de
+   juegos tiene nombres muy largos y, sin esto, desborda en el móvil. */
+input:not([type="radio"]),
+select {
+  width: 100%;
+  min-width: 0;
 }
 
 form .campo {
@@ -229,6 +239,8 @@ select {
 
 .segmentos input {
   position: absolute;
+  width: 1px;
+  height: 1px;
   opacity: 0;
 }
 
