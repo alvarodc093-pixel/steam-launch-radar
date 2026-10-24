@@ -34,11 +34,11 @@ uno, no cómo suele evolucionar un lanzamiento parecido en su primer mes.
 
 ## 2. Datos
 
-| Fuente | Qué aporta | Acceso |
-| --- | --- | --- |
-| Buscador de la tienda de Steam (`store.steampowered.com/search/results`) | Todos los lanzamientos de un periodo, ordenados por fecha, con su número de reseñas | Sin clave; la ruta `/search/` no está excluida en el `robots.txt` |
-| Ficha de la tienda (`store.steampowered.com/api/appdetails`) | Fecha de lanzamiento, precio de lista en dólares y géneros | Sin clave, unas 200 peticiones cada 5 minutos |
-| Steam Web API (`IUserReviewsService/GetAppReviews`) | Fecha y voto de cada reseña pública | Sin clave; [condiciones de la Steam Web API](https://steamcommunity.com/dev/apiterms) |
+| Fuente                                                                   | Qué aporta                                                                          | Acceso                                                                                |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Buscador de la tienda de Steam (`store.steampowered.com/search/results`) | Todos los lanzamientos de un periodo, ordenados por fecha, con su número de reseñas | Sin clave; la ruta `/search/` no está excluida en el `robots.txt`                     |
+| Ficha de la tienda (`store.steampowered.com/api/appdetails`)             | Fecha de lanzamiento, precio de lista en dólares y géneros                          | Sin clave, unas 200 peticiones cada 5 minutos                                         |
+| Steam Web API (`IUserReviewsService/GetAppReviews`)                      | Fecha y voto de cada reseña pública                                                 | Sin clave; [condiciones de la Steam Web API](https://steamcommunity.com/dev/apiterms) |
 
 - **Muestra:** todos los juegos del buscador lanzados entre el 29-10-2025 y el
   09-09-2026 con entre 50 y 10.000 reseñas: 4.069 juegos, de los que 3.019 son aptos
@@ -55,11 +55,11 @@ uno, no cómo suele evolucionar un lanzamiento parecido en su primer mes.
 
 Diccionario de las tablas de `data/processed/`:
 
-| Tabla | Filas | Columnas principales |
-| --- | --- | --- |
-| `juegos.csv` | 4.069 | `appid`, `nombre`, `fecha_lanzamiento`, `precio_usd`, `genero_principal`, `banda_precio`, `resenas_30d`, `pct_previas`, `estado` (apto o motivo de exclusión) |
-| `resenas_diarias.csv` | una por juego y día con reseñas, del día −30 al 89 | `appid`, `dia` (0 = lanzamiento), `positivas`, `negativas`, `resenas` |
-| `dataset_radar.csv` | 3.019 | variables previas al lanzamiento, `resenas_{3,7,14}d`, `pct_positivas_{3,7,14}d` y el objetivo `resenas_30d` |
+| Tabla                 | Filas                                              | Columnas principales                                                                                                                                          |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `juegos.csv`          | 4.069                                              | `appid`, `nombre`, `fecha_lanzamiento`, `precio_usd`, `genero_principal`, `banda_precio`, `resenas_30d`, `pct_previas`, `estado` (apto o motivo de exclusión) |
+| `resenas_diarias.csv` | una por juego y día con reseñas, del día −30 al 89 | `appid`, `dia` (0 = lanzamiento), `positivas`, `negativas`, `resenas`                                                                                         |
+| `dataset_radar.csv`   | 3.019                                              | variables previas al lanzamiento, `resenas_{3,7,14}d`, `pct_positivas_{3,7,14}d` y el objetivo `resenas_30d`                                                  |
 
 ## 3. Preprocesamiento y EDA
 
@@ -104,12 +104,12 @@ deciden el producto:
 
 Resultado en test, sobre lanzamientos que el modelo no vio:
 
-| Lectura | Modelo elegido | Factor de error típico | Dentro de ×2 | Cobertura del rango del 90 % |
-| --- | --- | --- | --- | --- |
-| Día 3 | Ridge | ×1,34 | 92 % | 93 % |
-| Día 7 | Ratio típico | ×1,21 | 98 % | 92 % |
-| Día 14 | Ratio típico | ×1,09 | 99,5 % | 93 % |
-| Antes de lanzar | Gradient boosting | ×2,56 (la mediana: ×2,39) | 37 % | 92 % |
+| Lectura         | Modelo elegido    | Factor de error típico    | Dentro de ×2 | Cobertura del rango del 90 % |
+| --------------- | ----------------- | ------------------------- | ------------ | ---------------------------- |
+| Día 3           | Ridge             | ×1,34                     | 92 %         | 93 %                         |
+| Día 7           | Ratio típico      | ×1,21                     | 98 %         | 92 %                         |
+| Día 14          | Ratio típico      | ×1,09                     | 99,5 %       | 93 %                         |
+| Antes de lanzar | Gradient boosting | ×2,56 (la mediana: ×2,39) | 37 %         | 92 %                         |
 
 «Factor de error típico» es la desviación en el juego mediano: ×1,21 significa que la
 estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
@@ -129,27 +129,27 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
 
 ## 5. La aplicación
 
-| Sección | Qué hace |
-| --- | --- |
-| **Radar** (`/`) | Estimación a 30 días, comparación con la cohorte, veredicto y trayectoria esperada. Se puede probar con 604 lanzamientos reales del test y ver lo que pasó después. Admite enlaces directos del tipo `/?juego=4113940&dia=7`. |
-| **Antes de lanzar** | Reseñas a 30 días de juegos del mismo género y precio (mediana y mitad central). |
-| **Mercado** | Indicadores de la muestra: ritmo del primer mes, géneros, precio, lanzamientos por mes y exclusiones. |
-| **Metodología** | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo. |
+| Sección             | Qué hace                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Radar** (`/`)     | Estimación a 30 días, comparación con la cohorte, veredicto y trayectoria esperada. Se puede probar con 604 lanzamientos reales del test y ver lo que pasó después. Admite enlaces directos del tipo `/?juego=4113940&dia=7`. Antes de la primera lectura enseña tres casos reales (uno por veredicto) que se leen con un clic, la precisión del modelo según el día y cuándo llegan las reseñas; debajo, los hallazgos del EDA que explican el diseño del radar. |
+| **Antes de lanzar** | Reseñas a 30 días de juegos del mismo género y precio (mediana y mitad central).                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Mercado**         | Indicadores de la muestra: ritmo del primer mes, géneros, precio, lanzamientos por mes y exclusiones.                                                                                                                                                                                                                                                                                                                                                             |
+| **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo.                                                                                                                                                                                                                                                                                                                                                   |
 
 API del servidor:
 
-| Ruta | Respuesta |
-| --- | --- |
-| `POST /api/radar` | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`. |
-| `POST /api/previo` | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`. |
-| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test. |
+| Ruta                        | Respuesta                                                                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/radar`           | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`. |
+| `POST /api/previo`          | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`.                                                    |
+| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test.                                                                                |
 
 Las entradas se validan en el formulario y otra vez en el servidor, con mensajes que
 nombran el campo erróneo (400). Si faltan los datos exportados, las páginas y la API
 lo dicen y explican cómo generarlos (503).
 
-| Antes de lanzar | Mercado | Móvil |
-| --- | --- | --- |
+| Antes de lanzar                                       | Mercado                               | Móvil                                                                             |
+| ----------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
 | ![Antes de lanzar](docs/capturas/antes-de-lanzar.png) | ![Mercado](docs/capturas/mercado.png) | <img src="docs/capturas/movil.png" alt="Radar en un móvil de 375 px" width="180"> |
 
 ## 6. Arquitectura y stack
@@ -234,13 +234,13 @@ correo de contacto, que se añade al User-Agent de las peticiones.
 
 ### Comprobaciones
 
-| Dónde | Comando | Qué cubre |
-| --- | --- | --- |
-| Raíz | `ruff check . && ruff format --check .` | Estilo y errores en `src/`, `tests/` y notebooks |
-| Raíz | `pytest --cov` | 55 tests de ingesta, preparación, modelo y exportación (cobertura del 97 %) |
-| `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos |
-| `app/` | `npm test` | Inferencia en TypeScript frente a 2.416 casos calculados en Python |
-| `app/` | `npm run build && npm run humo` | Arranca el build de producción y prueba páginas y API |
+| Dónde  | Comando                                                     | Qué cubre                                                                   |
+| ------ | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Raíz   | `ruff check . && ruff format --check .`                     | Estilo y errores en `src/`, `tests/` y notebooks                            |
+| Raíz   | `pytest --cov`                                              | 55 tests de ingesta, preparación, modelo y exportación (cobertura del 97 %) |
+| `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos                                                    |
+| `app/` | `npm test`                                                  | Inferencia en TypeScript frente a 2.416 casos calculados en Python          |
+| `app/` | `npm run build && npm run humo`                             | Arranca el build de producción y prueba páginas y API                       |
 
 ### Despliegue en Vercel
 
@@ -249,10 +249,10 @@ En Vercel, «Add New Project», importar el repositorio y fijar **Root Directory
 
 ### Actualización mensual de los datos
 
-El workflow necesita permiso para abrir Pull Requests: en GitHub, *Settings → Actions →
-General → Workflow permissions*, marcar «Read and write permissions» y «Allow GitHub
+El workflow necesita permiso para abrir Pull Requests: en GitHub, _Settings → Actions →
+General → Workflow permissions_, marcar «Read and write permissions» y «Allow GitHub
 Actions to create and approve pull requests». Se puede lanzar a mano desde la pestaña
-*Actions* con «Run workflow».
+_Actions_ con «Run workflow».
 
 ## 8. Estructura del repositorio
 

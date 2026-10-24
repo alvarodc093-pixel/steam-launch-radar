@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Grafico, { type Serie } from "@/components/Grafico";
+import PortadaRadar, { type DatosPortada } from "@/components/PortadaRadar";
 import { dolares, entero, fecha, porcentaje } from "@/lib/formato";
 import type { LecturaRadar, Veredicto } from "@/lib/radar";
 import type { Ejemplo, EjemploResumen } from "@/lib/tipos";
@@ -14,6 +15,8 @@ interface Props {
   ejemplos: EjemploResumen[];
   /** Lectura que abrir al cargar (enlace compartible ?juego=…&dia=…). */
   inicial?: { ejemplo: Ejemplo; dia: number };
+  /** Lo que se enseña en la columna del resultado antes de la primera lectura. */
+  portada: DatosPortada;
 }
 
 const TITULO: Record<Veredicto, string> = {
@@ -64,7 +67,7 @@ function camposDe(e: Ejemplo, d: number, generos: string[]): Campos {
   };
 }
 
-export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Props) {
+export default function FormularioRadar({ dias, generos, ejemplos, inicial, portada }: Props) {
   const ejemploInicial = inicial?.ejemplo ?? null;
   const diaInicial = inicial && dias.includes(inicial.dia) ? inicial.dia : (dias[1] ?? dias[0]);
   const [dia, setDia] = useState(diaInicial);
@@ -81,6 +84,22 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
     if (e) setCampos(camposDe(e, d, generos));
   }
 
+  async function cargarEjemplo(appid: string): Promise<Ejemplo | null> {
+    setCargando(true);
+    try {
+      const r = await fetch(`/api/ejemplos/${appid}`);
+      if (!r.ok) throw new Error(String(r.status));
+      const e: Ejemplo = await r.json();
+      setEjemplo(e);
+      return e;
+    } catch {
+      setError("No se ha podido cargar ese juego. Prueba de nuevo en unos segundos.");
+      return null;
+    } finally {
+      setCargando(false);
+    }
+  }
+
   async function elegirEjemplo(appid: string) {
     setLectura(null);
     setError(null);
@@ -89,18 +108,19 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
       setCampos(VACIO);
       return;
     }
-    setCargando(true);
-    try {
-      const r = await fetch(`/api/ejemplos/${appid}`);
-      if (!r.ok) throw new Error(String(r.status));
-      const e: Ejemplo = await r.json();
-      setEjemplo(e);
-      rellenar(e, dia);
-    } catch {
-      setError("No se ha podido cargar ese juego. Prueba de nuevo en unos segundos.");
-    } finally {
-      setCargando(false);
-    }
+    const e = await cargarEjemplo(appid);
+    if (e) rellenar(e, dia);
+  }
+
+  /** Atajo de la portada: carga el juego y lee el radar en el día de los destacados. */
+  async function probar(appid: number) {
+    setError(null);
+    const e = await cargarEjemplo(String(appid));
+    if (!e) return;
+    const c = camposDe(e, portada.dia, generos);
+    setDia(portada.dia);
+    setCampos(c);
+    await consultar(c, portada.dia);
   }
 
   function elegirDia(d: number) {
@@ -260,11 +280,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
             ejemplo={ejemplo}
           />
         ) : (
-          <div className="panel nota">
-            Elige un lanzamiento real o introduce los datos de tu juego. El radar estima las reseñas
-            que tendrá al cumplir 30 días y te dice si eso es mucho o poco comparado con juegos del
-            mismo género.
-          </div>
+          <PortadaRadar datos={portada} onProbar={(a) => void probar(a)} cargando={cargando} />
         )}
       </section>
     </div>
