@@ -85,3 +85,22 @@ def test_faltan_procesados(tmp_path, monkeypatch, caplog) -> None:  # noqa: ANN0
     monkeypatch.setattr(config, "DIR_PROCESADO", tmp_path)
     assert exportar.main() == 1
     assert "radar.preparacion" in caplog.text
+
+
+def test_informe_resume_lo_exportado(procesados, tmp_path_factory) -> None:  # noqa: ANN001
+    from radar import informe
+
+    salida = tmp_path_factory.mktemp("app_data")
+    exportar.exportar(procesados, salida, salida / "casos.json")
+    texto = informe.resumen(salida)
+    assert "160 lanzamientos aptos" in texto
+    assert texto.count("| Día ") == len(config.DIAS_LECTURA)
+    assert "Antes de lanzar" in texto
+
+
+def test_informe_sin_datos(tmp_path, monkeypatch, capsys) -> None:  # noqa: ANN001
+    from radar import informe
+
+    monkeypatch.setattr(config, "DIR_APP_DATOS", tmp_path)
+    assert informe.main() == 1
+    assert "radar.exportar" in capsys.readouterr().err

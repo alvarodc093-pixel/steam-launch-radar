@@ -1,0 +1,79 @@
+# Actualización mensual: descarga los lanzamientos que han cerrado su primer
+# mes, reentrena, vuelve a ejecutar los notebooks y abre un Pull Request con
+# los datos nuevos y un resumen de métricas para revisarlo antes de publicar.
+name: Actualizar datos
+
+on:
+  schedule:
+    - cron: "0 5 1 * *" # día 1 de cada mes, 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: actualizar-datos
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      # Las fichas y las reseñas ya descargadas no cambian para los juegos con
+      # su primer mes cerrado: se reutilizan de una ejecución a la siguiente.
+      - name: Caché de descargas
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: descargas-${{ github.run_id }}
+          restore-keys: descargas-
+
+      - name: Ingesta
+        env:
+          CONTACTO_USER_AGENT: ${{ vars.CONTACTO_USER_AGENT }}
+        run: python -m radar.ingesta
+      - run: python -m radar.preparacion
+      - run: python -m radar.exportar
+      - name: Notebooks
+        run: |
+          for nb in notebooks/*.ipynb; do
+            python -m nbconvert --to notebook --execute --inplace "$nb"
+          done
+      - run: pytest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Tests de la app con los modelos nuevos
+        working-directory: app
+        run: |
+          npm ci
+          npm test
+
+      - name: Resumen de métricas
+        run: python -m radar.informe > "$RUNNER_TEMP/resumen.md"
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: datos/actualizacion-mensual
+          delete-branch: true
+          commit-message: "data: actualización mensual de la muestra y los modelos"
+          title: "data: actualización mensual de la muestra y los modelos"
+          body-path: ${{ runner.temp }}/resumen.md
+          add-paths: |
+            data/processed
+            app/data
+            app/tests/casos_dorados.json
+            notebooks

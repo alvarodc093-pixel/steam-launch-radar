@@ -29,3 +29,7 @@ Desktop.ini
 
 # Metadatos del paquete instalado en modo editable
 *.egg-info/
+
+# Cobertura de tests
+.coverage
+htmlcov/

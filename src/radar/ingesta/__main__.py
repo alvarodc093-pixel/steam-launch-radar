@@ -49,13 +49,19 @@ def _guardar(ruta: Path, datos: Any) -> None:
 
 
 def paso_candidatos(hoy: date) -> list[dict[str, Any]]:
-    """Recorre el buscador desde hoy hacia atrás hasta salir de la ventana."""
+    """Recorre el buscador desde hoy hacia atrás hasta salir de la ventana.
+
+    Las páginas se guardan por día: el buscador ordena por fecha y cada día
+    entran lanzamientos nuevos que desplazan los resultados, así que una
+    página de otro día ya no contiene los mismos juegos.
+    """
     cliente = ClienteHttp(pausa_s=busqueda.PAUSA_S)
     desde, hasta = config.ventana_lanzamientos(hoy)
     candidatos: dict[int, dict[str, Any]] = {}
+    carpeta = DIR_BUSQUEDA / hoy.isoformat()
     inicio = 0
     while True:
-        ruta = DIR_BUSQUEDA / f"desde_{inicio:06d}.json"
+        ruta = carpeta / f"desde_{inicio:06d}.json"
         if not ruta.exists():
             _guardar(ruta, busqueda.descargar_pagina(cliente, inicio))
         filas = _leer(ruta)

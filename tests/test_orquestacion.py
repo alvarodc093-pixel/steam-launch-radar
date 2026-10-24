@@ -73,6 +73,10 @@ def test_candidatos_recorre_hasta_salir_de_la_ventana(raw, monkeypatch) -> None:
     assert [c["appid"] for c in ingesta.paso_candidatos(HOY)] == [2, 3]
     assert pedidas == []
 
+    # Otro día la caché del buscador no vale: las páginas se desplazan.
+    ingesta.paso_candidatos(date(2026, 10, 25))
+    assert pedidas == [0, 100, 200]
+
 
 def test_fichas_guarda_descartes_y_sigue_tras_un_error(raw, monkeypatch) -> None:  # noqa: ANN001
     def descargar(_cliente, appid):  # noqa: ANN001, ANN202
