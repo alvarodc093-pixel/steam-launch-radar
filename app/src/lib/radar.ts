@@ -16,12 +16,12 @@ export interface LecturaRadar {
 }
 
 /** Cohorte del género si hay juegos suficientes; si no, toda la muestra. */
-function cohorte(datos: DatosRadar, genero: string) {
-  const propia = datos.cohortes.por_genero[genero];
+function cohorte(radar: DatosRadar, genero: string) {
+  const propia = radar.cohortes.por_genero[genero];
   if (propia) {
     return { nombre: genero, n: propia.n as number, tabla: propia as Record<string, number[]> };
   }
-  return { nombre: "toda la muestra", n: datos.cohortes.n_global, tabla: datos.cohortes.global };
+  return { nombre: "toda la muestra", n: radar.cohortes.n_global, tabla: radar.cohortes.global };
 }
 
 /**
@@ -36,14 +36,14 @@ export function veredicto(est: Estimacion, cuantiles30d: number[]): Veredicto {
   return "en_linea";
 }
 
-export function leerRadar(datos: DatosRadar, e: EntradaRadar): LecturaRadar {
-  const modelo = datos.modelos[String(e.dia)];
+export function leerRadar(radar: DatosRadar, e: EntradaRadar): LecturaRadar {
+  const modelo = radar.modelos[String(e.dia)];
   // Al mes no puede haber menos reseñas de las que ya hay el día de lectura.
   const est = estimar(modelo, variablesRadar(e, modelo.generos), e.resenas);
-  const c = cohorte(datos, e.genero);
-  const niveles = datos.cohortes.cuantiles;
+  const c = cohorte(radar, e.genero);
+  const niveles = radar.cohortes.cuantiles;
   const cuantiles30d = c.tabla["30"];
-  const curva = datos.curva_tipica[c.nombre] ?? datos.curva_tipica.global;
+  const curva = radar.curva_tipica[c.nombre] ?? radar.curva_tipica.global;
   return {
     estimacion: est,
     cohorte: { nombre: c.nombre, n: c.n, cuantiles30d },
@@ -66,11 +66,11 @@ export interface LecturaPrevia {
   benchmark: { genero: string; banda: string | null; n: number; cuantiles: number[] } | null;
 }
 
-export function leerPrevio(datos: DatosPrevio, e: EntradaPrevia, banda: string): LecturaPrevia {
-  const m = datos.modelo;
+export function leerPrevio(previo: DatosPrevio, e: EntradaPrevia, banda: string): LecturaPrevia {
+  const m = previo.modelo;
   const base = m.baselines_test.mediana;
-  const exacta = datos.genero_banda.find((g) => g.genero === e.genero && g.banda === banda);
-  const genero = datos.por_genero.find((g) => g.genero === e.genero);
+  const exacta = previo.genero_banda.find((g) => g.genero === e.genero && g.banda === banda);
+  const genero = previo.por_genero.find((g) => g.genero === e.genero);
   // Con menos de 10 juegos los cuartiles bailan demasiado: se sube un nivel.
   const benchmark =
     exacta && exacta.n >= 10

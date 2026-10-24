@@ -9,16 +9,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ app
   if (!/^\d+$/.test(appid)) {
     return NextResponse.json({ error: "El appid tiene que ser un número." }, { status: 400 });
   }
-  let datos;
+  let radar;
   try {
-    datos = await datosRadar();
+    radar = await datosRadar();
   } catch {
     return NextResponse.json(
       { error: "Faltan los datos del modelo. Ejecuta `python -m radar.exportar`." },
       { status: 503 },
     );
   }
-  const ejemplo = datos.ejemplos.find((e) => e.appid === Number(appid));
+  const ejemplo = radar.ejemplos.find((e) => e.appid === Number(appid));
   if (!ejemplo) {
     return NextResponse.json({ error: "Ese juego no está entre los ejemplos." }, { status: 404 });
   }

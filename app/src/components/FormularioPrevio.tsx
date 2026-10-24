@@ -31,9 +31,9 @@ export default function FormularioPrevio({ generos }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ genero, precio_usd: Number(precio), mes_lanzamiento: Number(mes) }),
       });
-      const datos = await r.json();
-      if (!r.ok) setError(datos.error ?? `Error ${r.status}`);
-      else setRespuesta(datos);
+      const cuerpo = await r.json();
+      if (!r.ok) setError(cuerpo.error ?? `Error ${r.status}`);
+      else setRespuesta(cuerpo);
     } catch {
       setError("No se ha podido contactar con el servidor.");
     }

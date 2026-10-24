@@ -43,9 +43,11 @@ def _redondear(valor: Any, cifras: int = 6) -> Any:
     return valor
 
 
-def _escribir(ruta: Path, datos: Any, cifras: int = 6, indent: int | None = 1) -> None:
+def _escribir(
+    ruta: Path, contenido: Any, cifras: int = 6, indent: int | None = 1
+) -> None:
     ruta.parent.mkdir(parents=True, exist_ok=True)
-    texto = json.dumps(_redondear(datos, cifras), ensure_ascii=False, indent=indent)
+    texto = json.dumps(_redondear(contenido, cifras), ensure_ascii=False, indent=indent)
     ruta.write_text(texto, encoding="utf-8")
     logger.info("Escrito %s (%.0f KB)", ruta.name, ruta.stat().st_size / 1024)
 
@@ -59,7 +61,7 @@ def _cuantiles(serie: pd.Series) -> list[float]:
 
 def serializar(res: m.Resultado) -> dict[str, Any]:
     """Describe el modelo elegido de forma que TypeScript pueda reproducirlo."""
-    datos: dict[str, Any] = {
+    descripcion: dict[str, Any] = {
         "tipo": res.nombre,
         "numericas": res.variables.numericas,
         "categoricas": res.variables.categoricas,
@@ -75,28 +77,28 @@ def serializar(res: m.Resultado) -> dict[str, Any]:
     }
     modelo = res.modelo
     if res.nombre == "mediana":
-        datos["mediana"] = modelo.valor_
-        return datos
+        descripcion["mediana"] = modelo.valor_
+        return descripcion
     if res.nombre == "ratio_tipico":
-        datos["ratio"] = {
+        descripcion["ratio"] = {
             "columna": modelo.columna,
             "desplazamiento": modelo.desplazamiento_,
         }
-        return datos
+        return descripcion
 
     pre = modelo.named_steps["pre"]
     num = pre.named_transformers_["num"]
     numericas = res.variables.numericas
-    datos["medianas"] = dict(
+    descripcion["medianas"] = dict(
         zip(numericas, num.named_steps["imputar"].statistics_, strict=True)
     )
     if "escalar" in num.named_steps:
         escalador = num.named_steps["escalar"]
-        datos["medias"] = dict(zip(numericas, escalador.mean_, strict=True))
-        datos["escalas"] = dict(zip(numericas, escalador.scale_, strict=True))
+        descripcion["medias"] = dict(zip(numericas, escalador.mean_, strict=True))
+        descripcion["escalas"] = dict(zip(numericas, escalador.scale_, strict=True))
     if res.variables.categoricas:
         codificador = pre.named_transformers_["cat"]
-        datos["categorias"] = {
+        descripcion["categorias"] = {
             col: [str(c) for c in cats]
             for col, cats in zip(
                 res.variables.categoricas, codificador.categories_, strict=True
@@ -105,12 +107,12 @@ def serializar(res: m.Resultado) -> dict[str, Any]:
 
     estimador = modelo.named_steps["modelo"]
     if res.nombre == "ridge":
-        datos["ridge"] = {
+        descripcion["ridge"] = {
             "coef": estimador.coef_.tolist(),
             "intercepto": estimador.intercept_,
         }
     else:
-        datos["gb"] = {
+        descripcion["gb"] = {
             "inicial": float(estimador.init_.constant_.ravel()[0]),
             "tasa": estimador.learning_rate,
             "arboles": [
@@ -124,7 +126,7 @@ def serializar(res: m.Resultado) -> dict[str, Any]:
                 for arbol in estimador.estimators_.ravel()
             ],
         }
-    return datos
+    return descripcion
 
 
 # --- tablas de referencia ---------------------------------------------------

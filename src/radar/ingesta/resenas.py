@@ -67,8 +67,10 @@ def descargar_resenas(cliente: ClienteHttp, appid: int, maximo: int) -> dict[str
     terminado = False
 
     for _ in range(MAX_PAGINAS):
-        datos = cliente.get_json(URL, params=params)
-        respuesta = datos.get("response") if isinstance(datos, dict) else None
+        pagina_json = cliente.get_json(URL, params=params)
+        respuesta = (
+            pagina_json.get("response") if isinstance(pagina_json, dict) else None
+        )
         if not isinstance(respuesta, dict):
             raise ErrorFuente(f"GetAppReviews sin 'response' para {appid}")
         if total_api is None:

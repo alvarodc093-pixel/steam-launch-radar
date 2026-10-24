@@ -72,7 +72,7 @@ export default async function PaginaMercado() {
           series={[
             {
               etiqueta: "Fracción acumulada (mediana)",
-              datos: m.curva_tipica.map((v) => Math.round(v * 1000) / 10),
+              valores: m.curva_tipica.map((v) => Math.round(v * 1000) / 10),
               color: "#1e7a52",
             },
           ]}
@@ -90,7 +90,7 @@ export default async function PaginaMercado() {
           series={[
             {
               etiqueta: "Mediana de reseñas a 30 días",
-              datos: generos.map((g) => g.mediana_30d),
+              valores: generos.map((g) => g.mediana_30d),
               color: "#1e7a52",
             },
           ]}
@@ -107,7 +107,7 @@ export default async function PaginaMercado() {
           series={[
             {
               etiqueta: "Mediana de reseñas a 30 días",
-              datos: bandas.map((b) => b.mediana_30d),
+              valores: bandas.map((b) => b.mediana_30d),
               color: "#2f5bd7",
             },
           ]}
@@ -124,7 +124,7 @@ export default async function PaginaMercado() {
           series={[
             {
               etiqueta: "Lanzamientos en la muestra",
-              datos: m.por_mes.map((p) => p.lanzamientos),
+              valores: m.por_mes.map((p) => p.lanzamientos),
               color: "#8a6d00",
             },
           ]}

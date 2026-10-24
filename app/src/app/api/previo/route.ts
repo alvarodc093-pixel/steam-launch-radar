@@ -19,9 +19,9 @@ export async function POST(request: Request) {
   const entrada = validarPrevio(cuerpo);
   if (!entrada.ok) return NextResponse.json({ error: entrada.error }, { status: 400 });
 
-  let datos;
+  let previo;
   try {
-    datos = await datosPrevio();
+    previo = await datosPrevio();
   } catch {
     return NextResponse.json(
       { error: "Faltan los datos del modelo. Ejecuta `python -m radar.exportar`." },
@@ -32,6 +32,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     entrada: entrada.valor,
     banda,
-    lectura: leerPrevio(datos, entrada.valor, banda),
+    lectura: leerPrevio(previo, entrada.valor, banda),
   });
 }

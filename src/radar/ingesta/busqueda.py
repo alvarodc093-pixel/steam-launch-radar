@@ -53,7 +53,7 @@ def parsear_pagina(html_resultados: str) -> list[dict[str, Any]]:
 
 
 def descargar_pagina(cliente: ClienteHttp, inicio: int) -> list[dict[str, Any]]:
-    datos = cliente.get_json(
+    respuesta = cliente.get_json(
         URL,
         params={
             "query": "",
@@ -68,7 +68,7 @@ def descargar_pagina(cliente: ClienteHttp, inicio: int) -> list[dict[str, Any]]:
         },
     )
     return parsear_pagina(
-        datos.get("results_html", "") if isinstance(datos, dict) else ""
+        respuesta.get("results_html", "") if isinstance(respuesta, dict) else ""
     )
 
 

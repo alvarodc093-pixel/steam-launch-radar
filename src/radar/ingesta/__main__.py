@@ -33,10 +33,12 @@ def _leer(ruta: Path) -> Any:
     return json.loads(ruta.read_text(encoding="utf-8"))
 
 
-def _guardar(ruta: Path, datos: Any) -> None:
+def _guardar(ruta: Path, contenido: Any) -> None:
     ruta.parent.mkdir(parents=True, exist_ok=True)
     tmp = ruta.with_suffix(".tmp")
-    tmp.write_text(json.dumps(datos, ensure_ascii=False, default=str), encoding="utf-8")
+    tmp.write_text(
+        json.dumps(contenido, ensure_ascii=False, default=str), encoding="utf-8"
+    )
     # Escritura atómica: un corte no deja JSON a medias. En Windows, OneDrive
     # o el antivirus pueden tener el fichero abierto un instante.
     for intento in range(5):

@@ -132,9 +132,9 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
           genero: c.genero,
         }),
       });
-      const datos = await r.json();
-      if (!r.ok) setError(datos.error ?? `Error ${r.status}`);
-      else setLectura(datos.lectura);
+      const cuerpo = await r.json();
+      if (!r.ok) setError(cuerpo.error ?? `Error ${r.status}`);
+      else setLectura(cuerpo.lectura);
     } catch {
       setError("No se ha podido contactar con el servidor. Prueba de nuevo en unos segundos.");
     } finally {
@@ -290,28 +290,33 @@ function Resultado({
     // La banda se dibuja rellenando desde la serie 1 (rango alto) hasta la 0
     // (rango bajo, invisible).
     const s: Serie[] = [
-      { etiqueta: "Rango bajo", datos: escala(est.inferior), color: "#1e7a5200", enLeyenda: false },
+      {
+        etiqueta: "Rango bajo",
+        valores: escala(est.inferior),
+        color: "#1e7a5200",
+        enLeyenda: false,
+      },
       {
         etiqueta: "Rango del 90 %",
-        datos: escala(est.superior),
+        valores: escala(est.superior),
         color: "#1e7a52",
         rellenarHasta: 0,
       },
       {
         etiqueta: "Trayectoria esperada",
-        datos: lectura.trayectoria,
+        valores: lectura.trayectoria,
         color: "#1e7a52",
         discontinua: true,
       },
       {
         etiqueta: `Hoy (día ${dia})`,
-        datos: lectura.trayectoria.map((_, i) => (i === dia - 1 ? resenas : null)),
+        valores: lectura.trayectoria.map((_, i) => (i === dia - 1 ? resenas : null)),
         color: "#b3402a",
         soloPuntos: true,
       },
     ];
     if (ejemplo) {
-      s.push({ etiqueta: "Lo que pasó", datos: ejemplo.acumuladas, color: "#2f5bd7" });
+      s.push({ etiqueta: "Lo que pasó", valores: ejemplo.acumuladas, color: "#2f5bd7" });
     }
     return s;
   }, [lectura, est, dia, resenas, ejemplo]);

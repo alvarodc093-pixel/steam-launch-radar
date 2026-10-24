@@ -8,7 +8,7 @@ Chart.register(...registerables);
 
 export interface Serie {
   etiqueta: string;
-  datos: (number | null)[];
+  valores: (number | null)[];
   color: string;
   /** Índice de otra serie con la que rellenar (para dibujar una banda). */
   rellenarHasta?: number;
@@ -54,7 +54,7 @@ export default function Grafico({
         labels: etiquetas,
         datasets: series.map((s) => ({
           label: s.etiqueta,
-          data: s.datos,
+          data: s.valores,
           borderColor: s.color,
           backgroundColor: s.rellenarHasta !== undefined ? s.color + "2e" : s.color,
           fill: s.rellenarHasta !== undefined ? s.rellenarHasta : false,

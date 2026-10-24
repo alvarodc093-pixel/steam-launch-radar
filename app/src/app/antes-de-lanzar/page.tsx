@@ -9,18 +9,18 @@ export const metadata: Metadata = { title: "Antes de lanzar" };
 export const dynamic = "force-dynamic";
 
 export default async function PaginaPrevia() {
-  let datos;
+  let previo;
   try {
-    datos = await datosPrevio();
+    previo = await datosPrevio();
   } catch {
     return <SinDatos titulo="Antes de lanzar" />;
   }
-  const generos = datos.por_genero
+  const generos = previo.por_genero
     .filter((g) => g.n >= 10)
     .map((g) => g.genero)
     .sort((a, b) => a.localeCompare(b, "es"));
   const orden = ["gratis", "hasta_10", "hasta_20", "hasta_40", "mas_de_40"];
-  const bandas = [...datos.por_banda].sort(
+  const bandas = [...previo.por_banda].sort(
     (a, b) => orden.indexOf(a.banda) - orden.indexOf(b.banda),
   );
 
@@ -37,7 +37,7 @@ export default async function PaginaPrevia() {
       <div className="panel tabla">
         <table>
           <caption>
-            {entero(datos.global.n)} lanzamientos de la muestra. Mediana y mitad central (del
+            {entero(previo.global.n)} lanzamientos de la muestra. Mediana y mitad central (del
             percentil 25 al 75) de las reseñas a 30 días.
           </caption>
           <thead>

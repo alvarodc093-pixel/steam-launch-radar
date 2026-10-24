@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "El cuerpo tiene que ser JSON válido." }, { status: 400 });
   }
 
-  let datos;
+  let radar;
   try {
-    datos = await datosRadar();
+    radar = await datosRadar();
   } catch {
     return NextResponse.json(
       { error: "Faltan los datos del modelo. Ejecuta `python -m radar.exportar`." },
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const entrada = validarRadar(cuerpo, datos.dias_lectura);
+  const entrada = validarRadar(cuerpo, radar.dias_lectura);
   if (!entrada.ok) return NextResponse.json({ error: entrada.error }, { status: 400 });
-  return NextResponse.json({ entrada: entrada.valor, lectura: leerRadar(datos, entrada.valor) });
+  return NextResponse.json({ entrada: entrada.valor, lectura: leerRadar(radar, entrada.valor) });
 }

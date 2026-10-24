@@ -38,13 +38,13 @@ def parsear_ficha(appid: int, respuesta: Any) -> dict[str, Any] | None:
     bloque = respuesta.get(str(appid)) if isinstance(respuesta, dict) else None
     if not bloque or not bloque.get("success"):
         return None
-    datos = bloque.get("data") or {}
-    if datos.get("type") != "game":
+    ficha = bloque.get("data") or {}
+    if ficha.get("type") != "game":
         return None
 
-    lanzamiento = datos.get("release_date") or {}
-    precio = datos.get("price_overview") or {}
-    if datos.get("is_free"):
+    lanzamiento = ficha.get("release_date") or {}
+    precio = ficha.get("price_overview") or {}
+    if ficha.get("is_free"):
         precio_usd = 0.0
     elif isinstance(precio.get("initial"), int) and precio.get("currency") == "USD":
         # `initial` es el precio sin descuento; `final` cambia con las rebajas.
@@ -54,18 +54,18 @@ def parsear_ficha(appid: int, respuesta: Any) -> dict[str, Any] | None:
 
     return {
         "appid": appid,
-        "nombre": datos.get("name"),
+        "nombre": ficha.get("name"),
         "fecha_lanzamiento": parsear_fecha(lanzamiento.get("date")),
         "proximamente": bool(lanzamiento.get("coming_soon")),
         "precio_usd": precio_usd,
-        "gratis": bool(datos.get("is_free")),
+        "gratis": bool(ficha.get("is_free")),
         "generos": [
             g.get("description")
-            for g in datos.get("genres", [])
+            for g in ficha.get("genres", [])
             if g.get("description")
         ],
-        "desarrolladores": datos.get("developers") or [],
-        "editores": datos.get("publishers") or [],
+        "desarrolladores": ficha.get("developers") or [],
+        "editores": ficha.get("publishers") or [],
     }
 
 
