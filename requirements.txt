@@ -18,6 +18,7 @@ ipykernel==7.4.0
 
 # Calidad
 pytest==9.1.1
+pytest-cov==7.0.0
 responses==0.26.3
 ruff==0.17.1
 

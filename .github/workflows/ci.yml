@@ -17,7 +17,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: ruff check .
       - run: ruff format --check .
-      - run: pytest
+      - run: pytest --cov --cov-report=term
 
   app:
     runs-on: ubuntu-latest
