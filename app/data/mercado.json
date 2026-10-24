@@ -1,0 +1,195 @@
+{
+ "generado_en": "2026-10-24T02:58:23+00:00",
+ "juegos_descargados": 4069,
+ "juegos_aptos": 3019,
+ "exclusiones": {
+  "apto": 3019,
+  "sin_resenas_en_30d": 689,
+  "fase_previa_publica": 357,
+  "sin_precio_usd": 4
+ },
+ "rango_lanzamientos": {
+  "desde": "2025-10-29",
+  "hasta": "2026-09-09"
+ },
+ "mediana_resenas_30d": 48.0,
+ "mediana_pct_positivas_7d": 0.909091,
+ "fraccion_mediana_del_mes": {
+  "3": 0.36,
+  "7": 0.619048,
+  "14": 0.825726
+ },
+ "por_mes": [
+  {
+   "mes": "2025-10",
+   "lanzamientos": 42,
+   "mediana_30d": 33.0
+  },
+  {
+   "mes": "2025-11",
+   "lanzamientos": 375,
+   "mediana_30d": 42.0
+  },
+  {
+   "mes": "2025-12",
+   "lanzamientos": 211,
+   "mediana_30d": 29.0
+  },
+  {
+   "mes": "2026-01",
+   "lanzamientos": 237,
+   "mediana_30d": 38.0
+  },
+  {
+   "mes": "2026-02",
+   "lanzamientos": 218,
+   "mediana_30d": 41.0
+  },
+  {
+   "mes": "2026-03",
+   "lanzamientos": 287,
+   "mediana_30d": 48.0
+  },
+  {
+   "mes": "2026-04",
+   "lanzamientos": 339,
+   "mediana_30d": 47.0
+  },
+  {
+   "mes": "2026-05",
+   "lanzamientos": 262,
+   "mediana_30d": 50.5
+  },
+  {
+   "mes": "2026-06",
+   "lanzamientos": 224,
+   "mediana_30d": 57.5
+  },
+  {
+   "mes": "2026-07",
+   "lanzamientos": 327,
+   "mediana_30d": 52.0
+  },
+  {
+   "mes": "2026-08",
+   "lanzamientos": 391,
+   "mediana_30d": 63.0
+  },
+  {
+   "mes": "2026-09",
+   "lanzamientos": 106,
+   "mediana_30d": 87.0
+  }
+ ],
+ "por_genero": [
+  {
+   "genero": "Action",
+   "n": 1077,
+   "mediana_30d": 63.0
+  },
+  {
+   "genero": "Adventure",
+   "n": 681,
+   "mediana_30d": 39.0
+  },
+  {
+   "genero": "Casual",
+   "n": 690,
+   "mediana_30d": 40.0
+  },
+  {
+   "genero": "Indie",
+   "n": 53,
+   "mediana_30d": 42.0
+  },
+  {
+   "genero": "Massively Multiplayer",
+   "n": 5,
+   "mediana_30d": 51.0
+  },
+  {
+   "genero": "RPG",
+   "n": 141,
+   "mediana_30d": 42.0
+  },
+  {
+   "genero": "Racing",
+   "n": 23,
+   "mediana_30d": 161.0
+  },
+  {
+   "genero": "Simulation",
+   "n": 235,
+   "mediana_30d": 52.0
+  },
+  {
+   "genero": "Sports",
+   "n": 4,
+   "mediana_30d": 79.5
+  },
+  {
+   "genero": "Strategy",
+   "n": 110,
+   "mediana_30d": 46.0
+  }
+ ],
+ "por_banda": [
+  {
+   "banda": "gratis",
+   "n": 34,
+   "mediana_30d": 2.0
+  },
+  {
+   "banda": "hasta_10",
+   "n": 1563,
+   "mediana_30d": 36.0
+  },
+  {
+   "banda": "hasta_20",
+   "n": 1066,
+   "mediana_30d": 58.0
+  },
+  {
+   "banda": "hasta_40",
+   "n": 306,
+   "mediana_30d": 139.0
+  },
+  {
+   "banda": "mas_de_40",
+   "n": 50,
+   "mediana_30d": 309.5
+  }
+ ],
+ "curva_tipica": [
+  0.0714,
+  0.249,
+  0.36,
+  0.4474,
+  0.5145,
+  0.5714,
+  0.619,
+  0.6615,
+  0.6929,
+  0.7273,
+  0.7561,
+  0.7807,
+  0.8049,
+  0.8257,
+  0.8452,
+  0.8611,
+  0.8759,
+  0.8929,
+  0.9067,
+  0.92,
+  0.931,
+  0.9412,
+  0.9502,
+  0.96,
+  0.9696,
+  0.9778,
+  0.9861,
+  0.9951,
+  1.0,
+  1.0
+ ]
+}

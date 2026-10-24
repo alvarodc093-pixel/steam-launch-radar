@@ -4,9 +4,8 @@ Dos comportamientos de la API sin clave, comprobados en octubre de 2026,
 condicionan la descarga:
 
 - Solo devuelve reseñas escritas en inglés, sea cual sea el parámetro
-  `language`; `query_summary.total_reviews` sí cuenta todos los idiomas. El
-  proyecto trabaja por tanto con reseñas en inglés, tanto en la lectura del
-  radar como en el objetivo a 30 días.
+  `language`. El proyecto trabaja por tanto con reseñas en inglés, tanto en la
+  lectura del radar como en el objetivo a 30 días.
 - Sin `day_range`, `filter=recent` se queda en las reseñas recientes. Con el
   máximo permitido devuelve todo el histórico, de la más nueva a la más
   antigua, así que para llegar a los primeros días hay que recorrerlo entero.
@@ -48,8 +47,8 @@ def agregar_por_dia(reviews: list[dict[str, Any]]) -> dict[str, list[int]]:
 def descargar_resenas(cliente: ClienteHttp, appid: int, maximo: int) -> dict[str, Any]:
     """Recorre todas las páginas y devuelve el agregado diario.
 
-    `completo` es False si el juego supera `maximo` reseñas (en todos los
-    idiomas) o si se alcanza el tope de páginas: en ambos casos pueden faltar
+    `completo` es False si el juego supera `maximo` reseñas (de las que sirve la
+    API) o si se alcanza el tope de páginas: en ambos casos pueden faltar
     los primeros días y el juego no debe entrar en el modelo.
     """
     params: dict[str, Any] = {

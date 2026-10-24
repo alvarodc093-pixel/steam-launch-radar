@@ -23,8 +23,9 @@ DIR_APP_DATOS = RAIZ / "app" / "data"
 HISTORICO_API_DIAS = 365
 DIAS_MARGEN_INICIO = 5  # colchón por zonas horarias y por la fecha de descarga
 DIAS_MARGEN = 45  # hasta hoy - 45 días: la ventana de 30 días está cerrada
-# Mínimo en todos los idiomas: la API solo sirve las de inglés (más o menos
-# una de cada cuatro), y con menos de 50 apenas quedarían datos que leer.
+# Mínimo en todos los idiomas (el recuento del buscador). La API solo sirve las
+# de inglés, en la mediana un 40 % del total, y con menos de 50 apenas
+# quedarían datos que leer.
 RESENAS_MIN = 50
 RESENAS_MAX = 10_000
 

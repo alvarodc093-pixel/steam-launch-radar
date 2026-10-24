@@ -56,6 +56,13 @@ export default async function PaginaMetodologia() {
   const dias = radar.dias_lectura;
   const tam = radar.modelos[String(dias[0])].tamanos;
   const pm = previo.modelo;
+  const base = pm.baselines_test.mediana;
+  // El mismo criterio que usa /api/previo (leerPrevio) para mostrar o no la cifra.
+  const previoSupera =
+    pm.tipo !== "mediana" &&
+    (!base ||
+      (pm.metricas_test.mae_log < base.mae_log &&
+        pm.metricas_test.mediana_error_log < base.mediana_error_log));
 
   return (
     <>
@@ -152,14 +159,13 @@ export default async function PaginaMetodologia() {
       <div className="panel">
         <p>
           Mismo método con lo que se sabe antes de publicar: precio, género y mes. En test, el
-          modelo elegido ({NOMBRE_MODELO[pm.tipo]}) tiene un MAE en log de{" "}
-          {decimal(pm.metricas_test.mae_log, 3)} frente a{" "}
-          {pm.baselines_test.mediana ? decimal(pm.baselines_test.mediana.mae_log, 3) : "—"} de la
-          mediana
-          {pm.metricas_test.spearman !== null &&
-            ` y una correlación de rangos de ${decimal(pm.metricas_test.spearman, 2)}`}
-          . Con ese margen la app no da una cifra individual antes del lanzamiento: muestra el
-          rango de juegos parecidos.
+          modelo elegido ({NOMBRE_MODELO[pm.tipo]}) tiene un error medio en log de{" "}
+          {decimal(pm.metricas_test.mae_log, 3)} y un error del juego típico de{" "}
+          {decimal(pm.metricas_test.mediana_error_log, 3)}; la mediana de la muestra,{" "}
+          {base ? `${decimal(base.mae_log, 3)} y ${decimal(base.mediana_error_log, 3)}` : "—"}.{" "}
+          {previoSupera
+            ? "Mejora en las dos medidas, así que la app muestra su estimación junto al rango de juegos parecidos."
+            : "No mejora en las dos a la vez, así que la app no da una cifra antes del lanzamiento: muestra el rango de juegos parecidos."}
         </p>
         <TablaCandidatos m={pm} />
       </div>

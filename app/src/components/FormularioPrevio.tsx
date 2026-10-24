@@ -104,7 +104,8 @@ export default function FormularioPrevio({ generos }: Props) {
             ) : (
               <p className="aviso" style={{ marginTop: "1rem" }}>
                 No mostramos una cifra concreta: con solo género, precio y mes, el modelo no
-                acierta mejor que la mediana de la muestra en lanzamientos que no había visto. Antes de lanzar lo útil es el rango de
+                acierta mejor que la mediana de la muestra en el juego típico. Antes de lanzar lo
+                útil es el rango de
                 juegos parecidos; la estimación fiable llega con las primeras reseñas (pestaña
                 Radar).
               </p>

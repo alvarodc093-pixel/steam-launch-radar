@@ -80,7 +80,14 @@ export function leerPrevio(datos: DatosPrevio, e: EntradaPrevia, banda: string):
         : null;
   return {
     estimacion: estimar(m, variablesPrevias(e, m.generos)),
-    superaBaseline: m.tipo !== "mediana" && (!base || m.metricas_test.mae_log < base.mae_log),
+    // Tiene que mejorar a la mediana en el error medio y también en el del
+    // juego típico: bajar solo el medio puede deberse a unos pocos aciertos
+    // en juegos extremos mientras empeora el caso normal.
+    superaBaseline:
+      m.tipo !== "mediana" &&
+      (!base ||
+        (m.metricas_test.mae_log < base.mae_log &&
+          m.metricas_test.mediana_error_log < base.mediana_error_log)),
     benchmark,
   };
 }

@@ -185,22 +185,28 @@ def construir_dataset(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFra
     return aptos[columnas].sort_values("fecha_lanzamiento").reset_index(drop=True)
 
 
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    # Solo los candidatos de la última búsqueda: la caché puede guardar fichas
-    # de ejecuciones anteriores con otra ventana de fechas.
-    vigentes = {
-        c["appid"]
-        for c in json.loads(
-            (config.DIR_RAW / "candidatos.json").read_text(encoding="utf-8")
-        )
-    }
+def cargar_crudo() -> tuple[list[dict], list[dict]]:
+    """Fichas y reseñas de los candidatos de la última búsqueda.
+
+    La caché puede guardar descargas de ejecuciones anteriores con otra
+    ventana de fechas; solo cuentan los juegos de candidatos.json.
+    """
+    candidatos = json.loads(
+        (config.DIR_RAW / "candidatos.json").read_text(encoding="utf-8")
+    )
+    vigentes = {c["appid"] for c in candidatos}
     fichas = [
         f for f in _leer_json(config.DIR_RAW / "fichas") if f["appid"] in vigentes
     ]
     resenas = [
         r for r in _leer_json(config.DIR_RAW / "resenas") if r["appid"] in vigentes
     ]
+    return fichas, resenas
+
+
+def main() -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    fichas, resenas = cargar_crudo()
     juegos = construir_juegos(fichas, resenas)
     diarias = construir_diarias(resenas, juegos)
     juegos = marcar_aptos(juegos, diarias)

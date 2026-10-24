@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import time
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
@@ -36,7 +37,15 @@ def _guardar(ruta: Path, datos: Any) -> None:
     ruta.parent.mkdir(parents=True, exist_ok=True)
     tmp = ruta.with_suffix(".tmp")
     tmp.write_text(json.dumps(datos, ensure_ascii=False, default=str), encoding="utf-8")
-    tmp.replace(ruta)  # escritura atómica: un corte no deja JSON a medias
+    # Escritura atómica: un corte no deja JSON a medias. En Windows, OneDrive
+    # o el antivirus pueden tener el fichero abierto un instante.
+    for intento in range(5):
+        try:
+            tmp.replace(ruta)
+            return
+        except PermissionError:
+            time.sleep(0.5 * (intento + 1))
+    tmp.replace(ruta)
 
 
 def paso_candidatos(hoy: date) -> list[dict[str, Any]]:
