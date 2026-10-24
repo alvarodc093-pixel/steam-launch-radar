@@ -53,6 +53,9 @@ export interface Ejemplo {
   acumuladas: number[];
 }
 
+/** Lo que necesita el desplegable: el resto se pide al elegir el juego. */
+export type EjemploResumen = Pick<Ejemplo, "appid" | "nombre" | "fecha_lanzamiento">;
+
 export interface DatosRadar {
   generado_en: string;
   dias_lectura: number[];

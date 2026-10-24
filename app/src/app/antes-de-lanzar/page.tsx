@@ -20,14 +20,16 @@ export default async function PaginaPrevia() {
     .map((g) => g.genero)
     .sort((a, b) => a.localeCompare(b, "es"));
   const orden = ["gratis", "hasta_10", "hasta_20", "hasta_40", "mas_de_40"];
-  const bandas = [...datos.por_banda].sort((a, b) => orden.indexOf(a.banda) - orden.indexOf(b.banda));
+  const bandas = [...datos.por_banda].sort(
+    (a, b) => orden.indexOf(a.banda) - orden.indexOf(b.banda),
+  );
 
   return (
     <>
       <h1>Antes de lanzar: ¿qué es normal para un juego como el tuyo?</h1>
       <p className="entradilla">
-        Antes de publicar no hay reseñas que mirar, pero sí juegos parecidos que ya pasaron por
-        su primer mes. Esta pantalla te da ese punto de referencia para fijar expectativas.
+        Antes de publicar no hay reseñas que mirar, pero sí juegos parecidos que ya pasaron por su
+        primer mes. Esta pantalla te da ese punto de referencia para fijar expectativas.
       </p>
       <FormularioPrevio generos={generos} />
 
@@ -41,9 +43,15 @@ export default async function PaginaPrevia() {
           <thead>
             <tr>
               <th scope="col">Precio</th>
-              <th scope="col" className="num">Juegos</th>
-              <th scope="col" className="num">Mediana</th>
-              <th scope="col" className="num">Mitad central</th>
+              <th scope="col" className="num">
+                Juegos
+              </th>
+              <th scope="col" className="num">
+                Mediana
+              </th>
+              <th scope="col" className="num">
+                Mitad central
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -61,9 +69,9 @@ export default async function PaginaPrevia() {
         </table>
       </div>
       <p className="nota">
-        Las bandas se solapan mucho: dentro de cada precio hay juegos que no pasan de unas
-        decenas de reseñas y otros con miles. Por eso el precio y el género sirven como
-        contexto, no como predicción.
+        Las bandas se solapan mucho: dentro de cada precio hay juegos que no pasan de unas decenas
+        de reseñas y otros con miles. Por eso el precio y el género sirven como contexto, no como
+        predicción.
       </p>
     </>
   );

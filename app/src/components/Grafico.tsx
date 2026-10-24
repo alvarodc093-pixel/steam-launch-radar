@@ -33,7 +33,15 @@ function variable(nombre: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
 }
 
-export default function Grafico({ tipo, etiquetas, series, ejeX, ejeY, logaritmico, resumen }: Props) {
+export default function Grafico({
+  tipo,
+  etiquetas,
+  series,
+  ejeX,
+  ejeY,
+  logaritmico,
+  resumen,
+}: Props) {
   const lienzo = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

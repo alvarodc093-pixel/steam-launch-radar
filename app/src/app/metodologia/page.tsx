@@ -20,13 +20,15 @@ function TablaCandidatos({ m }: { m: ModeloJson }) {
   return (
     <table>
       <caption>
-        Error medio en log (MAE) en validación cruzada temporal dentro del entrenamiento. Se
-        elige el menor; el test no interviene.
+        Error medio en log (MAE) en validación cruzada temporal dentro del entrenamiento. Se elige
+        el menor; el test no interviene.
       </caption>
       <thead>
         <tr>
           <th scope="col">Candidato</th>
-          <th scope="col" className="num">MAE (media ± desv.)</th>
+          <th scope="col" className="num">
+            MAE (media ± desv.)
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -68,30 +70,29 @@ export default async function PaginaMetodologia() {
     <>
       <h1>Cómo funciona</h1>
       <p className="entradilla">
-        Qué datos usa la aplicación, cómo se han preparado, cómo se ha evaluado cada modelo y
-        qué no puede decir.
+        Qué datos usa la aplicación, cómo se han preparado, cómo se ha evaluado cada modelo y qué no
+        puede decir.
       </p>
 
       <h2>Datos</h2>
       <div className="panel">
         <ul>
           <li>
-            <strong>Muestra:</strong> todos los juegos del buscador de la tienda de Steam con
-            entre 50 y 10.000 reseñas, lanzados entre el{" "}
-            {fecha(mercado.rango_lanzamientos.desde)} y el {fecha(mercado.rango_lanzamientos.hasta)}.
-            Quedan {entero(mercado.juegos_aptos)} de {entero(mercado.juegos_descargados)}{" "}
-            descargados (los motivos de exclusión están en la pestaña Mercado).
+            <strong>Muestra:</strong> todos los juegos del buscador de la tienda de Steam con entre
+            50 y 10.000 reseñas, lanzados entre el {fecha(mercado.rango_lanzamientos.desde)} y el{" "}
+            {fecha(mercado.rango_lanzamientos.hasta)}. Quedan {entero(mercado.juegos_aptos)} de{" "}
+            {entero(mercado.juegos_descargados)} descargados (los motivos de exclusión están en la
+            pestaña Mercado).
           </li>
           <li>
-            <strong>Fecha de lanzamiento y precio:</strong> ficha oficial de la tienda de Steam.
-            El precio es el de lista (sin descuento) en dólares.
+            <strong>Fecha de lanzamiento y precio:</strong> ficha oficial de la tienda de Steam. El
+            precio es el de lista (sin descuento) en dólares.
           </li>
           <li>
-            <strong>Reseñas:</strong> las reseñas públicas en inglés de cada juego, vía la API
-            de Steam sin clave, agregadas por día. Esa API solo sirve reseñas en inglés y del
-            último año, por eso todas las cifras del radar son reseñas en inglés y la muestra
-            se limita a lanzamientos de los últimos doce meses. Del texto y del autor no se
-            guarda nada.
+            <strong>Reseñas:</strong> las reseñas públicas en inglés de cada juego, vía la API de
+            Steam sin clave, agregadas por día. Esa API solo sirve reseñas en inglés y del último
+            año, por eso todas las cifras del radar son reseñas en inglés y la muestra se limita a
+            lanzamientos de los últimos doce meses. Del texto y del autor no se guarda nada.
           </li>
         </ul>
       </div>
@@ -99,11 +100,11 @@ export default async function PaginaMetodologia() {
       <h2>El radar</h2>
       <div className="panel">
         <p>
-          Objetivo: reseñas acumuladas en los 30 primeros días, en escala logarítmica (un error
-          de «el doble» pesa lo mismo con 50 reseñas que con 5.000). Variables: reseñas y
-          porcentaje de positivas hasta el día de lectura, precio y género; nada posterior a
-          ese día. Partición por fecha de lanzamiento: {tam.train} juegos de entrenamiento,{" "}
-          {tam.calibracion} de calibración y {tam.test} de test (los más recientes).
+          Objetivo: reseñas acumuladas en los 30 primeros días, en escala logarítmica (un error de
+          «el doble» pesa lo mismo con 50 reseñas que con 5.000). Variables: reseñas y porcentaje de
+          positivas hasta el día de lectura, precio y género; nada posterior a ese día. Partición
+          por fecha de lanzamiento: {tam.train} juegos de entrenamiento, {tam.calibracion} de
+          calibración y {tam.test} de test (los más recientes).
         </p>
         <div className="tabla">
           <table>
@@ -112,17 +113,28 @@ export default async function PaginaMetodologia() {
               <tr>
                 <th scope="col">Lectura</th>
                 <th scope="col">Modelo elegido</th>
-                <th scope="col" className="num">Factor de error típico</th>
-                <th scope="col" className="num">Dentro de ×2</th>
-                <th scope="col" className="num">MAE log</th>
-                <th scope="col" className="num">MAE log del ratio típico</th>
-                <th scope="col" className="num">Cobertura del 90 %</th>
+                <th scope="col" className="num">
+                  Factor de error típico
+                </th>
+                <th scope="col" className="num">
+                  Dentro de ×2
+                </th>
+                <th scope="col" className="num">
+                  MAE log
+                </th>
+                <th scope="col" className="num">
+                  MAE log del ratio típico
+                </th>
+                <th scope="col" className="num">
+                  Cobertura del 90 %
+                </th>
               </tr>
             </thead>
             <tbody>
               {dias.map((d) => {
                 const m = radar.modelos[String(d)];
-                const ratio = m.tipo === "ratio_tipico" ? m.metricas_test : m.baselines_test.ratio_tipico;
+                const ratio =
+                  m.tipo === "ratio_tipico" ? m.metricas_test : m.baselines_test.ratio_tipico;
                 return (
                   <tr key={d}>
                     <th scope="row">Día {d}</th>
@@ -132,7 +144,9 @@ export default async function PaginaMetodologia() {
                     <td className="num">{decimal(m.metricas_test.mae_log, 3)}</td>
                     <td className="num">{ratio ? decimal(ratio.mae_log, 3) : "—"}</td>
                     <td className="num">
-                      {m.metricas_test.cobertura_90 !== undefined ? porcentaje(m.metricas_test.cobertura_90) : "—"}
+                      {m.metricas_test.cobertura_90 !== undefined
+                        ? porcentaje(m.metricas_test.cobertura_90)
+                        : "—"}
                     </td>
                   </tr>
                 );
@@ -174,21 +188,21 @@ export default async function PaginaMetodologia() {
       <div className="panel">
         <ul>
           <li>
-            Las reseñas miden actividad, no ventas. Hay juegos que venden mucho con pocas
-            reseñas y al revés.
+            Las reseñas miden actividad, no ventas. Hay juegos que venden mucho con pocas reseñas y
+            al revés.
           </li>
           <li>
-            Solo entran juegos con al menos 50 reseñas: los lanzamientos que casi nadie jugó
-            quedan fuera, y los éxitos con más de 10.000 también, a propósito (el radar es para
-            estudios pequeños y medianos).
+            Solo entran juegos con al menos 50 reseñas: los lanzamientos que casi nadie jugó quedan
+            fuera, y los éxitos con más de 10.000 también, a propósito (el radar es para estudios
+            pequeños y medianos).
           </li>
           <li>
-            Los juegos que salieron de acceso anticipado se excluyen: su «lanzamiento» no parte
-            de cero.
+            Los juegos que salieron de acceso anticipado se excluyen: su «lanzamiento» no parte de
+            cero.
           </li>
           <li>
-            El rango del 90 % se cumple en promedio, no en cada juego: uno de cada diez puede
-            quedar fuera.
+            El rango del 90 % se cumple en promedio, no en cada juego: uno de cada diez puede quedar
+            fuera.
           </li>
         </ul>
       </div>

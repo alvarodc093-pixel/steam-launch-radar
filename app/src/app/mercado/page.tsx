@@ -25,7 +25,9 @@ export default async function PaginaMercado() {
     return <SinDatos titulo="Mercado" />;
   }
   const dias = Object.keys(m.fraccion_mediana_del_mes);
-  const generos = [...m.por_genero].filter((g) => g.n >= 15).sort((a, b) => b.mediana_30d - a.mediana_30d);
+  const generos = [...m.por_genero]
+    .filter((g) => g.n >= 15)
+    .sort((a, b) => b.mediana_30d - a.mediana_30d);
   const orden = ["gratis", "hasta_10", "hasta_20", "hasta_40", "mas_de_40"];
   const bandas = [...m.por_banda].sort((a, b) => orden.indexOf(a.banda) - orden.indexOf(b.banda));
 
@@ -33,9 +35,8 @@ export default async function PaginaMercado() {
     <>
       <h1>El primer mes de un lanzamiento en Steam</h1>
       <p className="entradilla">
-        Indicadores de la muestra que alimenta el radar: {entero(m.juegos_aptos)} juegos
-        lanzados entre el {fecha(m.rango_lanzamientos.desde)} y el{" "}
-        {fecha(m.rango_lanzamientos.hasta)}.
+        Indicadores de la muestra que alimenta el radar: {entero(m.juegos_aptos)} juegos lanzados
+        entre el {fecha(m.rango_lanzamientos.desde)} y el {fecha(m.rango_lanzamientos.hasta)}.
       </p>
 
       <div className="rejilla">
@@ -47,6 +48,11 @@ export default async function PaginaMercado() {
         <div className="panel">
           <div className="etiqueta">Reseñas en el primer mes</div>
           <div className="cifra">{entero(m.mediana_resenas_30d)}</div>
+          <div className="nota">mediana por juego</div>
+        </div>
+        <div className="panel">
+          <div className="etiqueta">Positivas en la primera semana</div>
+          <div className="cifra">{porcentaje(m.mediana_pct_positivas_7d)}</div>
           <div className="nota">mediana por juego</div>
         </div>
         {dias.map((d) => (
@@ -81,7 +87,13 @@ export default async function PaginaMercado() {
         <Grafico
           tipo="bar"
           etiquetas={generos.map((g) => `${g.genero} (${g.n})`)}
-          series={[{ etiqueta: "Mediana de reseñas a 30 días", datos: generos.map((g) => g.mediana_30d), color: "#1e7a52" }]}
+          series={[
+            {
+              etiqueta: "Mediana de reseñas a 30 días",
+              datos: generos.map((g) => g.mediana_30d),
+              color: "#1e7a52",
+            },
+          ]}
           ejeY="Reseñas a 30 días (mediana)"
           resumen="Mediana de reseñas a 30 días por género principal; entre paréntesis, el número de juegos. Solo géneros con al menos 15 lanzamientos."
         />
@@ -92,7 +104,13 @@ export default async function PaginaMercado() {
         <Grafico
           tipo="bar"
           etiquetas={bandas.map((b) => `${NOMBRE_BANDA[b.banda] ?? b.banda} (${b.n})`)}
-          series={[{ etiqueta: "Mediana de reseñas a 30 días", datos: bandas.map((b) => b.mediana_30d), color: "#2f5bd7" }]}
+          series={[
+            {
+              etiqueta: "Mediana de reseñas a 30 días",
+              datos: bandas.map((b) => b.mediana_30d),
+              color: "#2f5bd7",
+            },
+          ]}
           ejeY="Reseñas a 30 días (mediana)"
           resumen="Mediana de reseñas a 30 días por banda de precio de lista; entre paréntesis, el número de juegos."
         />
@@ -103,7 +121,13 @@ export default async function PaginaMercado() {
         <Grafico
           tipo="bar"
           etiquetas={m.por_mes.map((p) => p.mes)}
-          series={[{ etiqueta: "Lanzamientos en la muestra", datos: m.por_mes.map((p) => p.lanzamientos), color: "#8a6d00" }]}
+          series={[
+            {
+              etiqueta: "Lanzamientos en la muestra",
+              datos: m.por_mes.map((p) => p.lanzamientos),
+              color: "#8a6d00",
+            },
+          ]}
           ejeY="Juegos"
           resumen="Lanzamientos de la muestra por mes. Entran los juegos con al menos 50 reseñas el día de la descarga: los lanzados hace menos han tenido menos tiempo para llegar a esa cifra, así que los meses más recientes pueden estar algo infrarrepresentados."
         />

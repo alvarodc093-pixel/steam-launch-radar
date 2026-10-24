@@ -13,7 +13,9 @@ export default function FormularioPrevio({ generos }: Props) {
   const [genero, setGenero] = useState("");
   const [precio, setPrecio] = useState("");
   const [mes, setMes] = useState(String(new Date().getMonth() + 1));
-  const [respuesta, setRespuesta] = useState<{ banda: string; lectura: LecturaPrevia } | null>(null);
+  const [respuesta, setRespuesta] = useState<{ banda: string; lectura: LecturaPrevia } | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   async function enviar(evento: React.FormEvent) {
@@ -52,7 +54,12 @@ export default function FormularioPrevio({ generos }: Props) {
         </div>
         <div className="campo">
           <label htmlFor="p">Precio previsto en dólares</label>
-          <input id="p" inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} />
+          <input
+            id="p"
+            inputMode="decimal"
+            value={precio}
+            onChange={(e) => setPrecio(e.target.value)}
+          />
         </div>
         <div className="campo">
           <label htmlFor="m">Mes de lanzamiento</label>
@@ -75,8 +82,8 @@ export default function FormularioPrevio({ generos }: Props) {
       <section aria-live="polite">
         {!l ? (
           <div className="panel nota">
-            Elige género y precio para ver cuántas reseñas suelen sumar en su primer mes los
-            juegos parecidos de la muestra.
+            Elige género y precio para ver cuántas reseñas suelen sumar en su primer mes los juegos
+            parecidos de la muestra.
           </div>
         ) : (
           <>
@@ -84,7 +91,9 @@ export default function FormularioPrevio({ generos }: Props) {
               <div className="panel">
                 <div className="etiqueta">
                   Juegos parecidos: {l.benchmark.genero}
-                  {l.benchmark.banda ? ` · ${NOMBRE_BANDA[l.benchmark.banda]}` : " (todos los precios)"}
+                  {l.benchmark.banda
+                    ? ` · ${NOMBRE_BANDA[l.benchmark.banda]}`
+                    : " (todos los precios)"}
                 </div>
                 <div className="cifra">{entero(l.benchmark.cuantiles[2])} reseñas</div>
                 <p className="nota" style={{ marginBottom: 0 }}>
@@ -103,11 +112,10 @@ export default function FormularioPrevio({ generos }: Props) {
               </p>
             ) : (
               <p className="aviso" style={{ marginTop: "1rem" }}>
-                No mostramos una cifra concreta: con solo género, precio y mes, el modelo no
-                acierta mejor que la mediana de la muestra en el juego típico. Antes de lanzar lo
-                útil es el rango de
-                juegos parecidos; la estimación fiable llega con las primeras reseñas (pestaña
-                Radar).
+                No mostramos una cifra concreta: con solo género, precio y mes, el modelo no acierta
+                mejor que la mediana de la muestra en el juego típico. Antes de lanzar lo útil es el
+                rango de juegos parecidos; la estimación fiable llega con las primeras reseñas
+                (pestaña Radar).
               </p>
             )}
           </>

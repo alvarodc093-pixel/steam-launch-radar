@@ -4,10 +4,19 @@ import Link from "next/link";
 import Secciones from "@/components/Secciones";
 import "./globals.css";
 
+const DESCRIPCION =
+  "Con las reseñas de los primeros días, estima cómo cerrará el primer mes de un juego en Steam y lo compara con lanzamientos parecidos.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://steam-launch-radar.vercel.app"),
   title: { default: "Steam Launch Radar", template: "%s · Steam Launch Radar" },
-  description:
-    "Con las reseñas de los primeros días, estima cómo cerrará el primer mes de un juego en Steam y lo compara con lanzamientos parecidos.",
+  description: DESCRIPCION,
+  openGraph: {
+    title: "Steam Launch Radar",
+    description: DESCRIPCION,
+    locale: "es_ES",
+    type: "website",
+  },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -30,8 +39,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
         <footer className="pie">
           <div className="contenedor">
-            Datos públicos de la tienda de Steam (buscador, ficha y reseñas en inglés). Las reseñas son
-            una aproximación a la actividad de un juego, no a sus ventas.
+            Datos públicos de la tienda de Steam (buscador, ficha y reseñas en inglés). Las reseñas
+            son una aproximación a la actividad de un juego, no a sus ventas.
           </div>
         </footer>
       </body>

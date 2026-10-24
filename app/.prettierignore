@@ -1,0 +1,6 @@
+.next/
+node_modules/
+data/
+tests/casos_dorados.json
+package-lock.json
+next-env.d.ts

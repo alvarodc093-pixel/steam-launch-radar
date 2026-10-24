@@ -5,14 +5,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Grafico, { type Serie } from "@/components/Grafico";
 import { dolares, entero, fecha, porcentaje } from "@/lib/formato";
 import type { LecturaRadar, Veredicto } from "@/lib/radar";
-import type { Ejemplo } from "@/lib/tipos";
+import type { Ejemplo, EjemploResumen } from "@/lib/tipos";
 
 interface Props {
   dias: number[];
   generos: string[];
-  ejemplos: Ejemplo[];
+  /** Solo nombre y fecha: los datos de cada juego se piden al elegirlo. */
+  ejemplos: EjemploResumen[];
   /** Lectura que abrir al cargar (enlace compartible ?juego=…&dia=…). */
-  inicial?: { appid: number; dia: number };
+  inicial?: { ejemplo: Ejemplo; dia: number };
 }
 
 const TITULO: Record<Veredicto, string> = {
@@ -33,6 +34,26 @@ const EXPLICACION: Record<Veredicto, string> = {
 const VACIO = { resenas: "", pct: "", precio: "", genero: "" };
 type Campos = typeof VACIO;
 
+/** Comprobación previa con los nombres que ve el usuario (la API valida otra vez). */
+function errorEnCampos(c: Campos): string | null {
+  if (c.resenas === "" || c.precio === "" || !c.genero) {
+    return "Rellena las reseñas, el precio y el género.";
+  }
+  const resenas = Number(c.resenas);
+  if (!Number.isInteger(resenas) || resenas < 0) {
+    return "Las reseñas tienen que ser un número entero, 0 o más.";
+  }
+  const pct = Number(c.pct);
+  if (c.pct !== "" && (!Number.isFinite(pct) || pct < 0 || pct > 100)) {
+    return "El porcentaje de positivas va de 0 a 100.";
+  }
+  const precio = Number(c.precio.replace(",", "."));
+  if (!Number.isFinite(precio) || precio < 0 || precio > 200) {
+    return "El precio tiene que estar entre 0 y 200 dólares.";
+  }
+  return null;
+}
+
 function camposDe(e: Ejemplo, d: number, generos: string[]): Campos {
   const l = e.lecturas[String(d)];
   return {
@@ -44,7 +65,7 @@ function camposDe(e: Ejemplo, d: number, generos: string[]): Campos {
 }
 
 export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Props) {
-  const ejemploInicial = inicial ? (ejemplos.find((e) => e.appid === inicial.appid) ?? null) : null;
+  const ejemploInicial = inicial?.ejemplo ?? null;
   const diaInicial = inicial && dias.includes(inicial.dia) ? inicial.dia : (dias[1] ?? dias[0]);
   const [dia, setDia] = useState(diaInicial);
   const [campos, setCampos] = useState<Campos>(
@@ -60,12 +81,26 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
     if (e) setCampos(camposDe(e, d, generos));
   }
 
-  function elegirEjemplo(appid: string) {
-    const e = ejemplos.find((x) => String(x.appid) === appid) ?? null;
-    setEjemplo(e);
+  async function elegirEjemplo(appid: string) {
     setLectura(null);
-    if (e) rellenar(e, dia);
-    else setCampos(VACIO);
+    setError(null);
+    if (!appid) {
+      setEjemplo(null);
+      setCampos(VACIO);
+      return;
+    }
+    setCargando(true);
+    try {
+      const r = await fetch(`/api/ejemplos/${appid}`);
+      if (!r.ok) throw new Error(String(r.status));
+      const e: Ejemplo = await r.json();
+      setEjemplo(e);
+      rellenar(e, dia);
+    } catch {
+      setError("No se ha podido cargar ese juego. Prueba de nuevo en unos segundos.");
+    } finally {
+      setCargando(false);
+    }
   }
 
   function elegirDia(d: number) {
@@ -81,11 +116,9 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
   }
 
   async function consultar(c: Campos, d: number) {
-    setError(null);
-    if (c.resenas === "" || c.precio === "" || !c.genero) {
-      setError("Rellena las reseñas, el precio y el género.");
-      return;
-    }
+    const problema = errorEnCampos(c);
+    setError(problema);
+    if (problema) return;
     setCargando(true);
     try {
       const r = await fetch("/api/radar", {
@@ -95,7 +128,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
           dia: d,
           resenas: Number(c.resenas),
           pct_positivas: c.pct === "" ? null : Number(c.pct) / 100,
-          precio_usd: Number(c.precio),
+          precio_usd: Number(c.precio.replace(",", ".")),
           genero: c.genero,
         }),
       });
@@ -129,7 +162,11 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
       <form className="panel" onSubmit={enviar} noValidate>
         <div className="campo">
           <label htmlFor="ejemplo">Probar con un lanzamiento real</label>
-          <select id="ejemplo" value={ejemplo?.appid ?? ""} onChange={(e) => elegirEjemplo(e.target.value)}>
+          <select
+            id="ejemplo"
+            value={ejemplo?.appid ?? ""}
+            onChange={(e) => void elegirEjemplo(e.target.value)}
+          >
             <option value="">— Mis propios datos —</option>
             {ejemplos.map((e) => (
               <option key={e.appid} value={e.appid}>
@@ -138,8 +175,8 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
             ))}
           </select>
           <span className="nota">
-            Juegos que el modelo no vio al entrenar: puedes comparar su estimación con lo que
-            pasó de verdad.
+            Juegos que el modelo no vio al entrenar: puedes comparar su estimación con lo que pasó
+            de verdad.
           </span>
         </div>
 
@@ -159,20 +196,42 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
 
         <div className="campo">
           <label htmlFor="resenas">Reseñas en inglés acumuladas hasta hoy</label>
-          <input id="resenas" inputMode="numeric" value={campos.resenas} onChange={(e) => cambiar("resenas", e.target.value)} />
-          <span className="nota">En la página del juego en Steam, filtra las reseñas por idioma: inglés.</span>
+          <input
+            id="resenas"
+            inputMode="numeric"
+            value={campos.resenas}
+            onChange={(e) => cambiar("resenas", e.target.value)}
+          />
+          <span className="nota">
+            En la página del juego en Steam, filtra las reseñas por idioma: inglés.
+          </span>
         </div>
         <div className="campo">
-          <label htmlFor="pct">Porcentaje de reseñas positivas</label>
-          <input id="pct" inputMode="decimal" placeholder="Vacío si aún no lo sabes" value={campos.pct} onChange={(e) => cambiar("pct", e.target.value)} />
+          <label htmlFor="pct">Porcentaje de reseñas positivas (0–100)</label>
+          <input
+            id="pct"
+            inputMode="decimal"
+            placeholder="Vacío si aún no lo sabes"
+            value={campos.pct}
+            onChange={(e) => cambiar("pct", e.target.value)}
+          />
         </div>
         <div className="campo">
           <label htmlFor="precio">Precio en dólares (0 si es gratis)</label>
-          <input id="precio" inputMode="decimal" value={campos.precio} onChange={(e) => cambiar("precio", e.target.value)} />
+          <input
+            id="precio"
+            inputMode="decimal"
+            value={campos.precio}
+            onChange={(e) => cambiar("precio", e.target.value)}
+          />
         </div>
         <div className="campo">
           <label htmlFor="genero">Género principal</label>
-          <select id="genero" value={campos.genero} onChange={(e) => cambiar("genero", e.target.value)}>
+          <select
+            id="genero"
+            value={campos.genero}
+            onChange={(e) => cambiar("genero", e.target.value)}
+          >
             <option value="">— Elige —</option>
             {generos.map((g) => (
               <option key={g} value={g}>
@@ -194,12 +253,17 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Pr
 
       <section aria-live="polite">
         {lectura ? (
-          <Resultado lectura={lectura} dia={dia} resenas={Number(campos.resenas)} ejemplo={ejemplo} />
+          <Resultado
+            lectura={lectura}
+            dia={dia}
+            resenas={Number(campos.resenas)}
+            ejemplo={ejemplo}
+          />
         ) : (
           <div className="panel nota">
-            Elige un lanzamiento real o introduce los datos de tu juego. El radar estima las
-            reseñas que tendrá al cumplir 30 días y te dice si eso es mucho o poco comparado
-            con juegos del mismo género.
+            Elige un lanzamiento real o introduce los datos de tu juego. El radar estima las reseñas
+            que tendrá al cumplir 30 días y te dice si eso es mucho o poco comparado con juegos del
+            mismo género.
           </div>
         )}
       </section>
@@ -227,8 +291,18 @@ function Resultado({
     // (rango bajo, invisible).
     const s: Serie[] = [
       { etiqueta: "Rango bajo", datos: escala(est.inferior), color: "#1e7a5200", enLeyenda: false },
-      { etiqueta: "Rango del 90 %", datos: escala(est.superior), color: "#1e7a52", rellenarHasta: 0 },
-      { etiqueta: "Trayectoria esperada", datos: lectura.trayectoria, color: "#1e7a52", discontinua: true },
+      {
+        etiqueta: "Rango del 90 %",
+        datos: escala(est.superior),
+        color: "#1e7a52",
+        rellenarHasta: 0,
+      },
+      {
+        etiqueta: "Trayectoria esperada",
+        datos: lectura.trayectoria,
+        color: "#1e7a52",
+        discontinua: true,
+      },
       {
         etiqueta: `Hoy (día ${dia})`,
         datos: lectura.trayectoria.map((_, i) => (i === dia - 1 ? resenas : null)),
@@ -243,7 +317,8 @@ function Resultado({
   }, [lectura, est, dia, resenas, ejemplo]);
 
   const etiquetas = useMemo(() => lectura.trayectoria.map((_, i) => String(i + 1)), [lectura]);
-  const dentro = ejemplo && ejemplo.resenas_30d >= est.inferior && ejemplo.resenas_30d <= est.superior;
+  const dentro =
+    ejemplo && ejemplo.resenas_30d >= est.inferior && ejemplo.resenas_30d <= est.superior;
 
   return (
     <>
@@ -280,7 +355,9 @@ function Resultado({
         <p className={dentro ? "nota" : "aviso"} style={{ marginTop: "1rem" }}>
           {ejemplo.nombre} ({dolares(ejemplo.precio_usd)}) cerró su primer mes con{" "}
           <strong>{entero(ejemplo.resenas_30d)}</strong> reseñas:{" "}
-          {dentro ? "dentro del rango estimado." : "fuera del rango estimado (pasa en torno a 1 de cada 10 juegos)."}
+          {dentro
+            ? "dentro del rango estimado."
+            : "fuera del rango estimado (pasa en torno a 1 de cada 10 juegos)."}
         </p>
       )}
 
@@ -296,8 +373,8 @@ function Resultado({
       </div>
 
       <p className="nota">
-        Error típico del modelo en juegos que no había visto: la estimación se desvía un factor
-        ×{lectura.modelo.factorError.toFixed(2).replace(".", ",")} del valor real
+        Error típico del modelo en juegos que no había visto: la estimación se desvía un factor ×
+        {lectura.modelo.factorError.toFixed(2).replace(".", ",")} del valor real
         {lectura.modelo.cobertura !== undefined &&
           `, y el rango del 90 % acertó en el ${porcentaje(lectura.modelo.cobertura)} de los casos`}{" "}
         (test de {lectura.modelo.nTest} lanzamientos).

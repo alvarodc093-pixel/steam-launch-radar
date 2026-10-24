@@ -36,7 +36,8 @@ export function validarRadar(cuerpo: unknown, diasValidos: number[]): Resultado<
     errores.push(`dia: el radar lee los días ${diasValidos.join(", ")}`);
   }
   const resenas = numero("resenas", c.resenas, 0, 1_000_000, errores);
-  if (Number.isFinite(resenas) && !Number.isInteger(resenas)) errores.push("resenas: número entero");
+  if (Number.isFinite(resenas) && !Number.isInteger(resenas))
+    errores.push("resenas: número entero");
   let pct: number | null = null;
   if (c.pct_positivas !== null && c.pct_positivas !== undefined) {
     pct = numero("pct_positivas", c.pct_positivas, 0, 1, errores);
