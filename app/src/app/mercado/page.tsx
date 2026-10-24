@@ -13,7 +13,8 @@ const MOTIVOS: Record<string, string> = {
   fase_previa_publica: "Tenían reseñas antes de la fecha oficial (acceso anticipado o similar)",
   descarga_incompleta: "Más reseñas de las que se pueden descargar enteras",
   sin_precio_usd: "Sin precio en dólares en la tienda",
-  sin_resenas_en_30d: "Ninguna reseña en su primer mes",
+  sin_resenas_en_30d: "Ninguna reseña en inglés en su primer mes",
+  fuera_del_historico_api: "Lanzados hace más de un año en el momento de la descarga",
 };
 
 export default async function PaginaMercado() {
@@ -104,7 +105,7 @@ export default async function PaginaMercado() {
           etiquetas={m.por_mes.map((p) => p.mes)}
           series={[{ etiqueta: "Lanzamientos en la muestra", datos: m.por_mes.map((p) => p.lanzamientos), color: "#8a6d00" }]}
           ejeY="Juegos"
-          resumen="Lanzamientos de la muestra por mes. La muestra parte de los juegos con más propietarios según SteamSpy, así que los meses recientes pueden estar infrarrepresentados: a sus juegos les ha dado menos tiempo a acumular propietarios."
+          resumen="Lanzamientos de la muestra por mes. Entran los juegos con al menos 50 reseñas el día de la descarga: los lanzados hace menos han tenido menos tiempo para llegar a esa cifra, así que los meses más recientes pueden estar algo infrarrepresentados."
         />
       </div>
 

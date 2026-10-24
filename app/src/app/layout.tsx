@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
         <footer className="pie">
           <div className="contenedor">
-            Datos públicos de Steam (reseñas y ficha de tienda) y SteamSpy. Las reseñas son
+            Datos públicos de la tienda de Steam (buscador, ficha y reseñas en inglés). Las reseñas son
             una aproximación a la actividad de un juego, no a sus ventas.
           </div>
         </footer>

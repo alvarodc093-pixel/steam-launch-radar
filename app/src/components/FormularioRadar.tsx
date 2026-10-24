@@ -135,8 +135,9 @@ export default function FormularioRadar({ dias, generos, ejemplos }: Props) {
         </fieldset>
 
         <div className="campo">
-          <label htmlFor="resenas">Reseñas acumuladas hasta hoy</label>
+          <label htmlFor="resenas">Reseñas en inglés acumuladas hasta hoy</label>
           <input id="resenas" inputMode="numeric" value={campos.resenas} onChange={(e) => cambiar("resenas", e.target.value)} />
+          <span className="nota">En la página del juego en Steam, filtra las reseñas por idioma: inglés.</span>
         </div>
         <div className="campo">
           <label htmlFor="pct">Porcentaje de reseñas positivas</label>

@@ -69,8 +69,8 @@ export default async function PaginaMetodologia() {
       <div className="panel">
         <ul>
           <li>
-            <strong>Muestra:</strong> juegos con más de 30 y menos de 10.000 reseñas entre los
-            ~25.000 con más propietarios de SteamSpy, lanzados entre el{" "}
+            <strong>Muestra:</strong> todos los juegos del buscador de la tienda de Steam con
+            entre 50 y 10.000 reseñas, lanzados entre el{" "}
             {fecha(mercado.rango_lanzamientos.desde)} y el {fecha(mercado.rango_lanzamientos.hasta)}.
             Quedan {entero(mercado.juegos_aptos)} de {entero(mercado.juegos_descargados)}{" "}
             descargados (los motivos de exclusión están en la pestaña Mercado).
@@ -80,8 +80,11 @@ export default async function PaginaMetodologia() {
             El precio es el de lista (sin descuento) en dólares.
           </li>
           <li>
-            <strong>Reseñas:</strong> todas las reseñas públicas de cada juego vía la API de
-            Steam, agregadas por día. Del texto y del autor no se guarda nada.
+            <strong>Reseñas:</strong> las reseñas públicas en inglés de cada juego, vía la API
+            de Steam sin clave, agregadas por día. Esa API solo sirve reseñas en inglés y del
+            último año, por eso todas las cifras del radar son reseñas en inglés y la muestra
+            se limita a lanzamientos de los últimos doce meses. Del texto y del autor no se
+            guarda nada.
           </li>
         </ul>
       </div>
@@ -169,9 +172,9 @@ export default async function PaginaMetodologia() {
             reseñas y al revés.
           </li>
           <li>
-            La muestra parte de los juegos con más propietarios según SteamSpy: los
-            lanzamientos que casi nadie compró están infrarrepresentados, y los éxitos con más
-            de 10.000 reseñas quedan fuera a propósito.
+            Solo entran juegos con al menos 50 reseñas: los lanzamientos que casi nadie jugó
+            quedan fuera, y los éxitos con más de 10.000 también, a propósito (el radar es para
+            estudios pequeños y medianos).
           </li>
           <li>
             Los juegos que salieron de acceso anticipado se excluyen: su «lanzamiento» no parte

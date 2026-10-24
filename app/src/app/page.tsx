@@ -17,7 +17,7 @@ export default async function PaginaRadar() {
     <>
       <h1>¿Cómo va tu lanzamiento?</h1>
       <p className="entradilla">
-        Con las reseñas que lleva tu juego a los {datos.dias_lectura.join(", ")} días de salir,
+        Con las reseñas en inglés que lleva tu juego a los {datos.dias_lectura.join(", ")} días de salir,
         el radar estima cuántas tendrá al cumplir el primer mes y te dice si eso está por
         encima, en línea o por debajo de lo habitual en juegos de su género. Sirve para
         decidir pronto si hace falta un empujón (marketing, una oferta, un parche) en lugar de
