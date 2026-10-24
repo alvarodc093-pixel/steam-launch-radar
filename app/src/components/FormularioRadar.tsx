@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Grafico, { type Serie } from "@/components/Grafico";
 import { dolares, entero, fecha, porcentaje } from "@/lib/formato";
@@ -11,6 +11,8 @@ interface Props {
   dias: number[];
   generos: string[];
   ejemplos: Ejemplo[];
+  /** Lectura que abrir al cargar (enlace compartible ?juego=…&dia=…). */
+  inicial?: { appid: number; dia: number };
 }
 
 const TITULO: Record<Veredicto, string> = {
@@ -29,24 +31,33 @@ const EXPLICACION: Record<Veredicto, string> = {
 };
 
 const VACIO = { resenas: "", pct: "", precio: "", genero: "" };
+type Campos = typeof VACIO;
 
-export default function FormularioRadar({ dias, generos, ejemplos }: Props) {
-  const [dia, setDia] = useState(dias[1] ?? dias[0]);
-  const [campos, setCampos] = useState(VACIO);
-  const [ejemplo, setEjemplo] = useState<Ejemplo | null>(null);
+function camposDe(e: Ejemplo, d: number, generos: string[]): Campos {
+  const l = e.lecturas[String(d)];
+  return {
+    resenas: String(l.resenas),
+    pct: l.pct_positivas === null ? "" : String(Math.round(l.pct_positivas * 100)),
+    precio: String(e.precio_usd),
+    genero: generos.includes(e.genero) ? e.genero : "Otro",
+  };
+}
+
+export default function FormularioRadar({ dias, generos, ejemplos, inicial }: Props) {
+  const ejemploInicial = inicial ? (ejemplos.find((e) => e.appid === inicial.appid) ?? null) : null;
+  const diaInicial = inicial && dias.includes(inicial.dia) ? inicial.dia : (dias[1] ?? dias[0]);
+  const [dia, setDia] = useState(diaInicial);
+  const [campos, setCampos] = useState<Campos>(
+    ejemploInicial ? camposDe(ejemploInicial, diaInicial, generos) : VACIO,
+  );
+  const [ejemplo, setEjemplo] = useState<Ejemplo | null>(ejemploInicial);
   const [lectura, setLectura] = useState<LecturaRadar | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
+  const consultado = useRef(false);
 
   function rellenar(e: Ejemplo | null, d: number) {
-    if (!e) return;
-    const l = e.lecturas[String(d)];
-    setCampos({
-      resenas: String(l.resenas),
-      pct: l.pct_positivas === null ? "" : String(Math.round(l.pct_positivas * 100)),
-      precio: String(e.precio_usd),
-      genero: generos.includes(e.genero) ? e.genero : "Otro",
-    });
+    if (e) setCampos(camposDe(e, d, generos));
   }
 
   function elegirEjemplo(appid: string) {
@@ -69,12 +80,9 @@ export default function FormularioRadar({ dias, generos, ejemplos }: Props) {
     setLectura(null);
   }
 
-  async function enviar(evento: React.FormEvent) {
-    evento.preventDefault();
+  async function consultar(c: Campos, d: number) {
     setError(null);
-    const resenas = Number(campos.resenas);
-    const precio = Number(campos.precio);
-    if (campos.resenas === "" || campos.precio === "" || !campos.genero) {
+    if (c.resenas === "" || c.precio === "" || !c.genero) {
       setError("Rellena las reseñas, el precio y el género.");
       return;
     }
@@ -84,11 +92,11 @@ export default function FormularioRadar({ dias, generos, ejemplos }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          dia,
-          resenas,
-          pct_positivas: campos.pct === "" ? null : Number(campos.pct) / 100,
-          precio_usd: precio,
-          genero: campos.genero,
+          dia: d,
+          resenas: Number(c.resenas),
+          pct_positivas: c.pct === "" ? null : Number(c.pct) / 100,
+          precio_usd: Number(c.precio),
+          genero: c.genero,
         }),
       });
       const datos = await r.json();
@@ -100,6 +108,21 @@ export default function FormularioRadar({ dias, generos, ejemplos }: Props) {
       setCargando(false);
     }
   }
+
+  function enviar(evento: React.FormEvent) {
+    evento.preventDefault();
+    void consultar(campos, dia);
+  }
+
+  // Con un enlace ?juego=…&dia=… la lectura se hace sola al abrir la página.
+  useEffect(() => {
+    if (ejemploInicial && !consultado.current) {
+      consultado.current = true;
+      void consultar(camposDe(ejemploInicial, diaInicial, generos), diaInicial);
+    }
+    // Solo al montar: después manda el formulario.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="dos-columnas">
@@ -203,7 +226,7 @@ function Resultado({
     // La banda se dibuja rellenando desde la serie 1 (rango alto) hasta la 0
     // (rango bajo, invisible).
     const s: Serie[] = [
-      { etiqueta: "Rango bajo", datos: escala(est.inferior), color: "#1e7a5200" },
+      { etiqueta: "Rango bajo", datos: escala(est.inferior), color: "#1e7a5200", enLeyenda: false },
       { etiqueta: "Rango del 90 %", datos: escala(est.superior), color: "#1e7a52", rellenarHasta: 0 },
       { etiqueta: "Trayectoria esperada", datos: lectura.trayectoria, color: "#1e7a52", discontinua: true },
       {

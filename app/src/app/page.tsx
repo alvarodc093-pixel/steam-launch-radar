@@ -4,7 +4,12 @@ import { datosRadar } from "@/lib/datos";
 
 export const dynamic = "force-dynamic";
 
-export default async function PaginaRadar() {
+export default async function PaginaRadar({
+  searchParams,
+}: {
+  searchParams: Promise<{ juego?: string; dia?: string }>;
+}) {
+  const { juego, dia } = await searchParams;
   let datos;
   try {
     datos = await datosRadar();
@@ -23,7 +28,12 @@ export default async function PaginaRadar() {
         decidir pronto si hace falta un empujón (marketing, una oferta, un parche) en lugar de
         esperar al cierre del mes.
       </p>
-      <FormularioRadar dias={datos.dias_lectura} generos={generos} ejemplos={datos.ejemplos} />
+      <FormularioRadar
+        dias={datos.dias_lectura}
+        generos={generos}
+        ejemplos={datos.ejemplos}
+        inicial={juego ? { appid: Number(juego), dia: Number(dia ?? 7) } : undefined}
+      />
     </>
   );
 }

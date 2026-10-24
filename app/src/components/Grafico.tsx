@@ -14,7 +14,8 @@ export interface Serie {
   rellenarHasta?: number;
   discontinua?: boolean;
   soloPuntos?: boolean;
-  oculta?: boolean;
+  /** false para series auxiliares, como el borde inferior de una banda. */
+  enLeyenda?: boolean;
 }
 
 interface Props {
@@ -54,7 +55,6 @@ export default function Grafico({ tipo, etiquetas, series, ejeX, ejeY, logaritmi
           pointRadius: s.soloPuntos ? 3 : 0,
           borderWidth: s.rellenarHasta !== undefined ? 0 : 2,
           tension: 0.2,
-          hidden: s.oculta,
         })),
       },
       options: {
@@ -65,8 +65,7 @@ export default function Grafico({ tipo, etiquetas, series, ejeX, ejeY, logaritmi
           legend: {
             labels: {
               color: texto,
-              // Las bandas no necesitan entrada propia en la leyenda.
-              filter: (item) => series[item.datasetIndex ?? 0]?.rellenarHasta === undefined,
+              filter: (item) => series[item.datasetIndex ?? 0]?.enLeyenda !== false,
             },
           },
         },
