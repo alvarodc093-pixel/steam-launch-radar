@@ -49,6 +49,15 @@ jobs:
           for nb in notebooks/*.ipynb; do
             python -m nbconvert --to notebook --execute --inplace "$nb"
           done
+      # El índice del asistente necesita los embeddings de los juegos nuevos.
+      - name: Ollama con el modelo de embeddings
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          (ollama serve > /dev/null 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://localhost:11434 > /dev/null && break; sleep 1; done
+          ollama pull embeddinggemma
+      - run: python -m radar.rag
+      - run: python -m radar.powerbi
       - run: pytest
 
       - uses: actions/setup-node@v4
@@ -75,5 +84,6 @@ jobs:
           add-paths: |
             data/processed
             app/data
+            powerbi
             app/tests/casos_dorados.json
             notebooks

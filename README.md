@@ -14,6 +14,10 @@ primeros 3, 7 o 14 días, estima cuántas tendrá el juego al cumplir 30 y dice 
 está por encima, en línea o por debajo de lo habitual en su género. Antes del
 lanzamiento, en lugar de inventar una cifra, enseña el rango de juegos parecidos.
 
+Lo completan un **asistente con RAG** que responde preguntas sobre los datos y el
+modelo citando sus fuentes, y un **panel de Power BI** con los indicadores de la
+muestra y la calidad del modelo.
+
 ---
 
 ## 1. Problema y usuario
@@ -127,6 +131,41 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
   juegos de 10 a 200 reseñas a día 7 (el rango lo absorbe, pero hay que vigilarlo al
   reentrenar).
 
+### Asistente (RAG)
+
+`src/radar/rag.py` construye el índice y `app/src/lib/rag.ts` hace la recuperación.
+
+- **Corpus:** 4.109 fragmentos. 40 salen del README y de las celdas de texto de los
+  notebooks, cortados por secciones, y el resto son una ficha por juego descargado con
+  sus cifras (precio, géneros, estudio, reseñas los días 3, 7, 14 y 30, y por qué se
+  excluyó si es el caso).
+- **Recuperación híbrida:** BM25 sobre las palabras y similitud de coseno sobre
+  embeddings de `embeddinggemma` (Ollama), combinados con Reciprocal Rank Fusion. Los
+  vectores se guardan normalizados y cuantizados a int8, así que el índice entero pesa
+  6 MB y no hace falta una base de datos vectorial.
+- **Generación:** un modelo servido con Ollama (`qwen3.5` en local) recibe los seis
+  fragmentos mejor situados con la instrucción de responder solo con ellos y citar cada
+  dato con su número.
+- **Evaluación** (`npm run evaluar-asistente`, detalle en
+  [`docs/evaluacion_asistente.md`](docs/evaluacion_asistente.md)): 22 preguntas de
+  referencia con la respuesta conocida, 3 de ellas ajenas al proyecto.
+
+| Búsqueda               | Acierto@1 | Acierto@6 | MRR  |
+| ---------------------- | --------- | --------- | ---- |
+| Palabras (BM25)        | 78 %      | 100 %     | 0,87 |
+| Embeddings             | 67 %      | 100 %     | 0,77 |
+| Híbrida (la de la app) | 78 %      | 100 %     | 0,88 |
+
+Con la búsqueda híbrida, las 19 respuestas sobre el proyecto contienen el dato
+esperado y citan su fuente, y las 3 preguntas ajenas se rechazan.
+
+- **Limitaciones:** en estas preguntas BM25 solo ya encuentra la fuente, porque casi
+  todas nombran el juego o el término exacto; los embeddings se mantienen para las
+  preguntas formuladas con otras palabras, que este conjunto apenas cubre. La
+  comprobación de las respuestas busca la cifra esperada en el texto, así que no mide
+  la redacción. Sin el modelo de embeddings (por ejemplo en Ollama Cloud) el asistente
+  recupera solo con BM25.
+
 ## 5. La aplicación
 
 | Sección             | Qué hace                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -134,19 +173,42 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
 | **Radar** (`/`)     | Estimación a 30 días, comparación con la cohorte, veredicto y trayectoria esperada. Se puede probar con 604 lanzamientos reales del test y ver lo que pasó después. Admite enlaces directos del tipo `/?juego=4113940&dia=7`. Antes de la primera lectura enseña tres casos reales (uno por veredicto) que se leen con un clic, la precisión del modelo según el día y cuándo llegan las reseñas; debajo, los hallazgos del EDA que explican el diseño del radar. |
 | **Antes de lanzar** | Reseñas a 30 días de juegos del mismo género y precio (mediana y mitad central).                                                                                                                                                                                                                                                                                                                                                                                  |
 | **Mercado**         | Indicadores de la muestra: ritmo del primer mes, géneros, precio, lanzamientos por mes y exclusiones.                                                                                                                                                                                                                                                                                                                                                             |
+| **Asistente**       | Chat con RAG: responde con la documentación y las fichas de los juegos, cita cada dato y enseña las fuentes recuperadas aunque el modelo de lenguaje no responda.                                                                                                                                                                                                                                                                                                 |
 | **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo.                                                                                                                                                                                                                                                                                                                                                   |
 
 API del servidor:
 
-| Ruta                        | Respuesta                                                                                                                                 |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /api/radar`           | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`. |
-| `POST /api/previo`          | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`.                                                    |
-| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test.                                                                                |
+| Ruta                        | Respuesta                                                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/radar`           | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`.                                                        |
+| `POST /api/previo`          | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`.                                                                                                           |
+| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test.                                                                                                                                       |
+| `POST /api/asistente`       | Respuesta del asistente en NDJSON: una línea con las fuentes, los trozos de texto según se generan y una de cierre o error. Cuerpo: `mensajes` (lista de `{rol, texto}`, el último del usuario). |
 
 Las entradas se validan en el formulario y otra vez en el servidor, con mensajes que
 nombran el campo erróneo (400). Si faltan los datos exportados, las páginas y la API
-lo dicen y explican cómo generarlos (503).
+lo dicen y explican cómo generarlos (503). Si Ollama no responde, el asistente lo
+dice con un mensaje claro y deja a la vista los fragmentos que encontró.
+
+### Panel de inteligencia (Power BI)
+
+[`powerbi/SteamLaunchRadar.pbip`](powerbi/) es un proyecto de Power BI en formato de
+texto (modelo semántico en TMDL e informe en PBIR) que `python -m radar.powerbi` genera
+junto con sus datos. Cada página responde a una pregunta:
+
+| Página                   | Pregunta                                       | Contenido                                                                      |
+| ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Mercado**              | ¿Cómo es un lanzamiento típico en Steam?       | Lanzamientos, mediana de reseñas y de positivas, por mes, género y precio      |
+| **Ritmo del primer mes** | ¿Cuándo llegan las reseñas?                    | Parte del mes recibida día a día y en los días 3, 7 y 14                       |
+| **Calidad del modelo**   | ¿Cuánto acierta el radar en juegos que no vio? | Factor de error, cobertura del rango, estimación frente a realidad, candidatos |
+| **Detalle por juego**    | ¿Qué estimó para cada juego del test?          | Tabla con la lectura, el rango y el valor real                                 |
+
+El modelo es una estrella: `juegos`, `calendario` y `lecturas` como dimensiones, y
+`curva_diaria`, `predicciones` y `metricas` como hechos. Las consultas leen los CSV de
+`powerbi/datos/` desde GitHub, así que el panel se actualiza con «Actualizar» cuando
+llegan datos nuevos; el parámetro `OrigenDatos` admite también una carpeta local. Un
+test comprueba que el factor de error y la cobertura del panel coinciden con los de la
+app.
 
 | Antes de lanzar                                       | Mercado                               | Móvil                                                                             |
 | ----------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
@@ -165,17 +227,25 @@ flowchart LR
         I[ingesta] --> P[preparacion]
         P --> M[modelo]
         M --> E[exportar]
+        E --> RG[rag]
+        E --> PB[powerbi]
     end
     B & F & R --> I
     I -. caché .-> RAW[(data/raw)]
     P --> CSV[(data/processed)]
     E --> JSON[(app/data/*.json)]
     E --> CD[(casos dorados)]
+    RG --> IDX[(app/data/rag.json)]
+    PB --> BI[(powerbi/)]
     subgraph Next["Next.js en Vercel"]
         JSON --> INF[Inferencia en TypeScript]
         INF --> UI[Páginas y API]
+        IDX --> BUS[BM25 + embeddings]
+        BUS --> UI
     end
+    OL[Ollama] <--> BUS
     CD -. npm test .-> INF
+    BI --> PBI[Power BI Desktop]
 ```
 
 - **Ingesta:** `requests` con reintentos, respeto de `Retry-After` y una pausa por
@@ -186,6 +256,11 @@ flowchart LR
 - **Aplicación:** Next.js 16 (App Router), React 19, TypeScript y Chart.js. No hay
   base de datos ni Python en producción: los modelos viajan como JSON y se evalúan en
   el servidor de Next.
+- **Asistente:** Ollama para los embeddings (`embeddinggemma`) y la generación
+  (`qwen3.5` en local, un modelo de Ollama Cloud en Vercel). BM25, el coseno y la
+  fusión están escritos en TypeScript, sin dependencias.
+- **Panel:** Power BI Desktop con un proyecto `.pbip` (TMDL y PBIR) generado desde
+  Python; los JSON del informe validan contra los esquemas públicos de Microsoft.
 - **Calidad:** ruff, pytest con cobertura mínima del 90 %, ESLint, Prettier,
   `tsc --noEmit`, tests de Node y una prueba de humo contra el build de producción.
   Gitleaks revisa todo el historial en busca de secretos.
@@ -226,26 +301,51 @@ Rehacer todo desde cero:
 python -m radar.ingesta           # descarga de Steam (1-2 h, reanudable)
 python -m radar.preparacion       # data/processed/*.csv
 python -m radar.exportar          # app/data/*.json y casos dorados de la app
+python -m radar.rag               # app/data/rag.json (índice del asistente; necesita Ollama)
+python -m radar.powerbi           # powerbi/datos/*.csv y el proyecto .pbip
 python -m radar.informe           # resumen de métricas en Markdown
 ```
 
 La ingesta no necesita clave. Opcionalmente, copiar `.env.example` a `.env` y poner un
 correo de contacto, que se añade al User-Agent de las peticiones.
 
+**Asistente en local.** Con [Ollama](https://ollama.com) instalado y abierto:
+
+```bash
+ollama pull embeddinggemma        # embeddings de las preguntas
+ollama pull qwen3.5               # modelo que redacta las respuestas
+cd app && npm run dev             # http://localhost:3000/asistente
+npm run evaluar-asistente         # vuelve a medir la calidad (unos 2 minutos)
+```
+
+Sin Ollama la app funciona igual y el asistente explica que no puede responder,
+enseñando las fuentes que encontró. Para cambiar de modelo, copiar `.env.example` a
+`app/.env.local` y ajustar las variables `OLLAMA_*`.
+
+**Panel de Power BI.** Instalar [Power BI Desktop](https://aka.ms/pbidesktopstore)
+(gratuito, Windows), abrir `powerbi/SteamLaunchRadar.pbip` y pulsar **Inicio →
+Actualizar** para cargar los datos. Para entregarlo como un único archivo: **Archivo →
+Guardar como → .pbix**.
+
 ### Comprobaciones
 
-| Dónde  | Comando                                                     | Qué cubre                                                                   |
-| ------ | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Raíz   | `ruff check . && ruff format --check .`                     | Estilo y errores en `src/`, `tests/` y notebooks                            |
-| Raíz   | `pytest --cov`                                              | 55 tests de ingesta, preparación, modelo y exportación (cobertura del 97 %) |
-| `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos                                                    |
-| `app/` | `npm test`                                                  | Inferencia en TypeScript frente a 2.416 casos calculados en Python          |
-| `app/` | `npm run build && npm run humo`                             | Arranca el build de producción y prueba páginas y API                       |
+| Dónde  | Comando                                                     | Qué cubre                                                                                                     |
+| ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Raíz   | `ruff check . && ruff format --check .`                     | Estilo y errores en `src/`, `tests/` y notebooks                                                              |
+| Raíz   | `pytest --cov`                                              | 71 tests de ingesta, preparación, modelo, exportación, índice del asistente y panel (cobertura del 98 %)      |
+| `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos                                                                                      |
+| `app/` | `npm test`                                                  | Inferencia en TypeScript frente a 2.416 casos calculados en Python, y recuperación y validación del asistente |
+| `app/` | `npm run evaluar-asistente`                                 | Calidad del asistente con Ollama (recuperación y respuestas)                                                  |
+| `app/` | `npm run build && npm run humo`                             | Arranca el build de producción y prueba páginas y API                                                         |
 
 ### Despliegue en Vercel
 
 En Vercel, «Add New Project», importar el repositorio y fijar **Root Directory =
-`app`**. No necesita variables de entorno.
+`app`**. El radar no necesita variables de entorno. El asistente sí, porque Vercel no
+llega al Ollama de un equipo local: `OLLAMA_HOST=https://ollama.com`, `OLLAMA_API_KEY`
+con una clave de [ollama.com/settings/keys](https://ollama.com/settings/keys) y
+`OLLAMA_MODELO` con un modelo de la nube (por ejemplo `gpt-oss:120b`). Sin ellas, el
+asistente responde con el aviso y las fuentes encontradas.
 
 ### Actualización mensual de los datos
 
@@ -271,16 +371,25 @@ steam-launch-radar/
 │   ├── preparacion.py            limpieza, exclusiones y variables
 │   ├── modelo.py                 partición temporal, candidatos e intervalo conformal
 │   ├── exportar.py               modelos y tablas para la app
+│   ├── rag.py                    índice del asistente (fragmentos y embeddings)
+│   ├── powerbi.py                tablas en estrella y proyecto de Power BI
 │   └── informe.py                resumen de métricas
 ├── tests/                        pytest
+├── powerbi/
+│   ├── datos/                    CSV del modelo en estrella
+│   ├── SteamLaunchRadar.pbip     se abre con Power BI Desktop
+│   ├── SteamLaunchRadar.SemanticModel/   tablas, relaciones y medidas DAX (TMDL)
+│   └── SteamLaunchRadar.Report/  páginas y visuales (PBIR)
 ├── app/
-│   ├── data/                     modelos y tablas exportados
+│   ├── data/                     modelos, tablas e índice del asistente
 │   ├── src/app/                  páginas y rutas de la API
 │   ├── src/components/           formularios y gráficos
 │   ├── src/lib/                  inferencia, validación y lectura de datos
-│   ├── tests/                    casos dorados y tests de Node
-│   └── scripts/humo.mjs          prueba de humo del build
-├── docs/capturas/
+│   ├── tests/                    casos dorados, preguntas de referencia y tests de Node
+│   └── scripts/                  prueba de humo y evaluación del asistente
+├── docs/
+│   ├── capturas/
+│   └── evaluacion_asistente.md   resultado de la última evaluación del asistente
 ├── requirements.txt              versiones exactas; instala también el paquete radar
 ├── pyproject.toml                ruff, pytest y cobertura
 └── LICENSE
@@ -308,6 +417,15 @@ steam-launch-radar/
 - **El sesgo de selección no se ve en las métricas.** Exigir 50 reseñas el día de la
   descarga favorece a los lanzamientos recientes más grandes. Afecta poco al radar, que
   trabaja con proporciones, pero descarta el mes de lanzamiento como variable previa.
+- **Medir la recuperación antes de complicarla.** La búsqueda híbrida se eligió por
+  robustez, pero la evaluación muestra que en estas preguntas BM25 solo ya encuentra la
+  fuente. Por eso el asistente no se rompe sin embeddings: baja a BM25 y lo dice.
+- **Fichas generadas, no texto libre.** Cada juego se describe con una plantilla a
+  partir de las tablas procesadas, así que el asistente no puede citar una cifra que no
+  esté en los datos del radar.
+- **Power BI como código.** El panel se genera desde Python en formato de texto y lee
+  los CSV desde GitHub: no hay rutas locales en el proyecto y la actualización mensual
+  lo deja al día sin tocar Power BI.
 
 ## 10. Posibles extensiones
 
