@@ -7,6 +7,7 @@ const SECCIONES = [
   { href: "/", texto: "Radar" },
   { href: "/antes-de-lanzar", texto: "Antes de lanzar" },
   { href: "/mercado", texto: "Mercado" },
+  { href: "/asistente", texto: "Asistente" },
   { href: "/metodologia", texto: "Metodología" },
 ];
 

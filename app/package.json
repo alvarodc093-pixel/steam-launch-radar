@@ -12,7 +12,8 @@
     "test": "node --test \"tests/*.test.ts\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "humo": "node scripts/humo.mjs"
+    "humo": "node scripts/humo.mjs",
+    "evaluar-asistente": "node scripts/evaluar-asistente.ts"
   },
   "dependencies": {
     "chart.js": "4.6.1",

@@ -44,6 +44,7 @@ try {
   await comprobar("antes de lanzar", { ruta: "/antes-de-lanzar" }, 200, html);
   await comprobar("mercado", { ruta: "/mercado" }, 200, html);
   await comprobar("metodología", { ruta: "/metodologia" }, 200, html);
+  await comprobar("asistente", { ruta: "/asistente" }, 200, html);
   await comprobar("página inexistente", { ruta: "/no-existe" }, 404);
 
   const radar = { dia: 7, resenas: 120, pct_positivas: 0.9, precio_usd: 14.99, genero: "Action" };
@@ -76,6 +77,14 @@ try {
   );
   await comprobar("API ejemplo inexistente", { ruta: "/api/ejemplos/1" }, 404);
   await comprobar("API ejemplo no numérico", { ruta: "/api/ejemplos/abc" }, 400);
+  // Sin Ollama (como en CI) la respuesta trae igualmente las fuentes recuperadas.
+  await comprobar(
+    "API asistente válida",
+    post("/api/asistente", { mensajes: [{ rol: "usuario", texto: "¿Qué modelo usa el radar?" }] }),
+    200,
+    (t) => JSON.parse(t.split("\n")[0]).fuentes.length > 0,
+  );
+  await comprobar("API asistente sin pregunta", post("/api/asistente", { mensajes: [] }), 400);
 } finally {
   // En Windows npx deja procesos hijos: hay que cerrar el árbol entero.
   if (process.platform === "win32") {

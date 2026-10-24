@@ -1,0 +1,100 @@
+[
+  {
+    "pregunta": "¿Qué parte de las reseñas del primer mes ha llegado el día 7?",
+    "fuente": "02_eda",
+    "contiene": ["62"]
+  },
+  {
+    "pregunta": "¿Qué modelo usa el radar a día 7?",
+    "fuente": "readme",
+    "contiene": ["ratio típico", "Ratio típico", "regla"]
+  },
+  {
+    "pregunta": "¿Cuál es el factor de error típico del radar a día 14?",
+    "fuente": "readme",
+    "contiene": ["1,09", "1.09"]
+  },
+  {
+    "pregunta": "¿Cuántos juegos son aptos para el modelo?",
+    "fuente": "readme",
+    "contiene": ["3.019", "3019", "3 019"]
+  },
+  {
+    "pregunta": "¿Por qué todas las cifras son de reseñas en inglés?",
+    "fuente": "readme",
+    "contiene": ["sin clave", "API"]
+  },
+  {
+    "pregunta": "¿Cuántos juegos se excluyeron por haber salido de acceso anticipado?",
+    "fuente": "readme",
+    "contiene": ["357"]
+  },
+  {
+    "pregunta": "¿Cómo se calcula el intervalo del 90 %?",
+    "fuente": "readme",
+    "contiene": ["conformal", "calibración"]
+  },
+  {
+    "pregunta": "¿Cómo se reparten los juegos entre entrenamiento, calibración y test?",
+    "fuente": "readme",
+    "contiene": ["1.811", "1811"]
+  },
+  {
+    "pregunta": "¿Influye el porcentaje de reseñas positivas de la primera semana en cómo acaba el mes?",
+    "fuente": "02_eda",
+    "contiene": ["21"]
+  },
+  {
+    "pregunta": "¿Por qué la página Antes de lanzar no da una cifra concreta?",
+    "fuente": "",
+    "contiene": ["rango", "mediana"]
+  },
+  {
+    "pregunta": "¿Cada cuánto se actualizan los datos de la aplicación?",
+    "fuente": "readme",
+    "contiene": ["mes", "mensual"]
+  },
+  {
+    "pregunta": "¿Qué significa un factor de error típico de ×1,21?",
+    "fuente": "readme",
+    "contiene": ["17", "21 %"]
+  },
+  {
+    "pregunta": "¿Cuántas reseñas tuvo My Little Puppy a los 30 días?",
+    "fuente": "juego-2102040",
+    "contiene": ["500"]
+  },
+  {
+    "pregunta": "¿Quién desarrolló Super Woden: Rally Edge?",
+    "fuente": "juego-3218630",
+    "contiene": ["ViJuDa"]
+  },
+  {
+    "pregunta": "¿Cuánto cuesta 5omeday?",
+    "fuente": "juego-3030980",
+    "contiene": ["5,99", "5.99"]
+  },
+  {
+    "pregunta": "¿Por qué Kebab Chefs! no se usó para entrenar el modelo?",
+    "fuente": "juego-1001270",
+    "contiene": ["acceso anticipado", "antes de la fecha", "anteriores a la fecha"]
+  },
+  {
+    "pregunta": "¿Cuántas reseñas tenía Warhounds el día 7?",
+    "fuente": "juego-3929470",
+    "contiene": ["297"]
+  },
+  {
+    "pregunta": "¿Cuándo salió DaemonBride:ADDITIONAL GAIN?",
+    "fuente": "juego-3390980",
+    "contiene": ["2025-12-30", "30 de diciembre", "30/12/2025"]
+  },
+  {
+    "pregunta": "¿Por qué Play Things quedó fuera de la muestra?",
+    "fuente": "juego-4635840",
+    "contiene": ["ninguna reseña", "sin reseñas", "ninguna reseña en inglés"]
+  },
+  { "pregunta": "¿Cuál es la capital de Australia?", "fuera_de_alcance": true },
+  { "pregunta": "¿Cuántas copias ha vendido My Little Puppy?", "fuera_de_alcance": true },
+  { "pregunta": "¿Qué nota tiene Elden Ring en Metacritic?", "fuera_de_alcance": true }
+]

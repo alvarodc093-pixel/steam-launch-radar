@@ -5,6 +5,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { Buscador, type IndiceRag } from "./rag";
 import type { DatosMercado, DatosPrevio, DatosRadar } from "./tipos";
 
 const DIR = path.join(process.cwd(), "data");
@@ -23,3 +24,11 @@ function leer<T>(nombre: string): Promise<T> {
 export const datosRadar = () => leer<DatosRadar>("radar.json");
 export const datosPrevio = () => leer<DatosPrevio>("previo.json");
 export const datosMercado = () => leer<DatosMercado>("mercado.json");
+
+// El índice BM25 se construye una vez por instancia del servidor, no por pregunta.
+let buscador: Promise<Buscador> | null = null;
+export function buscadorRag(): Promise<Buscador> {
+  buscador ??= leer<IndiceRag>("rag.json").then((indice) => new Buscador(indice));
+  buscador.catch(() => (buscador = null));
+  return buscador;
+}
