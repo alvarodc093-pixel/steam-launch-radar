@@ -234,31 +234,36 @@ las de consola no dejan reseñas en Steam.
   de Ollama Cloud en Vercel) recibe esos fragmentos con la instrucción de responder
   solo con ellos y citar cada dato con su número.
 - **Evaluación** (`npm run evaluar-asistente`, detalle en
-  [`docs/evaluacion_asistente.md`](docs/evaluacion_asistente.md)): 27 preguntas de
-  referencia, cada una con las secciones que contienen la respuesta. 19 son
-  directas, 5 están reformuladas sin las palabras de la documentación («¿cuánto se
-  equivoca la herramienta una semana después del estreno?») y 3 son ajenas al
-  proyecto.
+  [`docs/evaluacion_asistente.md`](docs/evaluacion_asistente.md)): 43 preguntas de
+  referencia, cada una con las secciones que contienen la respuesta. 24 son de
+  **ajuste** (con ellas se decidió cómo busca el asistente) y 16 de **reserva**,
+  escritas después para comprobar que esas decisiones generalizan. En los dos grupos
+  hay preguntas directas y **reformuladas** sin las palabras de la documentación
+  («¿cuánto se equivoca la herramienta una semana después del estreno?»). Otras 3
+  son ajenas al proyecto.
 
-| Búsqueda                  | Directas: fuente entre las 6 | Reformuladas: fuente entre las 6 | Respuestas correctas (directas · reformuladas) |
-| ------------------------- | ---------------------------- | -------------------------------- | ---------------------------------------------- |
-| Híbrida (local)           | 100 %                        | 60 %                             | 19/19 · 3/5                                    |
-| Solo palabras (en Vercel) | 100 %                        | 0 %                              | 18/19 · 1/5                                    |
+| Respuestas con el dato esperado | Ajuste: directas | Ajuste: reformuladas | Reserva: directas | Reserva: reformuladas |
+| ------------------------------- | ---------------- | -------------------- | ----------------- | --------------------- |
+| Híbrida (local)                 | 19/19            | 2/5                  | 10/10             | 3/6                   |
+| Solo palabras (en Vercel)       | 18/19            | 1/5                  | 8/10              | 1/6                   |
 
-En los dos modos todas las respuestas citan su fuente y las 3 preguntas ajenas se
-rechazan, con 1-2 segundos por respuesta.
+En los dos modos las respuestas citan su fuente y las 3 preguntas ajenas se rechazan,
+con unos 2 segundos por respuesta.
 
 - **Qué se aprendió midiendo:** reducir las palabras a su raíz mejora la búsqueda
   híbrida pero empeora la de solo palabras (crea coincidencias falsas que los
   embeddings ya no compensan), así que cada modo usa lo que le funciona. Sin el cupo
   de fichas, una pregunta sobre _early access_ se llenaba de juegos con ese género.
-- **Limitaciones:** las preguntas reformuladas son las difíciles: sin embeddings la
-  búsqueda no encuentra la fuente en ninguna de las 5, y Ollama Cloud no ofrece embeddings,
-  así que la versión publicada busca solo por palabras. Las decisiones de la
-  búsqueda se tomaron con este mismo conjunto de 27 preguntas, que es pequeño. La
-  comprobación de las respuestas busca la cifra o el término esperado, así que una
-  respuesta correcta redactada de otra forma cuenta como fallo; por eso el informe
-  guarda cada respuesta.
+  También se probó que el modelo de lenguaje reescribiera la pregunta en palabras
+  clave antes de buscar sin embeddings: ayudaba algo con las reformuladas y empeoraba
+  algo las directas, sin mejora neta, así que se descartó.
+- **Limitaciones:** las preguntas reformuladas son el punto débil, sobre todo en la
+  versión publicada, que busca solo por palabras porque Ollama Cloud no ofrece
+  embeddings. Los grupos son pequeños y las respuestas del modelo varían entre
+  ejecuciones (una o dos preguntas arriba o abajo en un grupo de 5 o 6), así que las
+  diferencias pequeñas no son significativas. La comprobación busca la cifra o el
+  término esperado, de modo que una respuesta correcta redactada de otra forma cuenta
+  como fallo; el informe guarda cada respuesta para revisarlas.
 
 ## 5. La aplicación
 

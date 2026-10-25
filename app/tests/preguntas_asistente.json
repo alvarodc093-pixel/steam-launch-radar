@@ -129,7 +129,118 @@
     "fuentes": ["README · 2. Datos"],
     "contiene": ["Steam"]
   },
-  { "pregunta": "¿Cuál es la capital de Australia?", "fuera_de_alcance": true },
-  { "pregunta": "¿Cuántas copias ha vendido My Little Puppy?", "fuera_de_alcance": true },
-  { "pregunta": "¿Qué nota tiene Elden Ring en Metacritic?", "fuera_de_alcance": true }
+  {
+    "pregunta": "¿Cuántas reseñas tuvo REPLACED en su primer mes?",
+    "reserva": true,
+    "fuentes": ["juego-1663850"],
+    "contiene": ["1867", "1.867", "1 867"]
+  },
+  {
+    "pregunta": "¿Quién desarrolló Exo Rally Championship?",
+    "reserva": true,
+    "fuentes": ["juego-2262020"],
+    "contiene": ["Exbleative"]
+  },
+  {
+    "pregunta": "¿Cuánto cuesta Orbitmine?",
+    "reserva": true,
+    "fuentes": ["juego-4489770"],
+    "contiene": ["2,99", "2.99"]
+  },
+  {
+    "pregunta": "¿Cuántas reseñas tenía Military Incremental Complex a los 7 días?",
+    "reserva": true,
+    "fuentes": ["juego-3469750"],
+    "contiene": ["282"]
+  },
+  {
+    "pregunta": "¿Cuántas reseñas tiene el juego mediano al cumplir su primer mes?",
+    "reserva": true,
+    "fuentes": ["README · 3. Preprocesamiento y EDA", "Notebook 01_preproceso · 6"],
+    "contiene": ["48"]
+  },
+  {
+    "pregunta": "¿Qué día de la semana se lanzan más juegos?",
+    "reserva": true,
+    "fuentes": ["Notebook 02_eda · P6"],
+    "contiene": ["jueves"]
+  },
+  {
+    "pregunta": "¿Cuál es el multiplicador típico entre el día 7 y el día 30?",
+    "reserva": true,
+    "fuentes": ["Notebook 02_eda · P2"],
+    "contiene": ["1,6"]
+  },
+  {
+    "pregunta": "¿Qué modelo usa el radar a día 3?",
+    "reserva": true,
+    "fuentes": ["README · 4. Ciencia de datos", "Notebook 03_modelo · 1"],
+    "contiene": ["Ridge"]
+  },
+  {
+    "pregunta": "¿Cuántos juegos se excluyeron por no tener reseñas en inglés en su primer mes?",
+    "reserva": true,
+    "fuentes": ["README · 3. Preprocesamiento y EDA", "Notebook 01_preproceso · 5"],
+    "contiene": ["689"]
+  },
+  {
+    "pregunta": "¿Con qué frecuencia acierta el veredicto «por debajo» a día 7?",
+    "reserva": true,
+    "fuentes": ["README · ¿Acierta el veredicto?"],
+    "contiene": ["95"]
+  },
+  {
+    "pregunta": "¿Gano algo esperando a la segunda semana para mirar los números?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["README · 4. Ciencia de datos", "Notebook 03_modelo · 2"],
+    "contiene": ["1,09", "9 %"]
+  },
+  {
+    "pregunta": "¿Los juegos gratis se comportan distinto en su primer mes?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["Notebook 02_eda · P3"],
+    "contiene": ["1,18", "1,2", "gratuit"]
+  },
+  {
+    "pregunta": "¿Es verdad que los juegos que salen ahora consiguen más opiniones que los de hace un año?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["README · 3. Preprocesamiento y EDA", "Notebook 02_eda · P7"],
+    "contiene": ["selección", "sesgo"]
+  },
+  {
+    "pregunta": "¿En qué casos se equivoca más la herramienta?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["Notebook 03_modelo · 3", "README · 4. Ciencia de datos"],
+    "contiene": ["11 %", "menos de 10"]
+  },
+  {
+    "pregunta": "¿Hasta qué punto me puedo fiar del margen que da la herramienta?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["README · 4. Ciencia de datos", "Notebook 03_modelo · 2"],
+    "contiene": ["92"]
+  },
+  {
+    "pregunta": "¿Puedo saber cuántas copias he vendido con esta herramienta?",
+    "reserva": true,
+    "reformulada": true,
+    "fuentes": ["README · 2. Datos", "README · Contraste con ventas anunciadas"],
+    "contiene": ["no publica", "estimaciones"]
+  },
+  {
+    "pregunta": "¿Cuál es la capital de Australia?",
+    "fuera_de_alcance": true
+  },
+  {
+    "pregunta": "¿Cuántas copias ha vendido My Little Puppy?",
+    "fuera_de_alcance": true
+  },
+  {
+    "pregunta": "¿Qué nota tiene Elden Ring en Metacritic?",
+    "fuera_de_alcance": true
+  }
 ]

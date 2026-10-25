@@ -2,15 +2,15 @@
 //
 // 1. Recuperación: con cada pregunta de tests/preguntas_asistente.json mira si
 //    alguna de sus fuentes esperadas sale primero (acierto@1) o entre los seis
-//    fragmentos que se pasan al modelo (acierto@6), y su posición media (MRR),
-//    para la búsqueda por palabras, por embeddings y la combinación de ambas.
-// 2. Respuestas: en los dos modos con los que funciona la app (híbrida en
-//    local, solo palabras en Vercel, donde no hay embeddings), si la respuesta
-//    contiene el dato esperado, si cita fuentes y si reconoce que no sabe
-//    cuando la pregunta queda fuera del proyecto.
+//    fragmentos que se pasan al modelo (acierto@6), con tres búsquedas: por
+//    palabras (la de la versión publicada, donde no hay embeddings), por
+//    embeddings e híbrida (la de la app en local).
+// 2. Respuestas: si contienen el dato esperado, si citan fuentes y si
+//    reconocen que no saben cuando la pregunta queda fuera del proyecto.
 //
-// Las preguntas «reformuladas» evitan las palabras de la documentación: miden
-// si el asistente entiende la pregunta y no solo si coincide con el texto.
+// Las preguntas «reformuladas» evitan las palabras de la documentación. Las de
+// «reserva» se escribieron después de ajustar la búsqueda con las demás: miden
+// si las decisiones generalizan o solo encajan con las preguntas de ajuste.
 //
 // Escribe el resultado en ../docs/evaluacion_asistente.md.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -24,8 +24,11 @@ interface Pregunta {
   fuentes?: string[];
   contiene?: string[];
   reformulada?: boolean;
+  reserva?: boolean;
   fuera_de_alcance?: boolean;
 }
+
+type Modo = ModoBusqueda;
 
 const K = 6;
 const NO_SABE = [
@@ -52,59 +55,54 @@ if (!indice.embeddings)
   throw new Error("El índice no tiene embeddings: ejecuta python -m radar.rag");
 const { modelo, prefijo_consulta } = indice.embeddings;
 
-const vectores = new Map<string, number[]>();
+const vectores = new Map<Pregunta, number[]>();
 for (const p of preguntas) {
   const v = await embeddingConsulta(prefijo_consulta + p.pregunta, modelo);
   if (!v) throw new Error(`Sin respuesta de ${CONFIG.host} para los embeddings (${modelo})`);
-  vectores.set(p.pregunta, v);
+  vectores.set(p, v);
 }
 
-const pct = (v: number) => `${(v * 100).toFixed(0)} %`;
-const nombres: Record<ModoBusqueda, string> = {
+function buscar(p: Pregunta, modo: Modo) {
+  return buscador.buscar(p.pregunta, vectores.get(p)!, K, modo).resultados;
+}
+
+const nombres: Record<Modo, string> = {
   lexica: "Palabras (BM25)",
   semantica: `Embeddings (${modelo})`,
   hibrida: "Híbrida (RRF)",
 };
-const dentro = preguntas.filter((p) => !p.fuera_de_alcance);
+const grupos: [string, Pregunta[]][] = [
+  ["Ajuste · directas", preguntas.filter((p) => p.fuentes && !p.reserva && !p.reformulada)],
+  ["Ajuste · reformuladas", preguntas.filter((p) => p.fuentes && !p.reserva && p.reformulada)],
+  ["Reserva · directas", preguntas.filter((p) => p.fuentes && p.reserva && !p.reformulada)],
+  ["Reserva · reformuladas", preguntas.filter((p) => p.fuentes && p.reserva && p.reformulada)],
+];
 const fuera = preguntas.filter((p) => p.fuera_de_alcance);
-const directas = dentro.filter((p) => !p.reformulada);
-const reformuladas = dentro.filter((p) => p.reformulada);
+const modos: Modo[] = ["lexica", "semantica", "hibrida"];
 
 // --- recuperación -------------------------------------------------------------
-function recuperacion(grupo: Pregunta[], modo: ModoBusqueda) {
-  let a1 = 0;
-  let a6 = 0;
-  let mrr = 0;
-  for (const p of grupo) {
-    const { resultados } = buscador.buscar(p.pregunta, vectores.get(p.pregunta)!, K, modo);
-    const posicion = resultados.findIndex((r) => esFuenteEsperada(r.fragmento, p.fuentes!));
-    if (posicion === 0) a1++;
-    if (posicion >= 0) {
-      a6++;
-      mrr += 1 / (posicion + 1);
-    }
-  }
-  const n = grupo.length;
-  return `${pct(a1 / n)} | ${pct(a6 / n)} | ${(mrr / n).toFixed(2)}`;
+function acierto6(grupo: Pregunta[], modo: Modo) {
+  const n = grupo.filter((p) =>
+    buscar(p, modo).some((r) => esFuenteEsperada(r.fragmento, p.fuentes!)),
+  ).length;
+  return `${n}/${grupo.length}`;
 }
-
-const modos: ModoBusqueda[] = ["lexica", "semantica", "hibrida"];
 const tablaRecuperacion = modos
-  .map((m) => `| ${nombres[m]} | ${recuperacion(directas, m)} | ${recuperacion(reformuladas, m)} |`)
+  .map((m) => `| ${nombres[m]} | ${grupos.map(([, g]) => acierto6(g, m)).join(" | ")} |`)
   .join("\n");
 
 // --- respuestas ----------------------------------------------------------------
-async function responder(modo: ModoBusqueda) {
+const NO_RESPONDE = new Set<Modo>(["semantica"]);
+async function responder(modo: Modo) {
   const ok = new Map<Pregunta, boolean>();
   const textos = new Map<Pregunta, string>();
   let citadas = 0;
   let tiempo = 0;
   for (const p of preguntas) {
-    const { resultados } = buscador.buscar(p.pregunta, vectores.get(p.pregunta)!, K, modo);
     const inicio = performance.now();
     let respuesta = "";
     const mensajes = [{ rol: "usuario" as const, texto: p.pregunta }];
-    for await (const trozo of chat(construirPrompt(mensajes, resultados))) respuesta += trozo;
+    for await (const trozo of chat(construirPrompt(mensajes, buscar(p, modo)))) respuesta += trozo;
     tiempo += performance.now() - inicio;
     const minusculas = respuesta.toLowerCase();
     const bien = p.fuera_de_alcance
@@ -113,64 +111,71 @@ async function responder(modo: ModoBusqueda) {
     if (!p.fuera_de_alcance && /\[\d+\]|【\d+/.test(respuesta)) citadas++;
     ok.set(p, bien);
     textos.set(p, respuesta);
-    console.log(`${modo.padEnd(8)} ${bien ? "ok   " : "FALLO"} ${p.pregunta}`);
+    console.log(`${modo.padEnd(9)} ${bien ? "ok   " : "FALLO"} ${p.pregunta}`);
   }
-  const cuenta = (grupo: Pregunta[]) => grupo.filter((p) => ok.get(p)).length;
-  return {
-    ok,
-    textos,
-    fila: (grupo: Pregunta[]) =>
-      `${cuenta(grupo)} / ${grupo.length} (${pct(cuenta(grupo) / grupo.length)})`,
-    citadas,
-    tiempo: tiempo / preguntas.length / 1000,
-  };
+  const cuenta = (g: Pregunta[]) => `${g.filter((p) => ok.get(p)).length}/${g.length}`;
+  return { ok, textos, cuenta, citadas, tiempo: tiempo / preguntas.length / 1000 };
 }
 
-const hibrida = await responder("hibrida");
-const lexica = await responder("lexica");
+const respuestas = new Map<Modo, Awaited<ReturnType<typeof responder>>>();
+for (const m of modos) if (!NO_RESPONDE.has(m)) respuestas.set(m, await responder(m));
+const modosRespuesta = modos.filter((m) => !NO_RESPONDE.has(m));
+const dentro = preguntas.filter((p) => !p.fuera_de_alcance);
+
+const filasRespuesta = [
+  ...grupos.map(
+    ([nombre, g]) =>
+      `| ${nombre} | ${modosRespuesta.map((m) => respuestas.get(m)!.cuenta(g)).join(" | ")} |`,
+  ),
+  `| Ajenas al proyecto rechazadas | ${modosRespuesta.map((m) => respuestas.get(m)!.cuenta(fuera)).join(" | ")} |`,
+  `| Respuestas que citan una fuente | ${modosRespuesta.map((m) => `${respuestas.get(m)!.citadas}/${dentro.length}`).join(" | ")} |`,
+  `| Tiempo medio de respuesta | ${modosRespuesta.map((m) => `${respuestas.get(m)!.tiempo.toFixed(1)} s`).join(" | ")} |`,
+].join("\n");
 
 const marca = (v: boolean | undefined) => (v ? "✓" : "✗");
 const celda = (t: string | undefined) =>
-  (t ?? "").replace(/\s+/g, " ").replace(/\|/g, "\\|").slice(0, 200);
+  (t ?? "").replace(/\s+/g, " ").replace(/\|/g, "\\|").slice(0, 180);
+const hibrida = respuestas.get("hibrida")!;
+const lexica = respuestas.get("lexica")!;
 
 const informe = `# Evaluación del asistente
 
 Generado con \`npm run evaluar-asistente\` el ${new Date().toISOString().slice(0, 10)}.
 Modelo de lenguaje: \`${CONFIG.modelo}\`; embeddings: \`${modelo}\`; índice de
 ${indice.fragmentos.length} fragmentos. ${preguntas.length} preguntas de referencia
-(\`app/tests/preguntas_asistente.json\`): ${directas.length} directas, ${reformuladas.length}
-reformuladas sin las palabras de la documentación y ${fuera.length} ajenas al proyecto.
+(\`app/tests/preguntas_asistente.json\`). Las de **ajuste** se usaron para decidir cómo
+busca el asistente; las de **reserva** se escribieron después y no intervinieron en esas
+decisiones, así que miden si generalizan. Las **reformuladas** evitan las palabras de la
+documentación. ${fuera.length} preguntas son ajenas al proyecto.
 
-## Recuperación
+La versión local usa la búsqueda híbrida; la publicada en Vercel no tiene embeddings
+(Ollama Cloud no los ofrece) y busca solo por palabras.
 
-Cada pregunta tiene una o varias secciones que contienen la respuesta.
-Acierto@1: una de ellas sale la primera; acierto@${K}: está entre los ${K} fragmentos que
-recibe el modelo; MRR: media de 1 / posición (0 si no aparece).
+Se probó también ampliar esa búsqueda con palabras clave que escribe el modelo de
+lenguaje antes de buscar (fusionando la búsqueda de la pregunta y la de las claves).
+No mejoró el resultado neto: ayudaba algo con las preguntas reformuladas y empeoraba
+algo las directas, dentro de la variación entre ejecuciones. Se descartó porque añade
+una llamada al modelo por pregunta sin una mejora medible.
 
-| Búsqueda | Directas: acierto@1 | acierto@${K} | MRR | Reformuladas: acierto@1 | acierto@${K} | MRR |
-| --- | --- | --- | --- | --- | --- | --- |
+## Recuperación: la fuente esperada está entre los ${K} fragmentos
+
+| Búsqueda | ${grupos.map(([n]) => n).join(" | ")} |
+| --- | ${grupos.map(() => "---").join(" | ")} |
 ${tablaRecuperacion}
 
-## Respuestas
+## Respuestas con el dato esperado
 
-La búsqueda híbrida es la de la app en local; la de palabras, la de la versión
-publicada en Vercel, donde Ollama Cloud no ofrece embeddings.
-
-| Métrica | Híbrida | Solo palabras |
-| --- | --- | --- |
-| Directas con el dato esperado | ${hibrida.fila(directas)} | ${lexica.fila(directas)} |
-| Reformuladas con el dato esperado | ${hibrida.fila(reformuladas)} | ${lexica.fila(reformuladas)} |
-| Ajenas al proyecto rechazadas | ${hibrida.fila(fuera)} | ${lexica.fila(fuera)} |
-| Respuestas que citan una fuente | ${hibrida.citadas} / ${dentro.length} | ${lexica.citadas} / ${dentro.length} |
-| Tiempo medio de respuesta | ${hibrida.tiempo.toFixed(1)} s | ${lexica.tiempo.toFixed(1)} s |
+| Grupo | ${modosRespuesta.map((m) => nombres[m]).join(" | ")} |
+| --- | ${modosRespuesta.map(() => "---").join(" | ")} |
+${filasRespuesta}
 
 La comprobación es automática: busca la cifra o el término esperado en la
 respuesta, así que una respuesta correcta redactada de otra forma puede contar
-como fallo. Por eso se guardan las respuestas de la búsqueda híbrida:
+como fallo. Por eso se guardan las respuestas:
 
-| Híbrida | Palabras | Pregunta | Respuesta (híbrida) |
+| Híbrida | Palabras | Pregunta | Respuesta (solo palabras, la de la versión publicada) |
 | --- | --- | --- | --- |
-${preguntas.map((p) => `| ${marca(hibrida.ok.get(p))} | ${marca(lexica.ok.get(p))} | ${p.pregunta} | ${celda(hibrida.textos.get(p))} |`).join("\n")}
+${preguntas.map((p) => `| ${marca(hibrida.ok.get(p))} | ${marca(lexica.ok.get(p))} | ${p.reserva ? "(reserva) " : ""}${p.pregunta} | ${celda(lexica.textos.get(p))} |`).join("\n")}
 `;
 writeFileSync("../docs/evaluacion_asistente.md", informe, "utf-8");
 console.log("\n" + informe.split("La comprobación")[0]);

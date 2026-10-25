@@ -357,9 +357,10 @@ export default async function PaginaMetodologia() {
           <p className="nota">
             La página <Link href="/asistente">Asistente</Link> recupera fragmentos del README, de
             los notebooks y de una ficha por juego (BM25, y embeddings cuando están disponibles) y
-            un modelo de Ollama redacta la respuesta citándolos. Se evalúa con 27 preguntas de
-            referencia: con búsqueda híbrida responde bien las 19 directas y 3 de las 5 formuladas
-            con otras palabras, y rechaza las 3 ajenas al proyecto.
+            un modelo de Ollama redacta la respuesta citándolos. Se evalúa con 43 preguntas de
+            referencia; en las 16 de reserva, escritas después de ajustar la búsqueda, responde bien
+            las 10 directas con búsqueda híbrida, 3 de las 6 formuladas con otras palabras, y
+            rechaza las ajenas al proyecto.
           </p>
         </div>
         <div className="panel">

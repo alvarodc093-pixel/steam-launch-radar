@@ -39,10 +39,11 @@ export default function PaginaAsistente() {
         <div className="panel">
           <h3>3. Se evalúa</h3>
           <p className="nota">
-            Con 27 preguntas de referencia. De las 19 directas responde bien 19 en local y 18 en
-            esta versión publicada; de las 5 reformuladas con otras palabras, 3 y 1. Las 3 preguntas
-            ajenas al proyecto se rechazan siempre. El detalle está en{" "}
-            <code>docs/evaluacion_asistente.md</code>.
+            Con 43 preguntas de referencia, 16 de ellas de reserva: escritas después de ajustar la
+            búsqueda, para comprobar que funciona con preguntas nuevas. En esas, de 10 preguntas
+            directas responde bien 10 en local y 8 en esta versión publicada; las formuladas con
+            otras palabras son su punto débil (3 de 6 y 1 de 6). Las preguntas ajenas al proyecto se
+            rechazan siempre. El detalle está en <code>docs/evaluacion_asistente.md</code>.
           </p>
         </div>
       </div>
