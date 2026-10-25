@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import SinDatos from "@/components/SinDatos";
 import { datosMercado, datosPrevio, datosRadar } from "@/lib/datos";
@@ -182,6 +183,29 @@ export default async function PaginaMetodologia() {
             : "No mejora en las dos a la vez, así que la app no da una cifra antes del lanzamiento: muestra el rango de juegos parecidos."}
         </p>
         <TablaCandidatos m={pm} />
+      </div>
+
+      <h2>Asistente y panel de Power BI</h2>
+      <div className="rejilla">
+        <div className="panel">
+          <h3>Asistente (RAG)</h3>
+          <p className="nota">
+            La página <Link href="/asistente">Asistente</Link> recupera fragmentos del README, de
+            los notebooks y de una ficha por juego (BM25, y embeddings cuando están disponibles) y
+            un modelo de Ollama redacta la respuesta citándolos. Se evalúa con 27 preguntas de
+            referencia: con búsqueda híbrida responde bien las 19 directas y 3 de las 5 formuladas
+            con otras palabras, y rechaza las 3 ajenas al proyecto.
+          </p>
+        </div>
+        <div className="panel">
+          <h3>Panel de Power BI</h3>
+          <p className="nota">
+            El repositorio incluye un proyecto de Power BI (<code>powerbi/</code>) con un modelo en
+            estrella y cuatro páginas: mercado, ritmo del primer mes, calidad del modelo y detalle
+            por juego. Se genera desde Python con los mismos datos y un test comprueba que sus
+            métricas coinciden con las de esta página.
+          </p>
+        </div>
       </div>
 
       <h2>Limitaciones</h2>

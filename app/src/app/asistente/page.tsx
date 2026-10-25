@@ -21,9 +21,11 @@ export default function PaginaAsistente() {
           <h3>1. Busca</h3>
           <p className="nota">
             Cada pregunta se compara con unos 4.100 fragmentos: las secciones del README, las
-            conclusiones de los notebooks y una ficha por juego. Se combinan dos búsquedas, por
-            palabras (BM25) y por significado (embeddings de <code>embeddinggemma</code>), y se
-            quedan los seis fragmentos mejor situados en ambas.
+            conclusiones de los notebooks y una ficha por juego. Siempre se busca por palabras
+            (BM25); si hay un modelo de embeddings disponible, como al ejecutar la app en local con
+            Ollama, esa búsqueda se combina con otra por significado (<code>embeddinggemma</code>).
+            En esta versión publicada, Ollama Cloud no ofrece embeddings y la búsqueda es solo por
+            palabras. Cada respuesta indica cuál se usó.
           </p>
         </div>
         <div className="panel">
@@ -37,9 +39,9 @@ export default function PaginaAsistente() {
         <div className="panel">
           <h3>3. Se evalúa</h3>
           <p className="nota">
-            Con 22 preguntas de referencia: la búsqueda encuentra la fuente correcta en las 18 que
-            la tienen, las 19 respuestas sobre el proyecto contienen el dato esperado y las 3
-            preguntas ajenas al proyecto se rechazan. El detalle está en{" "}
+            Con 27 preguntas de referencia. De las 19 directas responde bien 19 en local y 18 en
+            esta versión publicada; de las 5 reformuladas con otras palabras, 3 y 2. Las 3 preguntas
+            ajenas al proyecto se rechazan siempre. El detalle está en{" "}
             <code>docs/evaluacion_asistente.md</code>.
           </p>
         </div>
