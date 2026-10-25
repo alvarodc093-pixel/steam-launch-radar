@@ -83,6 +83,9 @@ def test_tmdl_de_una_tabla():
     assert "SELECTEDVALUE(lecturas[dia_lectura], 7)" in texto
     assert "\tpartition predicciones = m" in texto
     assert '{"estimacion", type number}' in texto
+    calendario = powerbi.tmdl_tabla("calendario")
+    assert calendario.startswith("table calendario\n\tdataCategory: Time\n")
+    assert "\t\tisKey" in calendario
     lecturas = powerbi.tmdl_tabla("lecturas")
     assert "sortByColumn: dia_lectura" in lecturas
     assert "\t\tisHidden" in lecturas

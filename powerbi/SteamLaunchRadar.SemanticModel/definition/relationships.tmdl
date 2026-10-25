@@ -18,8 +18,3 @@ relationship a9923c71-6df6-586e-9233-c2f802d9a4b8
 	fromColumn: metricas.dia_lectura
 	toColumn: lecturas.dia_lectura
 
-relationship ace8b90c-86fd-4672-b322-5ac176b23043
-	joinOnDateBehavior: datePartOnly
-	fromColumn: calendario.fecha
-	toColumn: LocalDateTable_899eaf13-753c-4f36-a8a5-e3118ab85abb.Date
-

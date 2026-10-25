@@ -245,6 +245,7 @@ class Columna:
     formato: str | None = None
     ordenar_por: str | None = None
     oculta: bool = False
+    clave: bool = False  # la clave de la tabla de fechas
 
 
 @dataclass
@@ -281,7 +282,7 @@ COLUMNAS: dict[str, list[Columna]] = {
         Columna("conjunto", "string"),
     ],
     "calendario": [
-        Columna("fecha", "dateTime", "dd/mm/yyyy"),
+        Columna("fecha", "dateTime", "dd/mm/yyyy", clave=True),
         Columna("anio", "int64", "0"),
         Columna("mes", "string"),
         Columna("trimestre", "string"),
@@ -428,6 +429,8 @@ MEDIDAS: dict[str, list[Medida]] = {
     ],
 }
 
+TABLA_FECHAS = "calendario"
+
 RELACIONES = [
     ("juegos", "fecha_lanzamiento", "calendario", "fecha"),
     ("curva_diaria", "appid", "juegos", "appid"),
@@ -461,7 +464,11 @@ def consulta_m(tabla: str, columnas: list[Columna]) -> str:
 
 
 def tmdl_tabla(tabla: str) -> str:
-    lineas = [f"table {tabla}", f"\tlineageTag: {_id(tabla)}", ""]
+    lineas = [f"table {tabla}"]
+    if tabla == TABLA_FECHAS:
+        # Marcada como tabla de fechas: Power BI no crea las suyas automáticas.
+        lineas.append("\tdataCategory: Time")
+    lineas += [f"\tlineageTag: {_id(tabla)}", ""]
     for medida in MEDIDAS.get(tabla, []):
         dax = medida.dax
         # En TMDL la descripción va como comentario /// encima del objeto.
@@ -479,6 +486,8 @@ def tmdl_tabla(tabla: str) -> str:
         ]
     for c in COLUMNAS[tabla]:
         lineas += [f"\tcolumn {c.nombre}", f"\t\tdataType: {c.tipo}"]
+        if c.clave:
+            lineas.append("\t\tisKey")
         if c.formato:
             lineas.append(f"\t\tformatString: {c.formato}")
         if c.oculta:
@@ -527,6 +536,9 @@ def escribir_modelo(carpeta: Path) -> None:
                 "\tdataAccessOptions",
                 "\t\tlegacyRedirects",
                 "\t\treturnErrorValuesAsNull",
+                "",
+                # Sin tablas de fecha automáticas: ya existe la de calendario.
+                "annotation __PBI_TimeIntelligenceEnabled = 0",
                 "",
                 *(f"ref table {t}" for t in COLUMNAS),
                 "",
