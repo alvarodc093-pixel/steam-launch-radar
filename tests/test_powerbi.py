@@ -128,14 +128,19 @@ def test_proyecto_completo(tmp_path):
                     assert (entidad, campo["Property"]) in columnas
 
 
-def test_main_escribe_datos_y_proyecto(monkeypatch, tmp_path):
+def test_main_solo_regenera_el_proyecto_si_se_pide(monkeypatch, tmp_path):
     monkeypatch.setattr(powerbi, "DIR_POWERBI", tmp_path)
     monkeypatch.setattr(
         powerbi,
         "tablas_modelo",
         lambda dataset: (pd.DataFrame({"appid": [1]}), pd.DataFrame({"modelo": ["x"]})),
     )
-    powerbi.main()
+    guardado = tmp_path / f"{powerbi.NOMBRE}.Report" / "guardado_en_desktop.json"
+    guardado.parent.mkdir(parents=True)
+    guardado.write_text("{}")
+
+    # Por defecto (la actualización mensual) solo se renuevan los CSV.
+    powerbi.main([])
     assert {p.stem for p in (tmp_path / "datos").glob("*.csv")} == {
         "juegos",
         "calendario",
@@ -144,4 +149,9 @@ def test_main_escribe_datos_y_proyecto(monkeypatch, tmp_path):
         "predicciones",
         "metricas",
     }
+    assert guardado.exists()
+    assert not (tmp_path / f"{powerbi.NOMBRE}.pbip").exists()
+
+    powerbi.main(["--proyecto"])
     assert (tmp_path / f"{powerbi.NOMBRE}.pbip").exists()
+    assert not guardado.exists()

@@ -2,7 +2,7 @@
 
 Genera dos cosas:
 
-- `powerbi/datos/`: cinco CSV en estrella. `juegos` (una fila por juego
+- `powerbi/datos/`: seis CSV en estrella. `juegos` (una fila por juego
   descargado), `calendario` y `lecturas` (días 3, 7 y 14, y 0 para «antes de
   lanzar») como dimensiones; `curva_diaria` (el primer mes de cada juego apto,
   día a día), `predicciones` (lo que estimó el radar para cada juego del test
@@ -16,12 +16,18 @@ Las consultas leen los CSV de la rama principal del repositorio en GitHub, así
 que el informe se actualiza con un clic cuando llegan datos nuevos. El
 parámetro `OrigenDatos` admite también una carpeta local.
 
+El proyecto se generó una vez con `--proyecto` y después se guardó desde Power
+BI Desktop, que añade sus propios metadatos. Por eso, sin esa opción, solo se
+escriben los CSV: regenerar el proyecto descartaría lo guardado en Desktop.
+
 Uso:
-    python -m radar.powerbi
+    python -m radar.powerbi              # solo los datos (actualización mensual)
+    python -m radar.powerbi --proyecto   # datos y proyecto desde cero
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import shutil
@@ -953,11 +959,19 @@ def escribir_proyecto(carpeta: Path) -> None:
     escribir_informe(carpeta / f"{NOMBRE}.Report")
 
 
-def main() -> None:
+def main(argumentos: list[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument(
+        "--proyecto",
+        action="store_true",
+        help="regenera también el proyecto .pbip (descarta lo guardado en Desktop)",
+    )
+    args = parser.parse_args(argumentos)
     escribir_datos(DIR_POWERBI / "datos")
-    escribir_proyecto(DIR_POWERBI)
-    logger.info("Proyecto escrito en %s", DIR_POWERBI / f"{NOMBRE}.pbip")
+    if args.proyecto:
+        escribir_proyecto(DIR_POWERBI)
+        logger.info("Proyecto escrito en %s", DIR_POWERBI / f"{NOMBRE}.pbip")
 
 
 if __name__ == "__main__":

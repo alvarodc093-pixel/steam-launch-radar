@@ -253,8 +253,10 @@ dice con un mensaje claro y deja a la vista los fragmentos que encontró.
 ### Panel de inteligencia (Power BI)
 
 [`powerbi/SteamLaunchRadar.pbip`](powerbi/) es un proyecto de Power BI en formato de
-texto (modelo semántico en TMDL e informe en PBIR) que `python -m radar.powerbi` genera
-junto con sus datos. Cada página responde a una pregunta:
+texto (modelo semántico en TMDL e informe en PBIR). Se generó desde Python con
+`python -m radar.powerbi --proyecto` y después se guardó con Power BI Desktop; cada mes,
+`python -m radar.powerbi` solo renueva sus CSV, para no descartar lo guardado en Desktop.
+Cada página responde a una pregunta:
 
 | Página                   | Pregunta                                       | Contenido                                                                      |
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -365,7 +367,7 @@ python -m radar.preparacion       # data/processed/*.csv
 python -m radar.exportar          # app/data/*.json y casos dorados de la app
 python -m radar.rag               # app/data/rag.json (índice del asistente; necesita Ollama)
 python -m radar.ventas            # app/data/ventas.json (contraste con ventas anunciadas)
-python -m radar.powerbi           # powerbi/datos/*.csv y el proyecto .pbip
+python -m radar.powerbi           # powerbi/datos/*.csv (--proyecto: también el .pbip)
 python -m radar.informe           # resumen de métricas en Markdown
 ```
 
