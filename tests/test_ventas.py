@@ -79,7 +79,7 @@ def test_tabla_markdown():
 def test_el_dataset_real_es_coherente():
     anuncios = ventas.cargar_ventas()
     juegos = pd.read_csv(config.DIR_PROCESADO / "juegos.csv")
-    assert anuncios["appid"].is_unique
+    assert not anuncios.duplicated(["appid", "fecha_dato"]).any()
     assert set(anuncios["appid"]) <= set(
         juegos.loc[juegos["estado"] == "apto", "appid"]
     )

@@ -72,10 +72,11 @@ def contrastar(
 
 
 DIAS_LANZAMIENTO = 14  # hasta aquí, la cifra es «del lanzamiento»
+DIAS_MES = 28  # desde aquí, de cuando las reseñas ya han alcanzado a las ventas
 
 
 def resumen(contraste: pd.DataFrame) -> dict[str, Any]:
-    """Copias de PC por reseña al lanzamiento y pasado el primer mes.
+    """Copias de PC por reseña al lanzamiento y a partir de la cuarta semana.
 
     Se separan porque no son comparables: al estrenarse muchos compran y aún no
     han jugado lo suficiente para reseñar, así que la proporción baja a medida
@@ -96,7 +97,7 @@ def resumen(contraste: pd.DataFrame) -> dict[str, Any]:
         "juegos": len(contraste),
         "con_cifra_de_pc": len(pc),
         "lanzamiento": tramo(pc[pc["dia"] <= DIAS_LANZAMIENTO]),
-        "despues_del_primer_mes": tramo(pc[pc["dia"] > 30]),
+        "despues_del_primer_mes": tramo(pc[pc["dia"] >= DIAS_MES]),
     }
 
 

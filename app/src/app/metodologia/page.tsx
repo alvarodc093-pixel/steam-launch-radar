@@ -281,13 +281,13 @@ export default async function PaginaMetodologia() {
                 </div>
               </div>
               <div>
-                <div className="etiqueta">Pasado el primer mes</div>
+                <div className="etiqueta">A partir de la cuarta semana</div>
                 <div className="cifra">{entero(ventas.resumen.despues_del_primer_mes.mediana)}</div>
                 <div className="nota">
                   mediana de {ventas.resumen.despues_del_primer_mes.juegos} juegos (de{" "}
                   {entero(ventas.resumen.despues_del_primer_mes.minimo)} a{" "}
-                  {entero(ventas.resumen.despues_del_primer_mes.maximo)}): las reseñas alcanzan a
-                  las ventas
+                  {entero(ventas.resumen.despues_del_primer_mes.maximo)}): baja a medida que llegan
+                  las reseñas, pero varía mucho entre juegos
                 </div>
               </div>
             </div>
@@ -318,7 +318,7 @@ export default async function PaginaMetodologia() {
                   {[...ventas.juegos]
                     .sort((a, b) => a.dia - b.dia)
                     .map((v) => (
-                      <tr key={v.appid}>
+                      <tr key={`${v.appid}-${v.dia}`}>
                         <th scope="row">
                           <a href={v.url} target="_blank" rel="noreferrer">
                             {v.nombre}
@@ -340,11 +340,14 @@ export default async function PaginaMetodologia() {
               </table>
             </div>
             <p className="nota" style={{ marginBottom: 0 }}>
-              Al estrenarse, muchos compran y aún no han jugado lo bastante para reseñar; con el
-              tiempo la proporción baja hacia las 30-60 copias por reseña que estima la industria
-              (que cuenta reseñas en todos los idiomas). Las reseñas dan bien el orden de magnitud,
-              no la cifra exacta, y son solo juegos que triunfaron: los estudios pequeños no
-              publican sus ventas.
+              Al estrenarse, muchos compran y aún no han jugado lo bastante para reseñar, así que la
+              proporción es alta y baja con el tiempo. Pero varía mucho de un juego a otro: a partir
+              de la cuarta semana va de {entero(ventas.resumen.despues_del_primer_mes.minimo)} a{" "}
+              {entero(ventas.resumen.despues_del_primer_mes.maximo)} copias por reseña. Una
+              explicación probable es el idioma: solo se cuentan reseñas en inglés, y un juego con
+              mucho público en otros idiomas vende más copias por cada una. Las reseñas dan el orden
+              de magnitud de las ventas, no una cifra fiable, y estos son solo juegos que
+              triunfaron: los estudios pequeños no publican sus ventas.
             </p>
           </div>
         </>

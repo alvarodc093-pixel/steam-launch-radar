@@ -178,42 +178,48 @@ la app y lo compara con dónde acabó de verdad a 30 días dentro de su cohorte:
 ### Contraste con ventas anunciadas
 
 Steam no publica ventas, pero algunos estudios anuncian las suyas.
-[`data/external/ventas_anunciadas.csv`](data/external/ventas_anunciadas.csv) recoge las
-cifras oficiales de 10 juegos de la muestra, cada una con su fecha, sus plataformas y
-la fuente, y `python -m radar.ventas` las cruza con las reseñas en inglés que llevaba
-cada juego ese mismo día (con el mismo criterio de días que el radar).
+[`data/external/ventas_anunciadas.csv`](data/external/ventas_anunciadas.csv) recoge
+11 cifras oficiales de 10 juegos de la muestra, cada una con su fecha, sus
+plataformas y la fuente, y `python -m radar.ventas` las cruza con las reseñas en inglés
+que llevaba cada juego ese mismo día (con el mismo criterio de días que el radar).
 
-| Juego                                                                                                                                                       | Día | Copias anunciadas | Plataformas                            | Reseñas en inglés | Copias de PC por reseña |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ----------------- | -------------------------------------- | ----------------- | ----------------------- |
-| [Dead as Disco](https://3dnews.ru/1141383)                                                                                                                  | 2   | 100.000           | Steam y Epic                           | 827               | 121                     |
-| [Heroes of Might and Magic: Olden Era](https://www.rpgsite.net/news/20297-heroes-of-might-and-magic-olden-era-sales-numbers-500k-copies-less-than-72-hours) | 3   | 500.000           | Steam                                  | 1.810             | 276                     |
-| [Cairn](https://www.pushsquare.com/news/2026/02/ps5-climbing-game-cairn-is-the-first-success-story-of-2026)                                                 | 4   | 200.000           | PC y PS5                               | 2.133             | —                       |
-| [Retro Rewind - Video Store Simulator](https://newsletter.gamediscover.co/p/how-retro-rewinds-perfect-theme-hit)                                            | 4   | 100.000           | Steam                                  | 797               | 126                     |
-| [Vampire Crawlers: The Turbo Wildcard from Vampire Survivors](https://nintendoeverything.com/vampire-crawlers-sales-surpass-1-million-in-one-week/)         | ~7  | 1.000.000         | Todas (incluye Switch)                 | 4.494             | —                       |
-| [Super Battle Golf](https://www.shacknews.com/article/148048/super-battle-golf-400k-copies-sold)                                                            | 7   | 400.000           | Steam                                  | 1.557             | 257                     |
-| [Gothic 1 Remake](https://thqnordic.com/news/half-a-million-nameless-heroes-gothic-1-remake-sells-500-000-copies-in-first-week)                             | 7   | 500.000           | PC, PS5 y Xbox                         | 3.231             | —                       |
-| [StarRupture](https://www.gamesmarket.global/creepy-jars-starrupture-significantly-exceeds-expectations/)                                                   | 11  | 500.000           | Steam                                  | 2.673             | 187                     |
-| [MENACE](https://www.gamespress.com/en-US/MENACE-250000-copies-sold)                                                                                        | 55  | 250.000           | PC: Steam, GOG, Epic y Microsoft Store | 6.288             | 40                      |
-| [MOUSE: P.I. For Hire](https://www.gematsu.com/2026/07/mouse-p-i-for-hire-sales-top-one-million)                                                            | 89  | 1.000.000         | Todas, la mitad en consola             | 8.329             | 60                      |
+| Juego                                                                                                                                                        | Día | Copias anunciadas | Plataformas                            | Reseñas en inglés | Copias de PC por reseña |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | ----------------- | -------------------------------------- | ----------------- | ----------------------- |
+| [Dead as Disco](https://3dnews.ru/1141383)                                                                                                                   | 2   | 100.000           | Steam y Epic                           | 827               | 121                     |
+| [Heroes of Might and Magic: Olden Era](https://www.rpgsite.net/news/20297-heroes-of-might-and-magic-olden-era-sales-numbers-500k-copies-less-than-72-hours)  | 3   | 500.000           | Steam                                  | 1.810             | 276                     |
+| [Cairn](https://www.pushsquare.com/news/2026/02/ps5-climbing-game-cairn-is-the-first-success-story-of-2026)                                                  | 4   | 200.000           | PC y PS5                               | 2.133             | —                       |
+| [Retro Rewind - Video Store Simulator](https://newsletter.gamediscover.co/p/how-retro-rewinds-perfect-theme-hit)                                             | 4   | 100.000           | Steam                                  | 797               | 126                     |
+| [Vampire Crawlers: The Turbo Wildcard from Vampire Survivors](https://nintendoeverything.com/vampire-crawlers-sales-surpass-1-million-in-one-week/)          | ~7  | 1.000.000         | Todas (incluye Switch)                 | 4.494             | —                       |
+| [Super Battle Golf](https://www.shacknews.com/article/148048/super-battle-golf-400k-copies-sold)                                                             | 7   | 400.000           | Steam                                  | 1.557             | 257                     |
+| [Gothic 1 Remake](https://thqnordic.com/news/half-a-million-nameless-heroes-gothic-1-remake-sells-500-000-copies-in-first-week)                              | 7   | 500.000           | PC, PS5 y Xbox                         | 3.231             | —                       |
+| [StarRupture](https://www.gamesmarket.global/creepy-jars-starrupture-significantly-exceeds-expectations/)                                                    | 11  | 500.000           | Steam                                  | 2.673             | 187                     |
+| [Heroes of Might and Magic: Olden Era](https://www.rpgsite.net/news/20468-heroes-of-might-magic-olden-era-sales-1-million-copies-steam-early-access-roadmap) | 29  | 1.000.000         | Steam                                  | 4.824             | 207                     |
+| [MENACE](https://www.gamespress.com/en-US/MENACE-250000-copies-sold)                                                                                         | 55  | 250.000           | PC: Steam, GOG, Epic y Microsoft Store | 6.288             | 40                      |
+| [MOUSE: P.I. For Hire](https://www.gematsu.com/2026/07/mouse-p-i-for-hire-sales-top-one-million)                                                             | 89  | 1.000.000         | Todas, la mitad en consola             | 8.329             | 60                      |
 
 La proporción solo se compara cuando se sabe qué parte de las ventas es de PC, porque
-las de consola no dejan reseñas en Steam.
+las de consola no dejan reseñas en Steam. «PC» incluye otras tiendas (Epic, GOG) cuando
+el anuncio no las separa, frente a reseñas que son solo de Steam.
 
-- **Al lanzamiento** (5 juegos, primeras dos semanas): mediana de **187 copias de PC
-  por reseña en inglés**, de 121 a 276. Mucha gente compra el día del estreno y todavía
-  no ha jugado lo bastante para reseñar.
-- **Pasado el primer mes** (MENACE y MOUSE): **40 y 60**. Las reseñas alcanzan a las
-  ventas y la proporción se acerca a las 30-60 copias por reseña que estima la industria
+- **Al lanzamiento** (5 cifras, primeras dos semanas): mediana de
+  **187 copias de PC por reseña en inglés**, de 121 a 276. Mucha gente compra el día
+  del estreno y todavía no ha jugado lo bastante para reseñar.
+- **A partir de la cuarta semana** (3 cifras): 40, 60 y 207. La proporción
+  baja con el tiempo, pero varía mucho de un juego a otro. Las dos más bajas quedan cerca
+  de las 30-60 copias por reseña que estima la industria
   ([VG Insights](https://wp.vginsights.com/further-analysis-into-steam-reviews-to-sales-ratio-how-to-estimate-video-game-sales/2),
-  [Gamalytic](https://gamalytic.com/blog/a-deep-dive-into-the-steam-review-ratio)),
-  que cuenta reseñas en todos los idiomas y vidas comerciales más largas.
-- **Conclusión:** las reseñas dan bien el orden de magnitud de las ventas, pero no la
-  cifra exacta: la proporción depende del momento, del precio y de cuánto se vende en
-  consola. Por eso el radar predice reseñas y no las convierte en ventas.
-- **Límites:** son 10 éxitos, muy lejos del juego típico de la muestra (48 reseñas al
-  mes), porque los estudios pequeños no publican sus ventas; la fecha de Vampire
-  Crawlers es aproximada. SteamSpy, la fuente gratuita de estimaciones, no tiene datos
-  de los juegos lanzados desde finales de 2025.
+  [Gamalytic](https://gamalytic.com/blog/a-deep-dive-into-the-steam-review-ratio)), que
+  cuenta reseñas en todos los idiomas; Heroes of Might and Magic: Olden Era la
+  multiplica por más de tres. Una explicación probable, no comprobada, es el idioma: solo
+  se cuentan reseñas en inglés, y una saga con mucho público en otros idiomas vende más
+  copias por cada una.
+- **Conclusión:** las reseñas dan el orden de magnitud de las ventas, pero no una cifra
+  fiable: la proporción depende del momento, del público de cada juego y de cuánto se
+  vende en consola. Por eso el radar predice reseñas y no las convierte en ventas.
+- **Límites:** son éxitos, muy lejos del juego típico de la muestra (48 reseñas al
+  mes), porque los estudios pequeños no publican sus ventas; solo 3 cifras caen a partir
+  de la cuarta semana; la fecha de Vampire Crawlers es aproximada. SteamSpy, la fuente
+  gratuita de estimaciones, no tiene datos de los juegos lanzados desde finales de 2025.
 
 ### Asistente (RAG)
 

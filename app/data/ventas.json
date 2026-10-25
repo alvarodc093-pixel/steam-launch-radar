@@ -1,7 +1,7 @@
 {
  "resumen": {
-  "juegos": 10,
-  "con_cifra_de_pc": 7,
+  "juegos": 11,
+  "con_cifra_de_pc": 8,
   "lanzamiento": {
    "juegos": 5,
    "mediana": 187.1,
@@ -9,10 +9,10 @@
    "maximo": 276.2
   },
   "despues_del_primer_mes": {
-   "juegos": 2,
-   "mediana": 49.9,
+   "juegos": 3,
+   "mediana": 60.0,
    "minimo": 39.8,
-   "maximo": 60.0
+   "maximo": 207.3
   }
  },
  "juegos": [
@@ -145,6 +145,19 @@
    "copias_pc_por_resena": 60.0,
    "fuente": "PlaySide en la ASX (Gematsu)",
    "url": "https://www.gematsu.com/2026/07/mouse-p-i-for-hire-sales-top-one-million"
+  },
+  {
+   "appid": 3105440,
+   "nombre": "Heroes of Might and Magic: Olden Era",
+   "dia": 29,
+   "fecha_aproximada": false,
+   "unidades": 1000000,
+   "plataformas": "Steam",
+   "resenas_ingles": 4824,
+   "copias_por_resena": 207.3,
+   "copias_pc_por_resena": 207.3,
+   "fuente": "Hooded Horse, Unfrozen y Ubisoft (RPG Site)",
+   "url": "https://www.rpgsite.net/news/20468-heroes-of-might-magic-olden-era-sales-1-million-copies-steam-early-access-roadmap"
   }
  ]
 }
