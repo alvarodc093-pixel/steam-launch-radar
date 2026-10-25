@@ -72,8 +72,8 @@ con los datos reales; la lógica vive en `src/radar/preparacion.py`.
 
 - Cada reseña se sitúa en su día relativo a la fecha oficial de lanzamiento.
 - Se excluyen 689 juegos sin ninguna reseña en inglés en su primer mes, 357 con más del
-  5 % de sus reseñas antes de la fecha oficial (salieron de acceso anticipado: su día 0
-  no es un estreno) y 4 sin precio en dólares.
+  5 % de sus reseñas antes de la fecha oficial (salieron de acceso anticipado, el
+  _early access_ de Steam: su día 0 no es un estreno) y 4 sin precio en dólares.
 - El volumen es muy asimétrico (mediana de 48 reseñas a 30 días, media de 220): se
   trabaja en log(1 + reseñas). Los juegos más grandes son lanzamientos reales y no se
   recortan.
@@ -139,32 +139,42 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
   notebooks, cortados por secciones, y el resto son una ficha por juego descargado con
   sus cifras (precio, géneros, estudio, reseñas los días 3, 7, 14 y 30, y por qué se
   excluyó si es el caso).
-- **Recuperación híbrida:** BM25 sobre las palabras y similitud de coseno sobre
-  embeddings de `embeddinggemma` (Ollama), combinados con Reciprocal Rank Fusion. Los
-  vectores se guardan normalizados y cuantizados a int8, así que el índice entero pesa
-  6 MB y no hace falta una base de datos vectorial.
-- **Generación:** un modelo servido con Ollama (`qwen3.5` en local) recibe los seis
-  fragmentos mejor situados con la instrucción de responder solo con ellos y citar cada
-  dato con su número.
+- **Recuperación:** BM25 sobre las palabras y similitud de coseno sobre embeddings
+  de `embeddinggemma` (Ollama), combinados con Reciprocal Rank Fusion. Los vectores
+  se guardan normalizados y cuantizados a int8, así que el índice entero pesa 6 MB y
+  no hace falta una base de datos vectorial. En la búsqueda híbrida las palabras se
+  reducen a una raíz de 6 letras («opiniones» y «opinión» cuentan igual). Entre los
+  seis fragmentos que recibe el modelo entran como mucho dos fichas de juegos, para
+  que no desplacen a la documentación.
+- **Generación:** un modelo servido con Ollama (`qwen3.5` en local, `gpt-oss:120b`
+  de Ollama Cloud en Vercel) recibe esos fragmentos con la instrucción de responder
+  solo con ellos y citar cada dato con su número.
 - **Evaluación** (`npm run evaluar-asistente`, detalle en
-  [`docs/evaluacion_asistente.md`](docs/evaluacion_asistente.md)): 22 preguntas de
-  referencia con la respuesta conocida, 3 de ellas ajenas al proyecto.
+  [`docs/evaluacion_asistente.md`](docs/evaluacion_asistente.md)): 27 preguntas de
+  referencia, cada una con las secciones que contienen la respuesta. 19 son
+  directas, 5 están reformuladas sin las palabras de la documentación («¿cuánto se
+  equivoca la herramienta una semana después del estreno?») y 3 son ajenas al
+  proyecto.
 
-| Búsqueda               | Acierto@1 | Acierto@6 | MRR  |
-| ---------------------- | --------- | --------- | ---- |
-| Palabras (BM25)        | 78 %      | 100 %     | 0,89 |
-| Embeddings             | 61 %      | 94 %      | 0,73 |
-| Híbrida (la de la app) | 83 %      | 100 %     | 0,89 |
+| Búsqueda                  | Directas: fuente entre las 6 | Reformuladas: fuente entre las 6 | Respuestas correctas (directas · reformuladas) |
+| ------------------------- | ---------------------------- | -------------------------------- | ---------------------------------------------- |
+| Híbrida (local)           | 100 %                        | 80 %                             | 19/19 · 3/5                                    |
+| Solo palabras (en Vercel) | 100 %                        | 20 %                             | 18/19 · 2/5                                    |
 
-Con la búsqueda híbrida, las 19 respuestas sobre el proyecto contienen el dato
-esperado y citan su fuente, y las 3 preguntas ajenas se rechazan.
+En los dos modos todas las respuestas citan su fuente y las 3 preguntas ajenas se
+rechazan, con 1-2 segundos por respuesta.
 
-- **Limitaciones:** en estas preguntas BM25 solo ya encuentra la fuente, porque casi
-  todas nombran el juego o el término exacto; los embeddings se mantienen para las
-  preguntas formuladas con otras palabras, que este conjunto apenas cubre. La
-  comprobación de las respuestas busca la cifra esperada en el texto, así que no mide
-  la redacción. Sin el modelo de embeddings (por ejemplo en Ollama Cloud) el asistente
-  recupera solo con BM25.
+- **Qué se aprendió midiendo:** reducir las palabras a su raíz mejora la búsqueda
+  híbrida pero empeora la de solo palabras (crea coincidencias falsas que los
+  embeddings ya no compensan), así que cada modo usa lo que le funciona. Sin el cupo
+  de fichas, una pregunta sobre _early access_ se llenaba de juegos con ese género.
+- **Limitaciones:** las preguntas reformuladas son las difíciles: sin embeddings la
+  búsqueda solo encuentra la fuente en 1 de 5, y Ollama Cloud no ofrece embeddings,
+  así que la versión publicada busca solo por palabras. Las decisiones de la
+  búsqueda se tomaron con este mismo conjunto de 27 preguntas, que es pequeño. La
+  comprobación de las respuestas busca la cifra o el término esperado, así que una
+  respuesta correcta redactada de otra forma cuenta como fallo; por eso el informe
+  guarda cada respuesta.
 
 ## 5. La aplicación
 
@@ -174,16 +184,16 @@ esperado y citan su fuente, y las 3 preguntas ajenas se rechazan.
 | **Antes de lanzar** | Reseñas a 30 días de juegos del mismo género y precio (mediana y mitad central).                                                                                                                                                                                                                                                                                                                                                                                  |
 | **Mercado**         | Indicadores de la muestra: ritmo del primer mes, géneros, precio, lanzamientos por mes y exclusiones.                                                                                                                                                                                                                                                                                                                                                             |
 | **Asistente**       | Chat con RAG: responde con la documentación y las fichas de los juegos, cita cada dato y enseña las fuentes recuperadas aunque el modelo de lenguaje no responda.                                                                                                                                                                                                                                                                                                 |
-| **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo.                                                                                                                                                                                                                                                                                                                                                   |
+| **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo, y un resumen del asistente y del panel.                                                                                                                                                                                                                                                                                                           |
 
 API del servidor:
 
-| Ruta                        | Respuesta                                                                                                                                                                                        |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `POST /api/radar`           | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`.                                                        |
-| `POST /api/previo`          | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`.                                                                                                           |
-| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test.                                                                                                                                       |
-| `POST /api/asistente`       | Respuesta del asistente en NDJSON: una línea con las fuentes, los trozos de texto según se generan y una de cierre o error. Cuerpo: `mensajes` (lista de `{rol, texto}`, el último del usuario). |
+| Ruta                        | Respuesta                                                                                                                                                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/radar`           | Lectura del radar. Cuerpo: `dia` (3, 7 o 14), `resenas` (entero), `pct_positivas` (fracción de 0 a 1, opcional), `precio_usd` y `genero`.                                                                                                              |
+| `POST /api/previo`          | Referencia antes de lanzar. Cuerpo: `precio_usd`, `mes_lanzamiento` (1-12) y `genero`.                                                                                                                                                                 |
+| `GET /api/ejemplos/{appid}` | Ficha y reseñas diarias reales de un lanzamiento del test.                                                                                                                                                                                             |
+| `POST /api/asistente`       | Respuesta del asistente en NDJSON: una línea con las fuentes, los trozos de texto según se generan y una de cierre o error. Cuerpo: `mensajes` (lista de `{rol, texto}`, el último del usuario). Como mucho 20 preguntas por IP cada 10 minutos (429). |
 
 Las entradas se validan en el formulario y otra vez en el servidor, con mensajes que
 nombran el campo erróneo (400). Si faltan los datos exportados, las páginas y la API
@@ -210,9 +220,11 @@ llegan datos nuevos; el parámetro `OrigenDatos` admite también una carpeta loc
 test comprueba que el factor de error y la cobertura del panel coinciden con los de la
 app.
 
-| Antes de lanzar                                       | Mercado                               | Móvil                                                                             |
-| ----------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
-| ![Antes de lanzar](docs/capturas/antes-de-lanzar.png) | ![Mercado](docs/capturas/mercado.png) | <img src="docs/capturas/movil.png" alt="Radar en un móvil de 375 px" width="180"> |
+| Radar antes de la primera lectura                     | Asistente                                 | Móvil                                                                             |
+| ----------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| ![Portada del radar](docs/capturas/portada.png)       | ![Asistente](docs/capturas/asistente.png) | <img src="docs/capturas/movil.png" alt="Radar en un móvil de 375 px" width="180"> |
+| **Antes de lanzar**                                   | **Mercado**                               | **Metodología**                                                                   |
+| ![Antes de lanzar](docs/capturas/antes-de-lanzar.png) | ![Mercado](docs/capturas/mercado.png)     | ![Metodología](docs/capturas/metodologia.png)                                     |
 
 ## 6. Arquitectura y stack
 
@@ -417,9 +429,10 @@ steam-launch-radar/
 - **El sesgo de selección no se ve en las métricas.** Exigir 50 reseñas el día de la
   descarga favorece a los lanzamientos recientes más grandes. Afecta poco al radar, que
   trabaja con proporciones, pero descarta el mes de lanzamiento como variable previa.
-- **Medir la recuperación antes de complicarla.** La búsqueda híbrida se eligió por
-  robustez, pero la evaluación muestra que en estas preguntas BM25 solo ya encuentra la
-  fuente. Por eso el asistente no se rompe sin embeddings: baja a BM25 y lo dice.
+- **Medir la recuperación antes de complicarla.** Con preguntas directas BM25 basta;
+  con preguntas reformuladas los embeddings pasan de encontrar la fuente en 1 de 5 a
+  4 de 5. Por eso el asistente combina las dos búsquedas cuando puede y, cuando no
+  hay embeddings, baja a BM25 y lo dice en cada respuesta.
 - **Fichas generadas, no texto libre.** Cada juego se describe con una plantilla a
   partir de las tablas procesadas, así que el asistente no puede citar una cifra que no
   esté en los datos del radar.
@@ -427,7 +440,10 @@ steam-launch-radar/
   los CSV desde GitHub: no hay rutas locales en el proyecto y la actualización mensual
   lo deja al día sin tocar Power BI.
 
-## 10. Posibles extensiones
+## 10. Qué mejoraría con más tiempo
+
+Lo que queda fuera no cabía en el plazo del proyecto o necesita datos que todavía no
+existen:
 
 - **Reseñas en todos los idiomas** con una clave de la Steam Web API, para incluir los
   juegos con público no anglófono que hoy se excluyen por no recibir reseñas en inglés.
@@ -438,10 +454,16 @@ steam-launch-radar/
   página de la tienda, para afinar la lectura del día 3, la más útil y la menos precisa.
 - **Alertas:** seguir un juego por su `appid` y avisar al estudio cuando su lectura
   diaria cambie de veredicto.
+- **Búsqueda híbrida también en la versión publicada,** con un servicio de embeddings
+  en la nube, para que las preguntas reformuladas funcionen igual que en local.
+- **Evaluar el asistente con preguntas reales** de quienes usen la app, en lugar de
+  un conjunto escrito a mano, y medir también la calidad de la redacción.
 
 ## Convención de commits
 
-El historial sigue [Conventional Commits](https://www.conventionalcommits.org/es/):
+Desde que el proyecto tiene CI y tests, los commits siguen
+[Conventional Commits](https://www.conventionalcommits.org/es/) (los primeros, de la
+construcción inicial, son frases descriptivas):
 `tipo(ámbito): descripción` en imperativo o nominal, con los tipos `feat`, `fix`,
 `refactor`, `test`, `docs`, `ci` y `chore`, y ámbitos como `ingesta`, `modelo`, `app`,
 `datos` o `notebooks`. Ejemplo: `fix(modelo): estadístico de orden exacto en el
