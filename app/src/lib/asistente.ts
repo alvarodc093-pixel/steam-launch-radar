@@ -12,6 +12,41 @@ export interface Mensaje {
 export const MAX_MENSAJES = 12;
 export const MAX_CARACTERES = 1000;
 
+/**
+ * Límite de preguntas por IP en una ventana de tiempo. El asistente público
+ * gasta la cuota de Ollama Cloud y así una sola persona no puede agotarla. Vive
+ * en la memoria de cada instancia del servidor: no es exacto si Vercel levanta
+ * varias, pero frena el abuso sin necesitar una base de datos.
+ */
+export class Limitador {
+  private readonly peticiones = new Map<string, number[]>();
+  private readonly maximo: number;
+  private readonly ventanaMs: number;
+
+  constructor(maximo: number, ventanaMs: number) {
+    this.maximo = maximo;
+    this.ventanaMs = ventanaMs;
+  }
+
+  /** true si la petición entra; la registra en ese caso. */
+  permitir(clave: string, ahora = Date.now()): boolean {
+    const recientes = (this.peticiones.get(clave) ?? []).filter((t) => ahora - t < this.ventanaMs);
+    if (recientes.length >= this.maximo) {
+      this.peticiones.set(clave, recientes);
+      return false;
+    }
+    recientes.push(ahora);
+    this.peticiones.set(clave, recientes);
+    // Sin limpieza el mapa crecería con cada IP nueva.
+    if (this.peticiones.size > 10_000) {
+      for (const [k, ts] of this.peticiones) {
+        if (ts.every((t) => ahora - t >= this.ventanaMs)) this.peticiones.delete(k);
+      }
+    }
+    return true;
+  }
+}
+
 export function validarConversacion(cuerpo: unknown): Resultado<Mensaje[]> {
   const mensajes = (cuerpo as { mensajes?: unknown } | null)?.mensajes;
   if (!Array.isArray(mensajes) || mensajes.length === 0) {

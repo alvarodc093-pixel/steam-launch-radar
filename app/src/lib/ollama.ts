@@ -47,7 +47,13 @@ export async function embeddingConsulta(texto: string, modelo: string): Promise<
 export class ErrorOllama extends Error {}
 
 /** Devuelve los trozos de texto de la respuesta según los genera el modelo. */
-export async function* chat(mensajes: MensajeOllama[]): AsyncGenerator<string> {
+export async function* chat(
+  mensajes: MensajeOllama[],
+  cancelar?: AbortSignal,
+): AsyncGenerator<string> {
+  // Se corta si tarda demasiado o si quien preguntó cierra la página.
+  const limite = AbortSignal.timeout(120_000);
+  const senal = cancelar ? AbortSignal.any([limite, cancelar]) : limite;
   let r: Response;
   try {
     r = await fetch(`${CONFIG.host}/api/chat`, {
@@ -62,7 +68,7 @@ export async function* chat(mensajes: MensajeOllama[]): AsyncGenerator<string> {
         think: false,
         options: { temperature: 0.2 },
       }),
-      signal: AbortSignal.timeout(120_000),
+      signal: senal,
     });
   } catch {
     throw new ErrorOllama(`No se puede conectar con Ollama en ${CONFIG.host}.`);

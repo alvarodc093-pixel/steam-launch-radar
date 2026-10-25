@@ -9,7 +9,12 @@ queda al menos con los fragmentos encontrados.
 
 import { NextResponse } from "next/server";
 
-import { consultaDeBusqueda, construirPrompt, validarConversacion } from "@/lib/asistente";
+import {
+  consultaDeBusqueda,
+  construirPrompt,
+  Limitador,
+  validarConversacion,
+} from "@/lib/asistente";
 import { buscadorRag } from "@/lib/datos";
 import { chat, embeddingConsulta, ErrorOllama } from "@/lib/ollama";
 
@@ -17,7 +22,18 @@ export const dynamic = "force-dynamic";
 // Un modelo local en CPU puede tardar en contestar.
 export const maxDuration = 120;
 
+const limitador = new Limitador(20, 10 * 60_000);
+
 export async function POST(request: Request) {
+  // Vercel pone la IP real del cliente la primera en x-forwarded-for.
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
+  if (!limitador.permitir(ip)) {
+    return NextResponse.json(
+      { error: "Has hecho muchas preguntas seguidas. Espera unos minutos y vuelve a probar." },
+      { status: 429 },
+    );
+  }
+
   let cuerpo: unknown;
   try {
     cuerpo = await request.json();
@@ -48,27 +64,44 @@ export async function POST(request: Request) {
     titulo: fragmento.titulo,
     tipo: fragmento.tipo,
     appid: fragmento.appid,
-    extracto: fragmento.texto.slice(0, 280),
+    // Los fragmentos de documentación empiezan repitiendo su título, que ya va
+    // aparte; las marcas de Markdown no se verían como tales.
+    extracto: (fragmento.tipo === "documentacion"
+      ? fragmento.texto.replace(fragmento.titulo.replace(/ \(\d+\)$/, ""), "")
+      : fragmento.texto
+    )
+      .replace(/\*\*/g, "")
+      .trim()
+      .slice(0, 280),
   }));
 
   const codificador = new TextEncoder();
   const linea = (dato: unknown) => codificador.encode(JSON.stringify(dato) + "\n");
+  // Si quien pregunta cierra la página, se deja de pedir texto a Ollama.
+  const cancelacion = new AbortController();
   const flujo = new ReadableStream<Uint8Array>({
     async start(control) {
-      control.enqueue(linea({ tipo: "fuentes", modo, fuentes }));
+      const enviar = (dato: unknown) => {
+        if (!cancelacion.signal.aborted) control.enqueue(linea(dato));
+      };
+      enviar({ tipo: "fuentes", modo, fuentes });
       try {
-        for await (const trozo of chat(construirPrompt(conversacion.valor, resultados))) {
-          control.enqueue(linea({ tipo: "texto", texto: trozo }));
+        const prompt = construirPrompt(conversacion.valor, resultados);
+        for await (const trozo of chat(prompt, cancelacion.signal)) {
+          enviar({ tipo: "texto", texto: trozo });
         }
-        control.enqueue(linea({ tipo: "fin" }));
+        enviar({ tipo: "fin" });
       } catch (error) {
         const mensaje =
           error instanceof ErrorOllama
             ? error.message
             : "El modelo de lenguaje dejó de responder a mitad de la respuesta.";
-        control.enqueue(linea({ tipo: "error", mensaje }));
+        enviar({ tipo: "error", mensaje });
       }
-      control.close();
+      if (!cancelacion.signal.aborted) control.close();
+    },
+    cancel() {
+      cancelacion.abort();
     },
   });
 
