@@ -212,8 +212,10 @@ export default async function PaginaMetodologia() {
       <div className="panel">
         <ul>
           <li>
-            Las reseñas miden actividad, no ventas. Hay juegos que venden mucho con pocas reseñas y
-            al revés.
+            Las reseñas miden actividad, no ventas. Steam no publica las ventas de ningún juego, y
+            las cifras que circulan son estimaciones, casi siempre calculadas a partir de las
+            propias reseñas: usarlas no añadiría información. Hay juegos que venden mucho con pocas
+            reseñas y al revés.
           </li>
           <li>
             Solo entran juegos con al menos 50 reseñas: los lanzamientos que casi nadie jugó quedan

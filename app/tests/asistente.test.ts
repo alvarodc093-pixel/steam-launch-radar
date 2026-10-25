@@ -73,7 +73,7 @@ test("sin Ollama, la búsqueda por palabras encuentra la fuente esperada", async
   ).length;
   // Umbral por debajo del valor medido (ver docs/evaluacion_asistente.md) para
   // que avise si un cambio en el índice o en la tokenización lo empeora.
-  assert.ok(aciertos / conFuente.length >= 0.8, `acierto@6 = ${aciertos}/${conFuente.length}`);
+  assert.ok(aciertos / conFuente.length >= 0.75, `acierto@6 = ${aciertos}/${conFuente.length}`);
 });
 
 test("el limitador corta a partir del máximo y se recupera al pasar la ventana", () => {

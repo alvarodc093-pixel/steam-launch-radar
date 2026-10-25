@@ -51,6 +51,13 @@ uno, no cómo suele evolucionar un lanzamiento parecido en su primer mes.
   devuelve reseñas en inglés (en el juego mediano, el 40 % del total) y solo las del
   último año. Por eso todas las cifras son reseñas en inglés y la muestra se limita a
   los lanzamientos de los últimos doce meses.
+- **Por qué reseñas y no ventas:** Steam no publica las ventas de ningún juego, ni en
+  la tienda ni en sus APIs. Las cifras que circulan son estimaciones: SteamSpy da
+  rangos amplios de propietarios, y otras webs multiplican las reseñas por un factor.
+  Usar esas estimaciones como objetivo sería circular (el modelo aprendería a
+  predecir las reseñas multiplicadas por una constante) y llamarlo «ventas» daría una
+  precisión falsa. Las reseñas son el indicador público más directo de cuánta gente
+  juega a un juego, y el que la industria usa como termómetro de sus ventas.
 - **Privacidad:** de cada reseña solo se guardan la fecha y el voto, agregados por día.
   El texto y el identificador del autor se descartan al leer la página.
 - **Obtención:** `python -m radar.ingesta` descarga todo (1-2 horas por los límites de
@@ -158,8 +165,8 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
 
 | Búsqueda                  | Directas: fuente entre las 6 | Reformuladas: fuente entre las 6 | Respuestas correctas (directas · reformuladas) |
 | ------------------------- | ---------------------------- | -------------------------------- | ---------------------------------------------- |
-| Híbrida (local)           | 100 %                        | 80 %                             | 19/19 · 3/5                                    |
-| Solo palabras (en Vercel) | 100 %                        | 20 %                             | 18/19 · 2/5                                    |
+| Híbrida (local)           | 100 %                        | 60 %                             | 19/19 · 3/5                                    |
+| Solo palabras (en Vercel) | 100 %                        | 0 %                              | 18/19 · 1/5                                    |
 
 En los dos modos todas las respuestas citan su fuente y las 3 preguntas ajenas se
 rechazan, con 1-2 segundos por respuesta.
@@ -169,7 +176,7 @@ rechazan, con 1-2 segundos por respuesta.
   embeddings ya no compensan), así que cada modo usa lo que le funciona. Sin el cupo
   de fichas, una pregunta sobre _early access_ se llenaba de juegos con ese género.
 - **Limitaciones:** las preguntas reformuladas son las difíciles: sin embeddings la
-  búsqueda solo encuentra la fuente en 1 de 5, y Ollama Cloud no ofrece embeddings,
+  búsqueda no encuentra la fuente en ninguna de las 5, y Ollama Cloud no ofrece embeddings,
   así que la versión publicada busca solo por palabras. Las decisiones de la
   búsqueda se tomaron con este mismo conjunto de 27 preguntas, que es pequeño. La
   comprobación de las respuestas busca la cifra o el término esperado, así que una
@@ -430,8 +437,8 @@ steam-launch-radar/
   descarga favorece a los lanzamientos recientes más grandes. Afecta poco al radar, que
   trabaja con proporciones, pero descarta el mes de lanzamiento como variable previa.
 - **Medir la recuperación antes de complicarla.** Con preguntas directas BM25 basta;
-  con preguntas reformuladas los embeddings pasan de encontrar la fuente en 1 de 5 a
-  4 de 5. Por eso el asistente combina las dos búsquedas cuando puede y, cuando no
+  con preguntas reformuladas los embeddings pasan de no encontrar la fuente en ninguna
+  a encontrarla en 3 de 5. Por eso el asistente combina las dos búsquedas cuando puede y, cuando no
   hay embeddings, baja a BM25 y lo dice en cada respuesta.
 - **Fichas generadas, no texto libre.** Cada juego se describe con una plantilla a
   partir de las tablas procesadas, así que el asistente no puede citar una cifra que no
