@@ -8,12 +8,21 @@ table calendario
 		summarizeBy: none
 		sourceColumn: fecha
 
+		variation Variation
+			isDefault
+			relationship: ace8b90c-86fd-4672-b322-5ac176b23043
+			defaultHierarchy: LocalDateTable_899eaf13-753c-4f36-a8a5-e3118ab85abb.'Jerarquía de fechas'
+
+		annotation UnderlyingDateTimeDataType = Date
+
 	column anio
 		dataType: int64
 		formatString: 0
 		lineageTag: 43f2e0a0-8deb-543e-9b1f-a4a4ebab3782
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: anio
+
+		annotation SummarizationSetBy = Automatic
 
 	column mes
 		dataType: string
@@ -31,8 +40,10 @@ table calendario
 		dataType: int64
 		formatString: 0
 		lineageTag: 182b5274-a3c0-5540-a875-869d821703f6
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: dia_semana
+
+		annotation SummarizationSetBy = Automatic
 
 	partition calendario = m
 		mode: import
@@ -47,3 +58,4 @@ table calendario
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

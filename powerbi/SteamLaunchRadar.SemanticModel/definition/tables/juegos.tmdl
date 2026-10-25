@@ -2,7 +2,7 @@ table juegos
 	lineageTag: 8dda527d-4bff-5aa8-a011-5262fcc8e077
 
 	/// Juegos descargados del buscador de Steam.
-	measure 'Lanzamientos' = COUNTROWS(juegos)
+	measure Lanzamientos = COUNTROWS(juegos)
 		formatString: #,0
 		lineageTag: a077a5aa-74b2-52c4-b965-0d8bcf9ade02
 
@@ -46,6 +46,8 @@ table juegos
 		summarizeBy: none
 		sourceColumn: fecha_lanzamiento
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column precio_usd
 		dataType: double
 		formatString: #,0.00 $
@@ -62,8 +64,8 @@ table juegos
 
 	column banda_orden
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: 655b874e-2b3e-5834-9f65-fa5d55efae4f
 		summarizeBy: none
 		sourceColumn: banda_orden
@@ -137,3 +139,4 @@ table juegos
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

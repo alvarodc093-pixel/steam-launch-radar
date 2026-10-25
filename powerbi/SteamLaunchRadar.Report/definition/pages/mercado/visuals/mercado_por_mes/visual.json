@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "mercado_por_mes",
   "position": {
     "x": 16,
     "y": 232,
     "z": 6,
-    "width": 1248,
     "height": 220,
+    "width": 1248,
     "tabOrder": 6
   },
   "visual": {
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "calendario.mes",
-              "nativeQueryRef": "mes"
+              "nativeQueryRef": "mes",
+              "active": true
             }
           ]
         },
@@ -65,8 +66,7 @@
             },
             "direction": "Ascending"
           }
-        ],
-        "isDefaultSort": false
+        ]
       }
     },
     "visualContainerObjects": {

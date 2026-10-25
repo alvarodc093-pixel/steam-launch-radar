@@ -1,0 +1,100 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 51.384382911884131,
+            "y": 834.272607699071
+          },
+          "nodeIndex": "calendario",
+          "nodeLineageTag": "cd3ca618-067f-5d44-af85-19781401a836",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 244.93598528808434
+          },
+          "nodeIndex": "curva_diaria",
+          "nodeLineageTag": "d66c2e74-c2c9-52f1-b7a9-0c98167dc54c",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 335.76642882994764,
+            "y": -50
+          },
+          "nodeIndex": "juegos",
+          "nodeLineageTag": "8dda527d-4bff-5aa8-a011-5262fcc8e077",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 621.95036078725434,
+            "y": 407.70435353494224
+          },
+          "nodeIndex": "lecturas",
+          "nodeLineageTag": "f818ad0b-d5c8-5c4f-a411-c0317d64cb68",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 336.12240073753475,
+            "y": 584.31498885717076
+          },
+          "nodeIndex": "metricas",
+          "nodeLineageTag": "86605cf5-4a0a-5a0e-80f1-afb83867c6df",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 638.51733287323771,
+            "y": 56.845431380410218
+          },
+          "nodeIndex": "predicciones",
+          "nodeLineageTag": "d309ae50-29e7-59df-8060-e5a21ddb46ce",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

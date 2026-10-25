@@ -7,57 +7,52 @@ table predicciones
 		lineageTag: df2e4167-18b7-5d9a-a0af-c77761ee60a1
 
 	/// exp(mediana del error en log): ×1,21 es un 21 % de desviación.
-	measure 'Factor de error típico' = ```
+	measure 'Factor de error típico' =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(EXP(MEDIAN(predicciones[error_log])), lecturas[dia_lectura] = d)
-			```
 		formatString: 0.00
 		lineageTag: fbd711f8-c205-5525-8ef0-dcbc5edad126
 
 	/// Juegos cuyo valor real cae dentro del rango del 90 %.
-	measure 'Cobertura del rango' = ```
+	measure 'Cobertura del rango' =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(AVERAGE(predicciones[dentro_rango]), lecturas[dia_lectura] = d)
-			```
 		formatString: 0 %
 		lineageTag: c685055b-1013-5b50-9065-636be9febdba
 
 	/// Estimaciones entre la mitad y el doble del valor real.
-	measure 'Dentro de x2' = ```
+	measure 'Dentro de x2' =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(AVERAGEX(predicciones, IF(predicciones[error_log] <= LN(2), 1, 0)), lecturas[dia_lectura] = d)
-			```
 		formatString: 0 %
 		lineageTag: 7d31a0fa-a3b9-5987-a8a1-760732e028e9
 
 	/// Reseñas a 30 días que estimó el radar.
-	measure 'Estimación' = ```
+	measure Estimación =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(AVERAGE(predicciones[estimacion]), lecturas[dia_lectura] = d)
-			```
 		formatString: #,0
 		lineageTag: b6eb2d0d-4393-559d-857d-ac99e04949f6
 
 	/// Reseñas que tuvo de verdad al cumplir 30 días.
-	measure 'Reseñas reales' = ```
+	measure 'Reseñas reales' =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(AVERAGE(predicciones[resenas_30d_reales]), lecturas[dia_lectura] = d)
-			```
 		formatString: #,0
 		lineageTag: f1607b69-e379-550d-bde3-e59b56ed0e95
 
 	column appid
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: 8434e494-c268-5e61-870a-681aca8951dc
 		summarizeBy: none
 		sourceColumn: appid
 
 	column dia_lectura
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: faeec15c-281d-509c-9113-e36183e9fd23
 		summarizeBy: none
 		sourceColumn: dia_lectura
@@ -124,3 +119,4 @@ table predicciones
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

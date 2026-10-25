@@ -2,17 +2,16 @@ table metricas
 	lineageTag: 86605cf5-4a0a-5a0e-80f1-afb83867c6df
 
 	/// Factor de error típico de cada candidato en test.
-	measure 'Factor de error en test' = ```
+	measure 'Factor de error en test' =
 			VAR d = SELECTEDVALUE(lecturas[dia_lectura], 7)
 			RETURN CALCULATE(AVERAGE(metricas[factor_error]), lecturas[dia_lectura] = d)
-			```
 		formatString: 0.00
 		lineageTag: e5eec829-380c-5482-80a8-f0ec86e840b3
 
 	column dia_lectura
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: b2e851aa-c4b9-5a80-b8bc-570d833043d9
 		summarizeBy: none
 		sourceColumn: dia_lectura
@@ -70,3 +69,4 @@ table metricas
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

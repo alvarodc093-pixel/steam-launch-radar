@@ -23,8 +23,8 @@ table curva_diaria
 
 	column appid
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: d4f5c5fa-109f-5aa1-8380-86b6b1a2bf47
 		summarizeBy: none
 		sourceColumn: appid
@@ -70,3 +70,4 @@ table curva_diaria
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

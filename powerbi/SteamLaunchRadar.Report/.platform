@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "SteamLaunchRadar"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "bb8695d5-7673-4ba3-a23e-da1dea29a31b"
+  }
+}

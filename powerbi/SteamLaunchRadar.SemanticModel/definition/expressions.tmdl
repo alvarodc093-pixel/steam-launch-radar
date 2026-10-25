@@ -2,3 +2,4 @@ expression OrigenDatos = "https://raw.githubusercontent.com/alvarodc093-pixel/st
 	lineageTag: c1a6a420-45cc-5ef5-99ec-9615efc14f75
 
 	annotation PBI_ResultType = Text
+

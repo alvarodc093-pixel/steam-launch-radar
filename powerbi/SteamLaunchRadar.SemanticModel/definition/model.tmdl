@@ -6,9 +6,18 @@ model Model
 		legacyRedirects
 		returnErrorValuesAsNull
 
+annotation PBI_QueryOrder = ["juegos","calendario","lecturas","curva_diaria","predicciones","metricas","OrigenDatos"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode"]
+
 ref table juegos
 ref table calendario
 ref table lecturas
 ref table curva_diaria
 ref table predicciones
 ref table metricas
+ref table DateTableTemplate_c364181a-92fa-4cce-a251-a90c931337c6
+ref table LocalDateTable_899eaf13-753c-4f36-a8a5-e3118ab85abb
+

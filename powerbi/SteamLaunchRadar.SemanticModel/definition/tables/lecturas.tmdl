@@ -3,8 +3,8 @@ table lecturas
 
 	column dia_lectura
 		dataType: int64
-		formatString: 0
 		isHidden
+		formatString: 0
 		lineageTag: 8943d90f-b7b3-5585-b799-e94b994cb48c
 		summarizeBy: none
 		sourceColumn: dia_lectura
@@ -29,3 +29,4 @@ table lecturas
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

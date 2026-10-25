@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.4.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "mercado_por_precio",
   "position": {
     "x": 648,
     "y": 468,
     "z": 8,
-    "width": 616,
     "height": 236,
+    "width": 616,
     "tabOrder": 8
   },
   "visual": {
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "juegos.banda_precio",
-              "nativeQueryRef": "banda_precio"
+              "nativeQueryRef": "banda_precio",
+              "active": true
             }
           ]
         },
@@ -65,8 +66,7 @@
             },
             "direction": "Ascending"
           }
-        ],
-        "isDefaultSort": false
+        ]
       }
     },
     "visualContainerObjects": {
