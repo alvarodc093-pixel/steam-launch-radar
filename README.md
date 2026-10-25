@@ -60,6 +60,9 @@ uno, no cómo suele evolucionar un lanzamiento parecido en su primer mes.
   juega a un juego, y el que la industria usa como termómetro de sus ventas.
 - **Privacidad:** de cada reseña solo se guardan la fecha y el voto, agregados por día.
   El texto y el identificador del autor se descartan al leer la página.
+- **Ventas anunciadas:** `data/external/ventas_anunciadas.csv`, recogidas a mano de
+  comunicados de los estudios y la prensa especializada, con el enlace a cada fuente
+  (ver [Contraste con ventas anunciadas](#contraste-con-ventas-anunciadas)).
 - **Obtención:** `python -m radar.ingesta` descarga todo (1-2 horas por los límites de
   las APIs; se puede cortar y reanudar). Las tablas procesadas ya vienen en el
   repositorio, así que no hace falta para usar la app.
@@ -138,6 +141,46 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
   juegos de 10 a 200 reseñas a día 7 (el rango lo absorbe, pero hay que vigilarlo al
   reentrenar).
 
+### Contraste con ventas anunciadas
+
+Steam no publica ventas, pero algunos estudios anuncian las suyas.
+[`data/external/ventas_anunciadas.csv`](data/external/ventas_anunciadas.csv) recoge las
+cifras oficiales de 10 juegos de la muestra, cada una con su fecha, sus plataformas y
+la fuente, y `python -m radar.ventas` las cruza con las reseñas en inglés que llevaba
+cada juego ese mismo día (con el mismo criterio de días que el radar).
+
+| Juego                                                                                                                                                       | Día | Copias anunciadas | Plataformas                            | Reseñas en inglés | Copias de PC por reseña |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ----------------- | -------------------------------------- | ----------------- | ----------------------- |
+| [Dead as Disco](https://3dnews.ru/1141383)                                                                                                                  | 2   | 100.000           | Steam y Epic                           | 827               | 121                     |
+| [Heroes of Might and Magic: Olden Era](https://www.rpgsite.net/news/20297-heroes-of-might-and-magic-olden-era-sales-numbers-500k-copies-less-than-72-hours) | 3   | 500.000           | Steam                                  | 1.810             | 276                     |
+| [Cairn](https://www.pushsquare.com/news/2026/02/ps5-climbing-game-cairn-is-the-first-success-story-of-2026)                                                 | 4   | 200.000           | PC y PS5                               | 2.133             | —                       |
+| [Retro Rewind - Video Store Simulator](https://newsletter.gamediscover.co/p/how-retro-rewinds-perfect-theme-hit)                                            | 4   | 100.000           | Steam                                  | 797               | 126                     |
+| [Vampire Crawlers: The Turbo Wildcard from Vampire Survivors](https://nintendoeverything.com/vampire-crawlers-sales-surpass-1-million-in-one-week/)         | ~7  | 1.000.000         | Todas (incluye Switch)                 | 4.494             | —                       |
+| [Super Battle Golf](https://www.shacknews.com/article/148048/super-battle-golf-400k-copies-sold)                                                            | 7   | 400.000           | Steam                                  | 1.557             | 257                     |
+| [Gothic 1 Remake](https://thqnordic.com/news/half-a-million-nameless-heroes-gothic-1-remake-sells-500-000-copies-in-first-week)                             | 7   | 500.000           | PC, PS5 y Xbox                         | 3.231             | —                       |
+| [StarRupture](https://www.gamesmarket.global/creepy-jars-starrupture-significantly-exceeds-expectations/)                                                   | 11  | 500.000           | Steam                                  | 2.673             | 187                     |
+| [MENACE](https://www.gamespress.com/en-US/MENACE-250000-copies-sold)                                                                                        | 55  | 250.000           | PC: Steam, GOG, Epic y Microsoft Store | 6.288             | 40                      |
+| [MOUSE: P.I. For Hire](https://www.gematsu.com/2026/07/mouse-p-i-for-hire-sales-top-one-million)                                                            | 89  | 1.000.000         | Todas, la mitad en consola             | 8.329             | 60                      |
+
+La proporción solo se compara cuando se sabe qué parte de las ventas es de PC, porque
+las de consola no dejan reseñas en Steam.
+
+- **Al lanzamiento** (5 juegos, primeras dos semanas): mediana de **187 copias de PC
+  por reseña en inglés**, de 121 a 276. Mucha gente compra el día del estreno y todavía
+  no ha jugado lo bastante para reseñar.
+- **Pasado el primer mes** (MENACE y MOUSE): **40 y 60**. Las reseñas alcanzan a las
+  ventas y la proporción se acerca a las 30-60 copias por reseña que estima la industria
+  ([VG Insights](https://wp.vginsights.com/further-analysis-into-steam-reviews-to-sales-ratio-how-to-estimate-video-game-sales/2),
+  [Gamalytic](https://gamalytic.com/blog/a-deep-dive-into-the-steam-review-ratio)),
+  que cuenta reseñas en todos los idiomas y vidas comerciales más largas.
+- **Conclusión:** las reseñas dan bien el orden de magnitud de las ventas, pero no la
+  cifra exacta: la proporción depende del momento, del precio y de cuánto se vende en
+  consola. Por eso el radar predice reseñas y no las convierte en ventas.
+- **Límites:** son 10 éxitos, muy lejos del juego típico de la muestra (48 reseñas al
+  mes), porque los estudios pequeños no publican sus ventas; la fecha de Vampire
+  Crawlers es aproximada. SteamSpy, la fuente gratuita de estimaciones, no tiene datos
+  de los juegos lanzados desde finales de 2025.
+
 ### Asistente (RAG)
 
 `src/radar/rag.py` construye el índice y `app/src/lib/rag.ts` hace la recuperación.
@@ -191,7 +234,7 @@ rechazan, con 1-2 segundos por respuesta.
 | **Antes de lanzar** | Reseñas a 30 días de juegos del mismo género y precio (mediana y mitad central).                                                                                                                                                                                                                                                                                                                                                                                  |
 | **Mercado**         | Indicadores de la muestra: ritmo del primer mes, géneros, precio, lanzamientos por mes y exclusiones.                                                                                                                                                                                                                                                                                                                                                             |
 | **Asistente**       | Chat con RAG: responde con la documentación y las fichas de los juegos, cita cada dato y enseña las fuentes recuperadas aunque el modelo de lenguaje no responda.                                                                                                                                                                                                                                                                                                 |
-| **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo, y un resumen del asistente y del panel.                                                                                                                                                                                                                                                                                                           |
+| **Metodología**     | Datos, comparación de candidatos, métricas de test y limitaciones, leídas de los mismos JSON que usa el modelo, el contraste con ventas anunciadas y un resumen del asistente y del panel.                                                                                                                                                                                                                                                                        |
 
 API del servidor:
 
@@ -321,6 +364,7 @@ python -m radar.ingesta           # descarga de Steam (1-2 h, reanudable)
 python -m radar.preparacion       # data/processed/*.csv
 python -m radar.exportar          # app/data/*.json y casos dorados de la app
 python -m radar.rag               # app/data/rag.json (índice del asistente; necesita Ollama)
+python -m radar.ventas            # app/data/ventas.json (contraste con ventas anunciadas)
 python -m radar.powerbi           # powerbi/datos/*.csv y el proyecto .pbip
 python -m radar.informe           # resumen de métricas en Markdown
 ```
@@ -382,6 +426,7 @@ steam-launch-radar/
 │   └── actualizar-datos.yml      reentrenamiento mensual con Pull Request
 ├── data/
 │   ├── raw/                      caché de la ingesta (no se versiona)
+│   ├── external/                 ventas anunciadas por los estudios, con su fuente
 │   └── processed/                juegos, reseñas diarias y dataset del modelo
 ├── notebooks/                    01_preproceso · 02_eda · 03_modelo
 ├── src/radar/
@@ -391,6 +436,7 @@ steam-launch-radar/
 │   ├── modelo.py                 partición temporal, candidatos e intervalo conformal
 │   ├── exportar.py               modelos y tablas para la app
 │   ├── rag.py                    índice del asistente (fragmentos y embeddings)
+│   ├── ventas.py                 contraste de las reseñas con las ventas anunciadas
 │   ├── powerbi.py                tablas en estrella y proyecto de Power BI
 │   └── informe.py                resumen de métricas
 ├── tests/                        pytest

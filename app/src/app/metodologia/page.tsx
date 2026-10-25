@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import SinDatos from "@/components/SinDatos";
-import { datosMercado, datosPrevio, datosRadar } from "@/lib/datos";
+import { datosMercado, datosPrevio, datosRadar, datosVentas } from "@/lib/datos";
 import { decimal, entero, fecha, porcentaje } from "@/lib/formato";
 import type { ModeloJson } from "@/lib/tipos";
 
@@ -56,6 +56,8 @@ export default async function PaginaMetodologia() {
   } catch {
     return <SinDatos titulo="Metodología" />;
   }
+  // Sin ventas.json la página funciona igual: solo se pierde ese contraste.
+  const ventas = await datosVentas().catch(() => null);
   const dias = radar.dias_lectura;
   const tam = radar.modelos[String(dias[0])].tamanos;
   const pm = previo.modelo;
@@ -184,6 +186,97 @@ export default async function PaginaMetodologia() {
         </p>
         <TablaCandidatos m={pm} />
       </div>
+
+      {ventas && (
+        <>
+          <h2>Contraste con ventas anunciadas</h2>
+          <div className="panel">
+            <p>
+              Steam no publica ventas, así que el radar trabaja con reseñas. Para comprobar que son
+              una buena aproximación, se cruzan las ventas oficiales que anunciaron los estudios de{" "}
+              {ventas.resumen.juegos} juegos de la muestra con las reseñas en inglés que llevaba
+              cada uno ese mismo día. La proporción solo se compara cuando se sabe qué parte de las
+              ventas es de PC: las de consola no dejan reseñas en Steam.
+            </p>
+            <div className="rejilla">
+              <div>
+                <div className="etiqueta">Copias de PC por reseña, al lanzamiento</div>
+                <div className="cifra">{entero(ventas.resumen.lanzamiento.mediana)}</div>
+                <div className="nota">
+                  mediana de {ventas.resumen.lanzamiento.juegos} juegos (de{" "}
+                  {entero(ventas.resumen.lanzamiento.minimo)} a{" "}
+                  {entero(ventas.resumen.lanzamiento.maximo)}) en sus dos primeras semanas
+                </div>
+              </div>
+              <div>
+                <div className="etiqueta">Pasado el primer mes</div>
+                <div className="cifra">{entero(ventas.resumen.despues_del_primer_mes.mediana)}</div>
+                <div className="nota">
+                  mediana de {ventas.resumen.despues_del_primer_mes.juegos} juegos (de{" "}
+                  {entero(ventas.resumen.despues_del_primer_mes.minimo)} a{" "}
+                  {entero(ventas.resumen.despues_del_primer_mes.maximo)}): las reseñas alcanzan a
+                  las ventas
+                </div>
+              </div>
+            </div>
+            <div className="tabla" style={{ marginTop: "1rem" }}>
+              <table>
+                <caption>
+                  Cifras oficiales y reseñas en inglés en Steam hasta el día del anuncio.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Juego</th>
+                    <th scope="col" className="num">
+                      Día
+                    </th>
+                    <th scope="col" className="num">
+                      Copias anunciadas
+                    </th>
+                    <th scope="col">Plataformas</th>
+                    <th scope="col" className="num">
+                      Reseñas en inglés
+                    </th>
+                    <th scope="col" className="num">
+                      Copias de PC por reseña
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...ventas.juegos]
+                    .sort((a, b) => a.dia - b.dia)
+                    .map((v) => (
+                      <tr key={v.appid}>
+                        <th scope="row">
+                          <a href={v.url} target="_blank" rel="noreferrer">
+                            {v.nombre}
+                          </a>
+                        </th>
+                        <td className="num">
+                          {v.fecha_aproximada ? "~" : ""}
+                          {v.dia}
+                        </td>
+                        <td className="num">{entero(v.unidades)}</td>
+                        <td>{v.plataformas}</td>
+                        <td className="num">{entero(v.resenas_ingles)}</td>
+                        <td className="num">
+                          {v.copias_pc_por_resena === null ? "—" : entero(v.copias_pc_por_resena)}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="nota" style={{ marginBottom: 0 }}>
+              Al estrenarse, muchos compran y aún no han jugado lo bastante para reseñar; con el
+              tiempo la proporción baja hacia las 30-60 copias por reseña que estima la industria
+              (que cuenta reseñas en todos los idiomas). Las reseñas dan bien el orden de magnitud,
+              no la cifra exacta, y son solo juegos que triunfaron: los estudios pequeños no
+              publican sus ventas.
+            </p>
+          </div>
+        </>
+      )}
 
       <h2>Asistente y panel de Power BI</h2>
       <div className="rejilla">

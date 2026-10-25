@@ -44,6 +44,7 @@ jobs:
         run: python -m radar.ingesta
       - run: python -m radar.preparacion
       - run: python -m radar.exportar
+      - run: python -m radar.ventas
       - name: Notebooks
         run: |
           for nb in notebooks/*.ipynb; do

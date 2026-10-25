@@ -109,3 +109,35 @@ export interface EntradaPrevia {
   genero: string;
   mes_lanzamiento: number;
 }
+
+/** Ventas oficiales de juegos de la muestra frente a sus reseñas (`python -m radar.ventas`). */
+export interface VentaAnunciada {
+  appid: number;
+  nombre: string;
+  dia: number;
+  fecha_aproximada: boolean;
+  unidades: number;
+  plataformas: string;
+  resenas_ingles: number;
+  copias_por_resena: number;
+  copias_pc_por_resena: number | null;
+  fuente: string;
+  url: string;
+}
+
+interface TramoVentas {
+  juegos: number;
+  mediana: number;
+  minimo: number;
+  maximo: number;
+}
+
+export interface DatosVentas {
+  resumen: {
+    juegos: number;
+    con_cifra_de_pc: number;
+    lanzamiento: TramoVentas;
+    despues_del_primer_mes: TramoVentas;
+  };
+  juegos: VentaAnunciada[];
+}

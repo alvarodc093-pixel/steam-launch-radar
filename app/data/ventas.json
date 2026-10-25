@@ -1,0 +1,150 @@
+{
+ "resumen": {
+  "juegos": 10,
+  "con_cifra_de_pc": 7,
+  "lanzamiento": {
+   "juegos": 5,
+   "mediana": 187.1,
+   "minimo": 120.9,
+   "maximo": 276.2
+  },
+  "despues_del_primer_mes": {
+   "juegos": 2,
+   "mediana": 49.9,
+   "minimo": 39.8,
+   "maximo": 60.0
+  }
+ },
+ "juegos": [
+  {
+   "appid": 1631270,
+   "nombre": "StarRupture",
+   "dia": 11,
+   "fecha_aproximada": false,
+   "unidades": 500000,
+   "plataformas": "Steam",
+   "resenas_ingles": 2673,
+   "copias_por_resena": 187.1,
+   "copias_pc_por_resena": 187.1,
+   "fuente": "Creepy Jar (Games Market)",
+   "url": "https://www.gamesmarket.global/creepy-jars-starrupture-significantly-exceeds-expectations/"
+  },
+  {
+   "appid": 1588550,
+   "nombre": "Cairn",
+   "dia": 4,
+   "fecha_aproximada": false,
+   "unidades": 200000,
+   "plataformas": "PC y PS5",
+   "resenas_ingles": 2133,
+   "copias_por_resena": 93.8,
+   "copias_pc_por_resena": null,
+   "fuente": "The Game Bakers (Push Square)",
+   "url": "https://www.pushsquare.com/news/2026/02/ps5-climbing-game-cairn-is-the-first-success-story-of-2026"
+  },
+  {
+   "appid": 4069520,
+   "nombre": "Super Battle Golf",
+   "dia": 7,
+   "fecha_aproximada": false,
+   "unidades": 400000,
+   "plataformas": "Steam",
+   "resenas_ingles": 1557,
+   "copias_por_resena": 256.9,
+   "copias_pc_por_resena": 256.9,
+   "fuente": "Brimstone en su blog de Steam (Shacknews)",
+   "url": "https://www.shacknews.com/article/148048/super-battle-golf-400k-copies-sold"
+  },
+  {
+   "appid": 3552140,
+   "nombre": "Retro Rewind - Video Store Simulator",
+   "dia": 4,
+   "fecha_aproximada": false,
+   "unidades": 100000,
+   "plataformas": "Steam",
+   "resenas_ingles": 797,
+   "copias_por_resena": 125.5,
+   "copias_pc_por_resena": 125.5,
+   "fuente": "Blood Pact Studios (GameDiscoverCo)",
+   "url": "https://newsletter.gamediscover.co/p/how-retro-rewinds-perfect-theme-hit"
+  },
+  {
+   "appid": 2432860,
+   "nombre": "MENACE",
+   "dia": 55,
+   "fecha_aproximada": false,
+   "unidades": 250000,
+   "plataformas": "PC: Steam, GOG, Epic y Microsoft Store",
+   "resenas_ingles": 6288,
+   "copias_por_resena": 39.8,
+   "copias_pc_por_resena": 39.8,
+   "fuente": "Hooded Horse y Overhype Studios (Gamespress)",
+   "url": "https://www.gamespress.com/en-US/MENACE-250000-copies-sold"
+  },
+  {
+   "appid": 3265700,
+   "nombre": "Vampire Crawlers: The Turbo Wildcard from Vampire Survivors",
+   "dia": 7,
+   "fecha_aproximada": true,
+   "unidades": 1000000,
+   "plataformas": "Todas (incluye Switch)",
+   "resenas_ingles": 4494,
+   "copias_por_resena": 222.5,
+   "copias_pc_por_resena": null,
+   "fuente": "poncle (Nintendo Everything)",
+   "url": "https://nintendoeverything.com/vampire-crawlers-sales-surpass-1-million-in-one-week/"
+  },
+  {
+   "appid": 3105440,
+   "nombre": "Heroes of Might and Magic: Olden Era",
+   "dia": 3,
+   "fecha_aproximada": false,
+   "unidades": 500000,
+   "plataformas": "Steam",
+   "resenas_ingles": 1810,
+   "copias_por_resena": 276.2,
+   "copias_pc_por_resena": 276.2,
+   "fuente": "Hooded Horse y Unfrozen (RPG Site)",
+   "url": "https://www.rpgsite.net/news/20297-heroes-of-might-and-magic-olden-era-sales-numbers-500k-copies-less-than-72-hours"
+  },
+  {
+   "appid": 3404260,
+   "nombre": "Dead as Disco",
+   "dia": 2,
+   "fecha_aproximada": false,
+   "unidades": 100000,
+   "plataformas": "Steam y Epic",
+   "resenas_ingles": 827,
+   "copias_por_resena": 120.9,
+   "copias_pc_por_resena": 120.9,
+   "fuente": "Brain Jar Games en Steam (3DNews)",
+   "url": "https://3dnews.ru/1141383"
+  },
+  {
+   "appid": 1297900,
+   "nombre": "Gothic 1 Remake",
+   "dia": 7,
+   "fecha_aproximada": false,
+   "unidades": 500000,
+   "plataformas": "PC, PS5 y Xbox",
+   "resenas_ingles": 3231,
+   "copias_por_resena": 154.8,
+   "copias_pc_por_resena": null,
+   "fuente": "THQ Nordic",
+   "url": "https://thqnordic.com/news/half-a-million-nameless-heroes-gothic-1-remake-sells-500-000-copies-in-first-week"
+  },
+  {
+   "appid": 2416450,
+   "nombre": "MOUSE: P.I. For Hire",
+   "dia": 89,
+   "fecha_aproximada": false,
+   "unidades": 1000000,
+   "plataformas": "Todas, la mitad en consola",
+   "resenas_ingles": 8329,
+   "copias_por_resena": 120.1,
+   "copias_pc_por_resena": 60.0,
+   "fuente": "PlaySide en la ASX (Gematsu)",
+   "url": "https://www.gematsu.com/2026/07/mouse-p-i-for-hire-sales-top-one-million"
+  }
+ ]
+}
