@@ -44,6 +44,8 @@ def parsear_pagina(html_resultados: str) -> list[dict[str, Any]]:
                 "nombre": html.unescape(titulo.group(1)).strip() if titulo else None,
                 "fecha": parsear_fecha(fecha.group(1)) if fecha else None,
                 # Sin texto de ayuda Steam aún no muestra puntuación (< 10 reseñas).
+                # Con muchas reseñas, el texto solo cuenta las del idioma de la
+                # consulta («reviews written in your language»), aquí inglés.
                 "resenas_tienda": int(resenas.group(1).replace(",", ""))
                 if resenas
                 else 0,

@@ -46,11 +46,17 @@ uno, no cómo suele evolucionar un lanzamiento parecido en su primer mes.
 
 - **Muestra:** todos los juegos del buscador lanzados entre el 29-10-2025 y el
   09-09-2026 con entre 50 y 10.000 reseñas: 4.069 juegos, de los que 3.019 son aptos
-  para el modelo. Descarga del 24-10-2026.
+  para el modelo. Descarga del 24-10-2026. El recuento del buscador cuenta todos los
+  idiomas en los juegos con pocas reseñas, pero en los grandes Steam lo calcula solo
+  con las del idioma de quien consulta (inglés en la ingesta): el mínimo de 50 se
+  aplica sobre todas las reseñas y el tope de 10.000, en los juegos grandes, sobre las
+  de inglés.
 - **Dos límites de la API sin clave**, comprobados al construir la ingesta: solo
-  devuelve reseñas en inglés (en el juego mediano, el 40 % del total) y solo las del
-  último año. Por eso todas las cifras son reseñas en inglés y la muestra se limita a
-  los lanzamientos de los últimos doce meses.
+  devuelve reseñas en inglés y solo las del último año. El inglés es el 41 % de las
+  reseñas en el juego mediano (medido en los 3.008 juegos con hasta 500, donde el
+  buscador cuenta todos los idiomas); el límite del año apenas afecta a los juegos
+  aptos. Por eso todas las cifras son reseñas en inglés y la muestra se limita a los
+  lanzamientos de los últimos doce meses.
 - **Por qué reseñas y no ventas:** Steam no publica las ventas de ningún juego, ni en
   la tienda ni en sus APIs. Las cifras que circulan son estimaciones: SteamSpy da
   rangos amplios de propietarios, y otras webs multiplican las reseñas por un factor.
