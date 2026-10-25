@@ -342,7 +342,8 @@ flowchart LR
 
 ## 7. Instalación y ejecución
 
-Requisitos: Python 3.13 y Node.js 20 o superior.
+Requisitos: Python 3.13 y Node.js 22.18 o superior (los tests y la evaluación del
+asistente ejecutan TypeScript directamente, algo que Node admite desde esa versión).
 
 ```bash
 git clone https://github.com/alvarodc093-pixel/steam-launch-radar.git
