@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { consultaDeBusqueda, construirPrompt, validarConversacion } from "../src/lib/asistente.ts";
-import { Buscador, fusionar, tokenizar, type IndiceRag } from "../src/lib/rag.ts";
+import {
+  consultaDeBusqueda,
+  construirPrompt,
+  Limitador,
+  validarConversacion,
+} from "../src/lib/asistente.ts";
+import { Buscador, esFuenteEsperada, fusionar, tokenizar, type IndiceRag } from "../src/lib/rag.ts";
 
 const leer = async <T>(ruta: string): Promise<T> => JSON.parse(await readFile(ruta, "utf-8"));
 
@@ -56,15 +61,26 @@ test("una repregunta corta se busca junto con la pregunta anterior", () => {
 
 test("sin Ollama, la búsqueda por palabras encuentra la fuente esperada", async () => {
   const indice = await leer<IndiceRag>("data/rag.json");
-  const preguntas = await leer<{ pregunta: string; fuente?: string }[]>(
+  const preguntas = await leer<{ pregunta: string; fuentes?: string[] }[]>(
     "tests/preguntas_asistente.json",
   );
   const buscador = new Buscador(indice);
-  const conFuente = preguntas.filter((p) => p.fuente);
+  const conFuente = preguntas.filter((p) => p.fuentes);
   const aciertos = conFuente.filter((p) =>
-    buscador.buscar(p.pregunta, null).resultados.some((r) => r.fragmento.id.startsWith(p.fuente!)),
+    buscador
+      .buscar(p.pregunta, null)
+      .resultados.some((r) => esFuenteEsperada(r.fragmento, p.fuentes!)),
   ).length;
   // Umbral por debajo del valor medido (ver docs/evaluacion_asistente.md) para
   // que avise si un cambio en el índice o en la tokenización lo empeora.
-  assert.ok(aciertos / conFuente.length >= 0.75, `acierto@6 = ${aciertos}/${conFuente.length}`);
+  assert.ok(aciertos / conFuente.length >= 0.8, `acierto@6 = ${aciertos}/${conFuente.length}`);
+});
+
+test("el limitador corta a partir del máximo y se recupera al pasar la ventana", () => {
+  const limitador = new Limitador(2, 1000);
+  assert.ok(limitador.permitir("ip", 0));
+  assert.ok(limitador.permitir("ip", 10));
+  assert.equal(limitador.permitir("ip", 20), false);
+  assert.ok(limitador.permitir("otra", 20), "cada IP lleva su propia cuenta");
+  assert.ok(limitador.permitir("ip", 1005), "la primera petición ya salió de la ventana");
 });
