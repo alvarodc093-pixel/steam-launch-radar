@@ -68,6 +68,16 @@ export interface DatosRadar {
   };
   curva_tipica: Record<string, number[]>;
   ejemplos: Ejemplo[];
+  /** Por día de lectura y veredicto: dónde acabaron de verdad los juegos del test. */
+  aciertos_veredicto: Record<string, Record<string, AciertosVeredicto>>;
+}
+
+export interface AciertosVeredicto {
+  por_encima: number;
+  en_linea: number;
+  por_debajo: number;
+  /** «Por encima» que ya superaban el tercer cuartil el día de la lectura. */
+  ya_superaba: number;
 }
 
 export interface DatosPrevio {
@@ -93,6 +103,12 @@ export interface DatosMercado {
   por_genero: { genero: string; n: number; mediana_30d: number }[];
   por_banda: { banda: string; n: number; mediana_30d: number }[];
   curva_tipica: number[];
+  /** Cifras del EDA que enseña la portada (radar/eda.py). */
+  hallazgos: {
+    spearman_7_30: number;
+    positivas_bajas: { juegos: number; residuo_mediano_log: number; efecto: number };
+    epsilon2: { precio: number; genero: number };
+  };
 }
 
 /** Entrada del radar tal como llega del formulario o de la API. */

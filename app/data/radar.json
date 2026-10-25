@@ -1,5 +1,5 @@
 {
- "generado_en": "2026-10-24T15:44:22+00:00",
+ "generado_en": "2026-10-25T23:18:36+00:00",
  "dias_lectura": [
   3,
   7,
@@ -551,6 +551,68 @@
      170.25,
      341.1
     ]
+   }
+  }
+ },
+ "aciertos_veredicto": {
+  "3": {
+   "en_linea": {
+    "por_encima": 73,
+    "en_linea": 328,
+    "por_debajo": 53,
+    "ya_superaba": 0
+   },
+   "por_encima": {
+    "por_encima": 104,
+    "en_linea": 1,
+    "por_debajo": 0,
+    "ya_superaba": 79
+   },
+   "por_debajo": {
+    "por_encima": 0,
+    "en_linea": 1,
+    "por_debajo": 44,
+    "ya_superaba": 0
+   }
+  },
+  "7": {
+   "en_linea": {
+    "por_encima": 44,
+    "en_linea": 328,
+    "por_debajo": 35,
+    "ya_superaba": 0
+   },
+   "por_encima": {
+    "por_encima": 132,
+    "en_linea": 0,
+    "por_debajo": 0,
+    "ya_superaba": 125
+   },
+   "por_debajo": {
+    "por_encima": 1,
+    "en_linea": 2,
+    "por_debajo": 62,
+    "ya_superaba": 0
+   }
+  },
+  "14": {
+   "en_linea": {
+    "por_encima": 21,
+    "en_linea": 329,
+    "por_debajo": 14,
+    "ya_superaba": 0
+   },
+   "por_encima": {
+    "por_encima": 156,
+    "en_linea": 0,
+    "por_debajo": 0,
+    "ya_superaba": 156
+   },
+   "por_debajo": {
+    "por_encima": 0,
+    "en_linea": 1,
+    "por_debajo": 83,
+    "ya_superaba": 0
    }
   }
  },

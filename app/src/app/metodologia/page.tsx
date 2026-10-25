@@ -49,6 +49,12 @@ function TablaCandidatos({ m }: { m: ModeloJson }) {
   );
 }
 
+const VEREDICTOS = {
+  por_encima: "Por encima",
+  en_linea: "En línea",
+  por_debajo: "Por debajo",
+} as const;
+
 export default async function PaginaMetodologia() {
   let radar, previo, mercado;
   try {
@@ -68,6 +74,14 @@ export default async function PaginaMetodologia() {
     (!base ||
       (pm.metricas_test.mae_log < base.mae_log &&
         pm.metricas_test.mediana_error_log < base.mediana_error_log));
+  // «79 de 105 el día 3, 125 de 132 el día 7 y 156 de 156 el día 14»
+  const partes = dias.flatMap((d) => {
+    const a = radar.aciertos_veredicto[String(d)]?.por_encima;
+    if (!a) return [];
+    return [`${a.ya_superaba} de ${a.por_encima + a.en_linea + a.por_debajo} el día ${d}`];
+  });
+  const triviales =
+    partes.length > 1 ? `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}` : partes.join("");
 
   return (
     <>
@@ -170,6 +184,64 @@ export default async function PaginaMetodologia() {
             </div>
           </details>
         ))}
+      </div>
+
+      <h2>¿Acierta el veredicto?</h2>
+      <div className="panel">
+        <p>
+          Cada juego del test, leído como lo haría la app, frente a dónde acabó de verdad a los 30
+          días dentro de su cohorte: por encima de tres de cada cuatro juegos parecidos, en la mitad
+          central o por debajo.
+        </p>
+        <div className="tabla">
+          <table>
+            <caption>Veredicto del radar y posición real a 30 días, en los juegos de test.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Lectura</th>
+                <th scope="col">Veredicto</th>
+                <th scope="col" className="num">
+                  Juegos
+                </th>
+                <th scope="col" className="num">
+                  Acabó por encima
+                </th>
+                <th scope="col" className="num">
+                  En la mitad central
+                </th>
+                <th scope="col" className="num">
+                  Acabó por debajo
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {dias.flatMap((d) =>
+                (["por_encima", "en_linea", "por_debajo"] as const).flatMap((v) => {
+                  const a = radar.aciertos_veredicto[String(d)]?.[v];
+                  if (!a) return [];
+                  const n = a.por_encima + a.en_linea + a.por_debajo;
+                  return [
+                    <tr key={`${d}-${v}`}>
+                      <th scope="row">Día {d}</th>
+                      <td>{VEREDICTOS[v]}</td>
+                      <td className="num">{entero(n)}</td>
+                      <td className="num">{porcentaje(a.por_encima / n)}</td>
+                      <td className="num">{porcentaje(a.en_linea / n)}</td>
+                      <td className="num">{porcentaje(a.por_debajo / n)}</td>
+                    </tr>,
+                  ];
+                }),
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="nota" style={{ marginBottom: 0 }}>
+          Cuando dice «por debajo» casi siempre acierta, y ahí está su valor: avisa de un mal mes
+          cuando todavía hay tiempo de reaccionar. Los «por encima» también aciertan, pero en la
+          mayoría el juego ya tenía, el día de la lectura, más reseñas de las que tres de cada
+          cuatro juegos parecidos alcanzan en un mes ({triviales}): el veredicto lo confirma, pero
+          el modelo apenas añade información.
+        </p>
       </div>
 
       <h2>Antes de lanzar</h2>

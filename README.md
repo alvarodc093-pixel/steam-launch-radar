@@ -147,6 +147,34 @@ estimación queda entre un 17 % por debajo y un 21 % por encima del valor real.
   juegos de 10 a 200 reseñas a día 7 (el rango lo absorbe, pero hay que vigilarlo al
   reentrenar).
 
+### ¿Acierta el veredicto?
+
+El error de la estimación no dice si el veredicto sirve para decidir. Para eso,
+`aciertos_veredicto` (`src/radar/exportar.py`) lee cada juego del test como lo haría
+la app y lo compara con dónde acabó de verdad a 30 días dentro de su cohorte:
+
+| Lectura | Veredicto  | Juegos | Acabó por encima | En la mitad central | Acabó por debajo |
+| ------- | ---------- | ------ | ---------------- | ------------------- | ---------------- |
+| Día 3   | Por encima | 105    | 99 %             | 1 %                 | 0 %              |
+| Día 3   | En línea   | 454    | 16 %             | 72 %                | 12 %             |
+| Día 3   | Por debajo | 45     | 0 %              | 2 %                 | 98 %             |
+| Día 7   | Por encima | 132    | 100 %            | 0 %                 | 0 %              |
+| Día 7   | En línea   | 407    | 11 %             | 81 %                | 9 %              |
+| Día 7   | Por debajo | 65     | 2 %              | 3 %                 | 95 %             |
+| Día 14  | Por encima | 156    | 100 %            | 0 %                 | 0 %              |
+| Día 14  | En línea   | 364    | 6 %              | 90 %                | 4 %              |
+| Día 14  | Por debajo | 84     | 0 %              | 1 %                 | 99 %             |
+
+- **El valor está en el «por debajo»:** acierta el 95-99 % de las veces y avisa de un mal
+  mes cuando todavía hay tiempo de reaccionar. No hay atajo posible: depende de lo que
+  estima el modelo.
+- **El «por encima» acierta casi siempre, pero casi siempre es trivial:** el juego ya
+  tenía, el día de la lectura, más reseñas de las que tres de cada cuatro juegos
+  parecidos alcanzan en un mes (79 de 105 el día 3, 125 de 132 el día 7, 156 de 156 el día 14). El veredicto lo confirma; el modelo apenas
+  añade información, salvo algo el día 3.
+- **El «en línea» acierta el 72-90 %** según el día, y es el veredicto más frecuente: el
+  radar solo se pronuncia cuando todo el rango queda fuera de la mitad central.
+
 ### Contraste con ventas anunciadas
 
 Steam no publica ventas, pero algunos estudios anuncian las suyas.
@@ -404,7 +432,7 @@ Guardar como → .pbix**.
 | Dónde  | Comando                                                     | Qué cubre                                                                                                     |
 | ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Raíz   | `ruff check . && ruff format --check .`                     | Estilo y errores en `src/`, `tests/` y notebooks                                                              |
-| Raíz   | `pytest --cov`                                              | 71 tests de ingesta, preparación, modelo, exportación, índice del asistente y panel (cobertura del 98 %)      |
+| Raíz   | `pytest --cov`                                              | 80 tests de ingesta, preparación, modelo, exportación, EDA, ventas, asistente y panel (cobertura del 98 %)    |
 | `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos                                                                                      |
 | `app/` | `npm test`                                                  | Inferencia en TypeScript frente a 2.416 casos calculados en Python, y recuperación y validación del asistente |
 | `app/` | `npm run evaluar-asistente`                                 | Calidad del asistente con Ollama (recuperación y respuestas)                                                  |
@@ -442,6 +470,7 @@ steam-launch-radar/
 │   ├── config.py                 rutas, ventana de lanzamientos y umbrales
 │   ├── ingesta/                  buscador, ficha y reseñas de Steam
 │   ├── preparacion.py            limpieza, exclusiones y variables
+│   ├── eda.py                    cifras del EDA que también enseña la app
 │   ├── modelo.py                 partición temporal, candidatos e intervalo conformal
 │   ├── exportar.py               modelos y tablas para la app
 │   ├── rag.py                    índice del asistente (fragmentos y embeddings)

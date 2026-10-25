@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from radar import config
+from radar import config, eda
 from radar import modelo as m
 
 logger = logging.getLogger("radar.exportar")
@@ -268,7 +268,67 @@ def resumen_mercado(
             for b, x in dataset.groupby("banda_precio")
         ],
         "curva_tipica": curva_tipica(diarias, dataset["appid"]),
+        "hallazgos": eda.hallazgos(dataset),
     }
+
+
+def _posicion(valor: float, q25: float, q75: float) -> str:
+    if valor > q75:
+        return "por_encima"
+    if valor < q25:
+        return "por_debajo"
+    return "en_linea"
+
+
+def aciertos_veredicto(
+    radar: dict[int, m.Resultado], test: pd.DataFrame, tabla_cohortes: dict[str, Any]
+) -> dict[str, Any]:
+    """¿Acierta el veredicto? Cada juego del test, leído como lo haría la app.
+
+    El veredicto se calcula igual que en app/src/lib/radar.ts: el rango del
+    90 % (con el mínimo de las reseñas que ya tiene) frente al primer y tercer
+    cuartil de su cohorte a 30 días. Se compara con dónde acabó de verdad el
+    juego en esa misma cohorte.
+
+    `ya_superaba` cuenta los «por encima» en los que el juego, el día de la
+    lectura, ya tenía más reseñas que el tercer cuartil a 30 días: esos
+    aciertan sin que el modelo aporte nada, porque las reseñas solo suben.
+    """
+    i25, i75 = CUANTILES.index(0.25), CUANTILES.index(0.75)
+    salida: dict[str, Any] = {}
+    for dia, res in radar.items():
+        log = predecir_python(res, test)
+        lectura = test[f"resenas_{dia}d"].to_numpy(float)
+        inferior = np.maximum(lectura, np.expm1(log - res.q90))
+        superior = np.maximum(lectura, np.expm1(log + res.q90))
+        cuentas: dict[str, dict[str, int]] = {}
+        for genero, hoy, inf, sup, real in zip(
+            test["genero_principal"],
+            lectura,
+            inferior,
+            superior,
+            test["resenas_30d"],
+            strict=True,
+        ):
+            # La app agrupa en «Otro» los géneros que el modelo no distingue,
+            # y sin cohorte propia compara con toda la muestra.
+            clave = genero if genero in res.generos else "Otro"
+            cohorte = tabla_cohortes["por_genero"].get(clave, tabla_cohortes["global"])
+            q25, q75 = cohorte["30"][i25], cohorte["30"][i75]
+            if sup < q25:
+                veredicto = "por_debajo"
+            elif inf > q75:
+                veredicto = "por_encima"
+            else:
+                veredicto = "en_linea"
+            fila = cuentas.setdefault(
+                veredicto,
+                {"por_encima": 0, "en_linea": 0, "por_debajo": 0, "ya_superaba": 0},
+            )
+            fila[_posicion(real, q25, q75)] += 1
+            fila["ya_superaba"] += int(veredicto == "por_encima" and hoy > q75)
+        salida[str(dia)] = cuentas
+    return salida
 
 
 # --- casos dorados para los tests de la app ---------------------------------
@@ -358,13 +418,15 @@ def exportar(carpeta_procesados: Path, carpeta_salida: Path, ruta_casos: Path) -
         if len(grupo) >= MIN_COHORTE:
             curvas[genero] = curva_tipica(diarias, grupo["appid"])
 
+    tabla_cohortes = cohortes(train)
     _escribir(
         carpeta_salida / "radar.json",
         {
             "generado_en": generado,
             "dias_lectura": list(config.DIAS_LECTURA),
             "modelos": {str(dia): serializar(res) for dia, res in radar.items()},
-            "cohortes": cohortes(train),
+            "cohortes": tabla_cohortes,
+            "aciertos_veredicto": aciertos_veredicto(radar, test, tabla_cohortes),
             "curva_tipica": curvas,
             "ejemplos": ejemplos(test, diarias),
         },

@@ -1,5 +1,5 @@
 {
- "generado_en": "2026-10-24T15:44:22+00:00",
+ "generado_en": "2026-10-25T23:18:36+00:00",
  "juegos_descargados": 4069,
  "juegos_aptos": 3019,
  "exclusiones": {
@@ -196,5 +196,17 @@
   0.9951,
   1.0,
   1.0
- ]
+ ],
+ "hallazgos": {
+  "spearman_7_30": 0.98,
+  "positivas_bajas": {
+   "juegos": 171,
+   "residuo_mediano_log": -0.238,
+   "efecto": -0.212
+  },
+  "epsilon2": {
+   "precio": 0.111,
+   "genero": 0.031
+  }
+ }
 }
