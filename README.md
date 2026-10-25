@@ -18,6 +18,20 @@ Lo completan un **asistente con RAG** que responde preguntas sobre los datos y e
 modelo citando sus fuentes, y un **panel de Power BI** con los indicadores de la
 muestra y la calidad del modelo.
 
+**Resultados clave**, sobre los 604 lanzamientos más recientes, que el modelo no vio
+al entrenar:
+
+- **Las reseñas llegan pronto:** el día 7 ya ha llegado el 62 % de las del primer mes.
+- **La estimación del día 7 se desvía un ×1,21** en el juego típico (×1,09 el día 14),
+  y su rango del 90 % acierta en el 92 % de los juegos.
+- **Cuando el radar dice «por debajo» el día 7, acierta el 95 %** de las veces: avisa
+  de un mal mes a tiempo de reaccionar.
+- **A día 7 la regla simple empata con los modelos complejos**, y antes del
+  lanzamiento ningún modelo mejora a decir «lo normal»: la app enseña un rango en
+  lugar de inventar una cifra.
+- **Las ventas que anunciaron diez estudios** confirman que las reseñas reflejan el
+  orden de magnitud de las ventas, aunque no la cifra exacta.
+
 ---
 
 ## 1. Problema y usuario
