@@ -63,14 +63,20 @@ export default function PortadaRadar({
     ];
   }, [curva, precision]);
   const etiquetas = useMemo(() => curva.map((_, i) => String(i + 1)), [curva]);
+  const cobertura = precision.find((p) => p.dia === dia)?.cobertura;
 
   return (
     <div className="portada">
       <div className="panel">
         <h2 className="titulo-panel">Pruébalo con un lanzamiento real</h2>
         <p className="nota" style={{ marginTop: 0 }}>
-          Tres juegos del conjunto de test, uno por veredicto, leídos el día {dia}. Pulsa uno para
-          ver la estimación junto a lo que pasó de verdad.
+          Tres juegos del conjunto de test, uno por veredicto, leídos el día {dia}. Están elegidos
+          entre los que acabaron dentro del rango estimado, para enseñar cómo funciona; no todos
+          acaban así
+          {cobertura !== undefined && (
+            <>: en la prueba, el rango acertó en el {porcentaje(cobertura)} de los juegos</>
+          )}
+          . En el desplegable del radar están todos los juegos de test, aciertos y fallos.
         </p>
         <div className="casos">
           {destacados.map((d) => (
