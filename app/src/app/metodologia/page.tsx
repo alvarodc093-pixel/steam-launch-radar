@@ -353,30 +353,6 @@ export default async function PaginaMetodologia() {
         </>
       )}
 
-      <h2>Asistente y panel de Power BI</h2>
-      <div className="rejilla">
-        <div className="panel">
-          <h3>Asistente (RAG)</h3>
-          <p className="nota">
-            La página <Link href="/asistente">Asistente</Link> recupera fragmentos del README, de
-            los notebooks y de una ficha por juego (BM25, y embeddings cuando están disponibles) y
-            un modelo de Ollama redacta la respuesta citándolos. Se evalúa con 43 preguntas de
-            referencia; en las 16 de reserva, escritas después de ajustar la búsqueda, responde bien
-            las 10 directas con búsqueda híbrida, 3 de las 6 formuladas con otras palabras, y
-            rechaza las ajenas al proyecto.
-          </p>
-        </div>
-        <div className="panel">
-          <h3>Panel de Power BI</h3>
-          <p className="nota">
-            El repositorio incluye un proyecto de Power BI (<code>powerbi/</code>) con un modelo en
-            estrella y cuatro páginas: mercado, ritmo del primer mes, calidad del modelo y detalle
-            por juego. Se genera desde Python con los mismos datos y un test comprueba que sus
-            métricas coinciden con las de esta página.
-          </p>
-        </div>
-      </div>
-
       <h2>Limitaciones</h2>
       <div className="panel">
         <ul>
@@ -400,6 +376,30 @@ export default async function PaginaMetodologia() {
             fuera.
           </li>
         </ul>
+      </div>
+
+      <h2>Asistente y panel de Power BI</h2>
+      <div className="rejilla">
+        <div className="panel">
+          <h3>Asistente (RAG)</h3>
+          <p className="nota">
+            La página <Link href="/asistente">Asistente</Link> recupera fragmentos del README, de
+            los notebooks y de una ficha por juego (BM25, y embeddings cuando están disponibles) y
+            un modelo de Ollama redacta la respuesta citándolos. Se evalúa con 43 preguntas de
+            referencia; en las 16 de reserva, escritas después de ajustar la búsqueda, responde bien
+            las 10 directas con búsqueda híbrida, 3 de las 6 formuladas con otras palabras, y
+            rechaza las ajenas al proyecto.
+          </p>
+        </div>
+        <div className="panel">
+          <h3>Panel de Power BI</h3>
+          <p className="nota">
+            El repositorio incluye un proyecto de Power BI (<code>powerbi/</code>) con un modelo en
+            estrella y cuatro páginas: mercado, ritmo del primer mes, calidad del modelo y detalle
+            por juego. Se genera desde Python con los mismos datos y un test comprueba que sus
+            métricas coinciden con las de esta página.
+          </p>
+        </div>
       </div>
     </>
   );

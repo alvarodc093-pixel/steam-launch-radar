@@ -5,7 +5,7 @@ export default function NoEncontrada() {
     <>
       <h1>Esta página no existe</h1>
       <p>
-        <Link href="/">Volver al radar</Link>
+        <Link href="/">Volver al inicio</Link>
       </p>
     </>
   );

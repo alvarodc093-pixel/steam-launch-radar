@@ -1,6 +1,4 @@
-import Link from "next/link";
-
-import { decimal, entero, fecha, NOMBRE_BANDA, porcentaje } from "@/lib/formato";
+import { decimal, entero, NOMBRE_BANDA, porcentaje } from "@/lib/formato";
 import type { DatosMercado } from "@/lib/tipos";
 
 const ORDEN_BANDAS = ["hasta_10", "hasta_20", "hasta_40", "mas_de_40"];
@@ -19,11 +17,6 @@ export default function HallazgosEda({ m }: { m: DatosMercado }) {
   return (
     <section className="hallazgos" aria-labelledby="titulo-hallazgos">
       <h2 id="titulo-hallazgos">Lo que dicen los datos</h2>
-      <p className="entradilla">
-        Del análisis de {entero(m.juegos_aptos)} lanzamientos en Steam entre el{" "}
-        {fecha(m.rango_lanzamientos.desde)} y el {fecha(m.rango_lanzamientos.hasta)}. El juego
-        mediano cierra su primer mes con {entero(m.mediana_resenas_30d)} reseñas en inglés.
-      </p>
 
       <div className="rejilla">
         <div className="panel">
@@ -79,11 +72,6 @@ export default function HallazgosEda({ m }: { m: DatosMercado }) {
           </p>
         </div>
       </div>
-
-      <p className="nota">
-        Más cifras en <Link href="/mercado">Mercado</Link> y cómo se construyó el modelo en{" "}
-        <Link href="/metodologia">Metodología</Link>.
-      </p>
     </section>
   );
 }

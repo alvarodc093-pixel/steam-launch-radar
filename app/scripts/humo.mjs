@@ -40,11 +40,20 @@ const post = (ruta, cuerpo) => ({
 try {
   await esperarServidor();
   const html = (t) => t.includes("Steam Launch") && !t.includes("No se encuentran los datos");
-  await comprobar("radar", { ruta: "/" }, 200, html);
-  await comprobar("antes de lanzar", { ruta: "/antes-de-lanzar" }, 200, html);
-  await comprobar("mercado", { ruta: "/mercado" }, 200, html);
+  await comprobar("mercado", { ruta: "/" }, 200, html);
   await comprobar("metodología", { ruta: "/metodologia" }, 200, html);
+  await comprobar("radar", { ruta: "/radar" }, 200, html);
+  await comprobar("antes de lanzar", { ruta: "/antes-de-lanzar" }, 200, html);
   await comprobar("asistente", { ruta: "/asistente" }, 200, html);
+  for (const [viejo, nuevo] of [
+    ["/mercado", "/"],
+    ["/?juego=1&dia=7", "/radar?juego=1&dia=7"],
+  ]) {
+    const r = await fetch(`${BASE}${viejo}`, { redirect: "manual" });
+    const ok = r.status === 308 && new URL(r.headers.get("location"), BASE).href === BASE + nuevo;
+    console.log(`${ok ? "ok  " : "FALLO"} ${r.status} enlace antiguo ${viejo}`);
+    if (!ok) fallos.push(`enlace antiguo ${viejo}`);
+  }
   await comprobar("página inexistente", { ruta: "/no-existe" }, 404);
 
   const radar = { dia: 7, resenas: 120, pct_positivas: 0.9, precio_usd: 14.99, genero: "Action" };

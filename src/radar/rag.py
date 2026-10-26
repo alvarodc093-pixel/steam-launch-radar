@@ -191,6 +191,8 @@ def ficha(juego: pd.Series, lecturas: pd.Series | None, en_test: bool) -> str:
     if en_test:
         lineas.append(
             "Está en el conjunto de test (no se usó para entrenar). "
+            # La portada redirige al radar; con /radar? la palabra entraría en
+            # miles de fichas y saldrían en cualquier pregunta sobre el radar.
             f"Enlace para probarlo: /?juego={juego['appid']}"
         )
     return "\n".join(lineas)

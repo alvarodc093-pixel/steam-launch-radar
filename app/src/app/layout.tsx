@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import Secciones from "@/components/Secciones";
+import Secciones, { Siguiente } from "@/components/Secciones";
 import "./globals.css";
 
 const DESCRIPCION =
@@ -36,6 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
         <main id="contenido" className="contenedor">
           {children}
+          <Siguiente />
         </main>
         <footer className="pie">
           <div className="contenedor">

@@ -649,3 +649,28 @@ details.fuentes ol {
 .caja-pregunta input {
   flex: 1;
 }
+
+/* Enlace a la sección siguiente, al pie de cada página. */
+.siguiente {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2.5rem 0 1rem;
+}
+
+.siguiente a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--acento);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.siguiente a:hover {
+  background: var(--acento-fondo);
+}
