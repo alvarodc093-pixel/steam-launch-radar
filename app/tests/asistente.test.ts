@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   consultaDeBusqueda,
   construirPrompt,
+  esRepregunta,
   Limitador,
   validarConversacion,
 } from "../src/lib/asistente.ts";
@@ -53,6 +54,15 @@ test("una repregunta corta se busca junto con la pregunta anterior", () => {
     { rol: "usuario" as const, texto: "¿Y a día 14?" },
   ];
   assert.match(consultaDeBusqueda(mensajes), /error del radar.*día 14/);
+  // Una pregunta completa sobre otro juego se busca sola.
+  const otra = [
+    { rol: "usuario" as const, texto: "¿Cuántas reseñas tuvo Pax Autocratica en su primer mes?" },
+    { rol: "asistente" as const, texto: "1759 reseñas [1]." },
+    { rol: "usuario" as const, texto: "¿Cuántas copias ha vendido My Little Puppy?" },
+  ];
+  assert.equal(consultaDeBusqueda(otra), "¿Cuántas copias ha vendido My Little Puppy?");
+  assert.equal(esRepregunta("¿Y el precio?"), true);
+  assert.equal(esRepregunta("y si fuera gratis, ¿cambiaría mucho la estimación?"), true);
   const prompt = construirPrompt(mensajes, []);
   assert.equal(prompt[0].role, "system");
   assert.equal(prompt.at(-1)!.role, "user");

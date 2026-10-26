@@ -73,20 +73,33 @@ export function validarConversacion(cuerpo: unknown): Resultado<Mensaje[]> {
 }
 
 /**
+ * Si la pregunta continúa la anterior: empieza por «y», «e» o «entonces», o es
+ * tan corta (cuatro palabras o menos) que no puede decir de qué habla. Una
+ * pregunta completa sobre otro juego no debe arrastrar la anterior.
+ */
+export function esRepregunta(texto: string): boolean {
+  const palabras = texto
+    .replace(/[¿?¡!.,]/g, " ")
+    .trim()
+    .split(/\s+/);
+  return /^(y|e|entonces)$/i.test(palabras[0] ?? "") || palabras.length <= 4;
+}
+
+/**
  * Texto con el que se busca. Una repregunta como «¿y a día 14?» no dice de
  * qué se habla: se le añade la pregunta anterior del usuario.
  */
 export function consultaDeBusqueda(mensajes: Mensaje[]): string {
   const preguntas = mensajes.filter((m) => m.rol === "usuario").map((m) => m.texto);
   const ultima = preguntas.at(-1)!;
-  return preguntas.length > 1 && ultima.split(/\s+/).length < 8
-    ? `${preguntas.at(-2)} ${ultima}`
-    : ultima;
+  return preguntas.length > 1 && esRepregunta(ultima) ? `${preguntas.at(-2)} ${ultima}` : ultima;
 }
 
 const INSTRUCCIONES = `Eres el asistente de Steam Launch Radar, una aplicación que estima con las reseñas de los primeros días cuántas tendrá un juego de Steam al cumplir su primer mes.
 
 Responde en español, en pocas frases, usando solo la información de las fuentes numeradas que acompañan a la pregunta. Cita la fuente de cada dato con su número entre corchetes, por ejemplo [2]. Si las fuentes no contienen la respuesta, dilo claramente y sugiere qué se puede consultar en la aplicación; no inventes cifras ni juegos.
+
+Responde solo a la última pregunta, con las fuentes que la acompañan. Los mensajes anteriores sirven únicamente para entender una repregunta como «¿y a día 14?»: no repitas respuestas anteriores ni uses sus datos si la pregunta nueva trata de otra cosa.
 
 Ten en cuenta que todas las cifras de reseñas son reseñas en inglés, y que son una aproximación a la actividad de un juego, no a sus ventas.`;
 
