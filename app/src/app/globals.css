@@ -674,3 +674,54 @@ details.fuentes ol {
 .siguiente a:hover {
   background: var(--acento-fondo);
 }
+
+/* Lectura en directo y juegos seguidos. */
+.en-directo {
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.fila-campo {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fila-campo input {
+  flex: 1;
+  min-width: 0;
+}
+
+button.secundario {
+  margin-top: 0.5rem;
+  background: transparent;
+  color: var(--acento);
+  border: 1px solid var(--acento);
+}
+
+button.enlace {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--acento);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.seguidos {
+  margin-top: 0.7rem;
+}
+
+.seguidos ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.seguidos li {
+  margin-bottom: 0.3rem;
+}
+
+.aviso-cambio {
+  color: var(--medio);
+  font-weight: 600;
+}

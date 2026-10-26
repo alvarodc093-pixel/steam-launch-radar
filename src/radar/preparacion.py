@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from radar import config
+from radar.ingesta.resenas import CAMPOS_DIA
 
 logger = logging.getLogger("radar.preparacion")
 
@@ -101,17 +102,25 @@ def construir_juegos(fichas: list[dict], resenas: list[dict]) -> pd.DataFrame:
 
 
 def construir_diarias(resenas: list[dict], juegos: pd.DataFrame) -> pd.DataFrame:
-    """Reseñas por día relativo al lanzamiento (negativo = antes de la fecha oficial)."""
+    """Reseñas por día relativo al lanzamiento (negativo = antes de la fecha oficial).
+
+    Las descargas del formato 1 solo traen el voto: sus señales tempranas
+    quedan vacías, no a cero.
+    """
     lanzamiento = juegos.set_index("appid")["fecha_lanzamiento"]
     filas = []
     for r in resenas:
         if r["appid"] not in lanzamiento.index:
             continue
         inicio = lanzamiento[r["appid"]]
-        for fecha, (pos, neg) in r.get("dias", {}).items():
+        for fecha, valores in r.get("dias", {}).items():
             dia = (pd.Timestamp(fecha) - inicio).days
-            filas.append((r["appid"], dia, pos, neg))
-    diarias = pd.DataFrame(filas, columns=["appid", "dia", "positivas", "negativas"])
+            completos = list(valores) + [np.nan] * (len(CAMPOS_DIA) - len(valores))
+            filas.append((r["appid"], dia, *completos))
+    diarias = pd.DataFrame(filas, columns=["appid", "dia", *CAMPOS_DIA])
+    diarias[["positivas", "negativas"]] = diarias[["positivas", "negativas"]].astype(
+        int
+    )
     diarias["resenas"] = diarias["positivas"] + diarias["negativas"]
     return diarias.sort_values(["appid", "dia"]).reset_index(drop=True)
 
@@ -141,13 +150,36 @@ def marcar_aptos(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFrame:
     fuera = (juegos["fecha_lanzamiento"] < limite).fillna(False).to_numpy()
 
     estado = np.full(len(juegos), "apto", dtype=object)
+    estado[juegos["resenas_30d"] > config.RESENAS_MAX_30D] = "mas_de_10000_en_30d"
     estado[juegos["pct_previas"] > MAX_PCT_PREVIAS] = "fase_previa_publica"
-    estado[juegos["resenas_30d"] == 0] = "sin_resenas_en_30d"
+    estado[juegos["resenas_30d"] < config.RESENAS_MIN_30D] = "menos_de_10_en_30d"
     estado[juegos["precio_usd"].isna()] = "sin_precio_usd"
     estado[fuera] = "fuera_del_historico_api"
     estado[~juegos["descarga_completa"]] = "descarga_incompleta"
     juegos["estado"] = estado
     return juegos
+
+
+# Señales de las reseñas de los primeros días, además del volumen y el voto.
+SENALES = ("pct_compra_steam", "pct_gratis", "pct_deck", "horas_resena")
+
+
+def senales_tempranas(tramo: pd.DataFrame) -> dict[str, pd.Series]:
+    """Por juego: proporciones sobre sus reseñas y horas medias al reseñar.
+
+    Sin reseñas, o con una descarga sin esas señales, quedan vacías para que
+    el modelo las impute en lugar de leer un 0 que no se ha medido.
+    """
+    sumas = tramo.groupby("appid")[["resenas", *CAMPOS_DIA[2:]]].sum(min_count=1)
+    n = sumas["resenas"].where(sumas["resenas"] > 0)
+    return {
+        "pct_compra_steam": sumas["compra_steam"] / n,
+        "pct_gratis": sumas["gratis"] / n,
+        "pct_deck": sumas["deck"] / n,
+        # Media de log(1 + horas): la típica, sin que un jugador con 500 horas
+        # mueva la cifra. Se devuelve en horas para leerla.
+        "horas_resena": np.expm1(sumas["horas_log"] / n),
+    }
 
 
 def construir_dataset(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFrame:
@@ -167,6 +199,8 @@ def construir_dataset(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFra
             tramo["positivas"] / tramo["resenas"].replace(0, 1),
             np.nan,
         )
+        for nombre, valor in senales_tempranas(ventana[ventana["dia"] < k]).items():
+            aptos[f"{nombre}_{k}d"] = valor.reindex(aptos["appid"]).to_numpy()
     aptos["mes_lanzamiento"] = aptos["fecha_lanzamiento"].dt.month
     aptos["dia_semana_lanzamiento"] = aptos["fecha_lanzamiento"].dt.day_of_week
     columnas = [
@@ -183,7 +217,11 @@ def construir_dataset(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFra
         *[
             c
             for k in config.DIAS_LECTURA
-            for c in (f"resenas_{k}d", f"pct_positivas_{k}d")
+            for c in (
+                f"resenas_{k}d",
+                f"pct_positivas_{k}d",
+                *(f"{s}_{k}d" for s in SENALES),
+            )
         ],
         "resenas_30d",
     ]

@@ -17,6 +17,7 @@ from sklearn.base import clone
 
 from radar import exportar
 from radar import modelo as m
+from radar.preparacion import SENALES
 
 
 def _vector(js: dict, fila: dict) -> list[float]:
@@ -110,4 +111,7 @@ def test_entradas_app_coinciden_con_las_variables(datos) -> None:  # noqa: ANN00
         "dia",
         "resenas",
         "pct_positivas",
+        "senales",
     }
+    # Sin señales medidas van vacías, no a cero: la app las imputa.
+    assert set(fila["senales"]) == set(SENALES)

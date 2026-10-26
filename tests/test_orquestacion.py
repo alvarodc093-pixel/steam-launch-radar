@@ -48,7 +48,7 @@ def test_candidatos_recorre_hasta_salir_de_la_ventana(raw, monkeypatch) -> None:
         ],  # 1: demasiado reciente
         100: [
             _fila(3, date(2026, 3, 1)),
-            _fila(4, date(2026, 3, 1), resenas_tienda=10),
+            _fila(4, date(2026, 3, 1), resenas_tienda=0),  # sin cifra: < 10
         ],
         200: [_fila(5, date(2025, 6, 1))],  # ya fuera de la ventana: aquí se para
         300: [_fila(6, date(2025, 5, 1))],
@@ -118,6 +118,31 @@ def test_resenas_solo_de_juegos_en_ventana(raw, monkeypatch) -> None:  # noqa: A
     assert guardadas == ["1"]
     agregado = json.loads((raw / "resenas" / "1.json").read_text(encoding="utf-8"))
     assert agregado["appid"] == 1 and "descargado_en" in agregado
+
+
+def test_vuelve_a_descargar_las_de_un_formato_anterior(raw, monkeypatch) -> None:  # noqa: ANN001
+    (raw / "fichas").mkdir()
+    (raw / "resenas").mkdir()
+    for appid in (1, 2):
+        (raw / "fichas" / f"{appid}.json").write_text(
+            json.dumps({"appid": appid, "fecha_lanzamiento": "2026-03-01"}),
+            encoding="utf-8",
+        )
+    # La 1 es del formato antiguo (solo voto); la 2 ya está al día.
+    (raw / "resenas" / "1.json").write_text(json.dumps({"appid": 1}), encoding="utf-8")
+    (raw / "resenas" / "2.json").write_text(
+        json.dumps({"appid": 2, "formato": resenas.FORMATO}),
+        encoding="utf-8",
+    )
+    pedidas = []
+
+    def descargar(_cliente, appid, _maximo):  # noqa: ANN001, ANN202
+        pedidas.append(appid)
+        return {"formato": resenas.FORMATO, "dias": {}}
+
+    monkeypatch.setattr(resenas, "descargar_resenas", descargar)
+    ingesta.paso_resenas(HOY, hilos=2)
+    assert pedidas == [1]
 
 
 def test_main_sin_candidatos_avisa_y_sale_con_error(raw, caplog) -> None:  # noqa: ANN001

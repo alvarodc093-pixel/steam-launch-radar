@@ -22,6 +22,7 @@ import pandas as pd
 
 from radar import config, eda
 from radar import modelo as m
+from radar.preparacion import SENALES
 
 logger = logging.getLogger("radar.exportar")
 
@@ -354,6 +355,12 @@ def entradas_app(df: pd.DataFrame, dia: int | None) -> list[dict[str, Any]]:
                 "dia": dia,
                 "resenas": int(juego[f"resenas_{dia}d"]),
                 "pct_positivas": None if pd.isna(pct) else float(pct),
+                # Las señales que calcula la lectura en directo (la app las
+                # imputa con la mediana si faltan).
+                "senales": {
+                    s: None if pd.isna(v := juego.get(f"{s}_{dia}d")) else float(v)
+                    for s in SENALES
+                },
             }
         filas.append(fila)
     return filas
@@ -407,7 +414,10 @@ def exportar(carpeta_procesados: Path, carpeta_salida: Path, ruta_casos: Path) -
 
     radar = {
         dia: m.entrenar(
-            dataset, m.variables_radar(dia), columna_ratio=f"log_resenas_{dia}d"
+            dataset,
+            m.variables_radar(dia),
+            columna_ratio=f"log_resenas_{dia}d",
+            senales=m.senales_radar(dia),
         )
         for dia in config.DIAS_LECTURA
     }

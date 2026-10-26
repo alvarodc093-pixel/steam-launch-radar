@@ -16,13 +16,18 @@ import {
   validarConversacion,
 } from "@/lib/asistente";
 import { buscadorRag } from "@/lib/datos";
-import { chat, embeddingConsulta, ErrorOllama } from "@/lib/ollama";
+import { embeddingConsulta, embeddingsActivos, MODELO_INDICE, precargar } from "@/lib/embeddings";
+import { chat, ErrorOllama } from "@/lib/ollama";
 
 export const dynamic = "force-dynamic";
 // Un modelo local en CPU puede tardar en contestar.
 export const maxDuration = 120;
 
 const limitador = new Limitador(20, 10 * 60_000);
+
+// El modelo de embeddings se empieza a cargar al arrancar la función, no con
+// la primera pregunta. Si falla, cada pregunta lo reintenta.
+if (embeddingsActivos()) precargar().catch(() => {});
 
 export async function POST(request: Request) {
   // Vercel pone la IP real del cliente la primera en x-forwarded-for.
@@ -55,9 +60,10 @@ export async function POST(request: Request) {
 
   const consulta = consultaDeBusqueda(conversacion.valor);
   const embeddings = buscador.indice.embeddings;
-  const vector = embeddings
-    ? await embeddingConsulta(embeddings.prefijo_consulta + consulta, embeddings.modelo)
-    : null;
+  const vector =
+    embeddings?.modelo === MODELO_INDICE
+      ? await embeddingConsulta(embeddings.prefijo_consulta + consulta)
+      : null;
   const { modo, resultados } = buscador.buscar(consulta, vector);
 
   const fuentes = resultados.map(({ fragmento }) => ({

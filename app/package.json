@@ -16,6 +16,7 @@
     "evaluar-asistente": "node scripts/evaluar-asistente.ts"
   },
   "dependencies": {
+    "@huggingface/transformers": "3.7.6",
     "chart.js": "4.6.1",
     "next": "16.4.3",
     "react": "19.3.1",
