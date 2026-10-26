@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import EnDirecto, { type RespuestaEnDirecto } from "@/components/EnDirecto";
 import Grafico, { type Serie } from "@/components/Grafico";
 import PortadaRadar, { type DatosPortada } from "@/components/PortadaRadar";
 import { dolares, entero, fecha, porcentaje } from "@/lib/formato";
@@ -78,7 +79,28 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   const [lectura, setLectura] = useState<LecturaRadar | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
+  const [directo, setDirecto] = useState<RespuestaEnDirecto | null>(null);
   const consultado = useRef(false);
+
+  function lecturaEnDirecto(r: RespuestaEnDirecto) {
+    setEjemplo(null);
+    setDirecto(r);
+    if (!r.entrada || !r.lectura) {
+      setLectura(null);
+      setError(`${r.ficha.nombre}: ${r.aviso ?? "no se puede leer."}`);
+      return;
+    }
+    const e = r.entrada;
+    setError(null);
+    setDia(e.dia);
+    setCampos({
+      resenas: String(e.resenas),
+      pct: e.pct_positivas === null ? "" : String(Math.round(e.pct_positivas * 100)),
+      precio: String(e.precio_usd),
+      genero: e.genero,
+    });
+    setLectura(r.lectura);
+  }
 
   function rellenar(e: Ejemplo | null, d: number) {
     if (e) setCampos(camposDe(e, d, generos));
@@ -103,6 +125,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   async function elegirEjemplo(appid: string) {
     setLectura(null);
     setError(null);
+    setDirecto(null);
     if (!appid) {
       setEjemplo(null);
       setCampos(VACIO);
@@ -115,6 +138,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   /** Atajo de la portada: carga el juego y lee el radar en el día de los destacados. */
   async function probar(appid: number) {
     setError(null);
+    setDirecto(null);
     const e = await cargarEjemplo(String(appid));
     if (!e) return;
     const c = camposDe(e, portada.dia, generos);
@@ -126,6 +150,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   function elegirDia(d: number) {
     setDia(d);
     setLectura(null);
+    setDirecto(null);
     rellenar(ejemplo, d);
   }
 
@@ -133,6 +158,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
     setCampos((c) => ({ ...c, [campo]: valor }));
     setEjemplo(null);
     setLectura(null);
+    setDirecto(null);
   }
 
   async function consultar(c: Campos, d: number) {
@@ -180,8 +206,10 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   return (
     <div className="dos-columnas">
       <form className="panel" onSubmit={enviar} noValidate>
+        <EnDirecto onLectura={lecturaEnDirecto} actual={directo} />
+
         <div className="campo">
-          <label htmlFor="ejemplo">Probar con un lanzamiento real</label>
+          <label htmlFor="ejemplo">O probar con un lanzamiento del test</label>
           <select
             id="ejemplo"
             value={ejemplo?.appid ?? ""}
@@ -278,6 +306,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
             dia={dia}
             resenas={Number(campos.resenas)}
             ejemplo={ejemplo}
+            directo={directo}
           />
         ) : (
           <PortadaRadar datos={portada} onProbar={(a) => void probar(a)} cargando={cargando} />
@@ -292,11 +321,13 @@ function Resultado({
   dia,
   resenas,
   ejemplo,
+  directo,
 }: {
   lectura: LecturaRadar;
   dia: number;
   resenas: number;
   ejemplo: Ejemplo | null;
+  directo: RespuestaEnDirecto | null;
 }) {
   const { estimacion: est, cohorte } = lectura;
   const [, q25, q50, q75] = cohorte.cuantiles30d;
@@ -334,8 +365,11 @@ function Resultado({
     if (ejemplo) {
       s.push({ etiqueta: "Lo que pasó", valores: ejemplo.acumuladas, color: "#2f5bd7" });
     }
+    if (directo?.acumuladas.length) {
+      s.push({ etiqueta: "Hasta hoy", valores: directo.acumuladas, color: "#2f5bd7" });
+    }
     return s;
-  }, [lectura, est, dia, resenas, ejemplo]);
+  }, [lectura, est, dia, resenas, ejemplo, directo]);
 
   const etiquetas = useMemo(() => lectura.trayectoria.map((_, i) => String(i + 1)), [lectura]);
   const dentro =
@@ -371,6 +405,20 @@ function Resultado({
           </div>
         </div>
       </div>
+
+      {directo && (
+        <p className="nota" style={{ marginTop: "1rem" }}>
+          {directo.ficha.nombre} ({dolares(directo.ficha.precioUsd ?? 0)},{" "}
+          {directo.ficha.generoPrincipal}), lanzado el {fecha(directo.ficha.fechaLanzamiento)}:
+          leído en directo de Steam con sus reseñas de los días 0 a {dia - 1}.
+          {directo.resenas30d !== null &&
+            ` Ya cumplió el mes: cerró con ${entero(directo.resenas30d)} reseñas, ${
+              directo.resenas30d >= est.inferior && directo.resenas30d <= est.superior
+                ? "dentro"
+                : "fuera"
+            } del rango.`}
+        </p>
+      )}
 
       {ejemplo && (
         <p className={dentro ? "nota" : "aviso"} style={{ marginTop: "1rem" }}>

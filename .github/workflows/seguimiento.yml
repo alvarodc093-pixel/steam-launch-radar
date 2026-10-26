@@ -1,0 +1,29 @@
+name: Seguimiento de lanzamientos
+
+# Una vez al día lee en directo los juegos de app/seguimiento.json y avisa en
+# un issue por juego cuando cambia su veredicto (ver app/scripts/seguimiento.ts).
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  seguimiento:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Sin dependencias: el script solo usa fetch y la lógica de la app.
+      - run: node scripts/seguimiento.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
