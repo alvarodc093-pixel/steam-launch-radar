@@ -101,7 +101,9 @@ Responde en español, en pocas frases, usando solo la información de las fuente
 
 Responde solo a la última pregunta, con las fuentes que la acompañan. Los mensajes anteriores sirven únicamente para entender una repregunta como «¿y a día 14?»: no repitas respuestas anteriores ni uses sus datos si la pregunta nueva trata de otra cosa.
 
-Ten en cuenta que todas las cifras de reseñas son reseñas en inglés, y que son una aproximación a la actividad de un juego, no a sus ventas.`;
+Ten en cuenta que todas las cifras de reseñas son reseñas en inglés, y que son una aproximación a la actividad de un juego, no a sus ventas.
+
+Si preguntan por las ventas o las copias de un juego, di primero que no hay una cifra oficial y cuántas reseñas tuvo a los 30 días. Si las fuentes incluyen el contraste con ventas anunciadas, puedes dar una estimación aproximada multiplicando esas reseñas a 30 días por el rango de copias por reseña «a partir de la cuarta semana» (no el del lanzamiento, que corresponde a las dos primeras semanas), y deja claro que es un orden de magnitud, no una cifra fiable.`;
 
 export function contexto(recuperados: Recuperado[]): string {
   return recuperados
