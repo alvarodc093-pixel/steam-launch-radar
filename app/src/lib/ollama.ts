@@ -55,7 +55,9 @@ export async function* chat(
         // Sin el razonamiento previo de los modelos que lo tienen: tarda más y
         // para resumir unos fragmentos no aporta.
         think: false,
-        options: { temperature: 0.2 },
+        // Sin azar: la misma pregunta con las mismas fuentes da la misma
+        // respuesta, que es lo que se espera de un asistente sobre datos.
+        options: { temperature: 0, seed: 42 },
       }),
       signal: senal,
     });
