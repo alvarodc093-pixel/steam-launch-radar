@@ -1,6 +1,6 @@
 table calendario
-	dataCategory: Time
 	lineageTag: cd3ca618-067f-5d44-af85-19781401a836
+	dataCategory: Time
 
 	column fecha
 		dataType: dateTime
