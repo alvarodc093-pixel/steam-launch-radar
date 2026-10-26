@@ -16,7 +16,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { construirPrompt } from "../src/lib/asistente.ts";
-import { chat, CONFIG, embeddingConsulta } from "../src/lib/ollama.ts";
+import { embeddingConsulta } from "../src/lib/embeddings.ts";
+import { chat, CONFIG } from "../src/lib/ollama.ts";
 import { Buscador, esFuenteEsperada, type IndiceRag, type ModoBusqueda } from "../src/lib/rag.ts";
 
 interface Pregunta {
@@ -57,8 +58,9 @@ const { modelo, prefijo_consulta } = indice.embeddings;
 
 const vectores = new Map<Pregunta, number[]>();
 for (const p of preguntas) {
-  const v = await embeddingConsulta(prefijo_consulta + p.pregunta, modelo);
-  if (!v) throw new Error(`Sin respuesta de ${CONFIG.host} para los embeddings (${modelo})`);
+  // La primera llamada descarga el modelo: se le da todo el tiempo que necesite.
+  const v = await embeddingConsulta(prefijo_consulta + p.pregunta, 10 * 60_000);
+  if (!v) throw new Error(`No se pudo cargar el modelo de embeddings (${modelo})`);
   vectores.set(p, v);
 }
 

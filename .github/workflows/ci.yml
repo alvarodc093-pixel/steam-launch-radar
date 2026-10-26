@@ -26,6 +26,9 @@ jobs:
         working-directory: app
     env:
       NEXT_TELEMETRY_DISABLED: "1"
+      # La prueba de humo no descarga los 200 MB del modelo de embeddings: el
+      # asistente responde igual, buscando solo por palabras.
+      RAG_EMBEDDINGS: "no"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

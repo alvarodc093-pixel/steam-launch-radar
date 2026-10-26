@@ -1,4 +1,4 @@
-/** Cliente mínimo de la API de Ollama: embeddings y chat en streaming.
+/** Cliente mínimo de la API de Ollama: el chat en streaming que redacta las respuestas.
 
 En local apunta al Ollama del equipo (http://localhost:11434). En Vercel no
 hay Ollama local, así que OLLAMA_HOST apunta a Ollama Cloud
@@ -21,27 +21,6 @@ function cabeceras(): HeadersInit {
     "Content-Type": "application/json",
     ...(CONFIG.clave ? { Authorization: `Bearer ${CONFIG.clave}` } : {}),
   };
-}
-
-/**
- * Vector de la consulta, o null si el modelo de embeddings no está disponible
- * (Ollama apagado, o un servicio en la nube que no lo ofrece): entonces el
- * asistente busca solo por palabras en lugar de fallar.
- */
-export async function embeddingConsulta(texto: string, modelo: string): Promise<number[] | null> {
-  try {
-    const r = await fetch(`${CONFIG.host}/api/embed`, {
-      method: "POST",
-      headers: cabeceras(),
-      body: JSON.stringify({ model: modelo, input: texto }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!r.ok) return null;
-    const cuerpo = (await r.json()) as { embeddings?: number[][] };
-    return cuerpo.embeddings?.[0] ?? null;
-  } catch {
-    return null;
-  }
 }
 
 export class ErrorOllama extends Error {}
