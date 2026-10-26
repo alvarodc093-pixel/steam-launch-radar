@@ -80,6 +80,38 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   const [cargando, setCargando] = useState(false);
   const consultado = useRef(false);
 
+  // El buscador muestra «Nombre (fecha)»; si dos juegos coinciden en ambas
+  // cosas, se añade el appid para que cada texto lleve a un solo juego.
+  const etiquetas = useMemo(() => {
+    const base = (e: EjemploResumen) => `${e.nombre} (${fecha(e.fecha_lanzamiento)})`;
+    const repetidas = new Set<string>();
+    const vistas = new Set<string>();
+    for (const e of ejemplos) {
+      const t = base(e);
+      if (vistas.has(t)) repetidas.add(t);
+      vistas.add(t);
+    }
+    const porAppid = new Map<number, string>();
+    const porTexto = new Map<string, number>();
+    for (const e of ejemplos) {
+      const t = repetidas.has(base(e)) ? `${base(e)} · ${e.appid}` : base(e);
+      porAppid.set(e.appid, t);
+      porTexto.set(t, e.appid);
+    }
+    return { porAppid, porTexto };
+  }, [ejemplos]);
+  const [busqueda, setBusqueda] = useState(
+    ejemploInicial ? (etiquetas.porAppid.get(ejemploInicial.appid) ?? "") : "",
+  );
+
+  /** Cada letra filtra la lista; el juego se carga al coincidir con uno. */
+  function buscar(texto: string) {
+    setBusqueda(texto);
+    const appid = etiquetas.porTexto.get(texto);
+    if (appid !== undefined) void elegirEjemplo(String(appid));
+    else if (!texto.trim() && ejemplo) void elegirEjemplo("");
+  }
+
   function rellenar(e: Ejemplo | null, d: number) {
     if (e) setCampos(camposDe(e, d, generos));
   }
@@ -117,6 +149,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
     setError(null);
     const e = await cargarEjemplo(String(appid));
     if (!e) return;
+    setBusqueda(etiquetas.porAppid.get(e.appid) ?? e.nombre);
     const c = camposDe(e, portada.dia, generos);
     setDia(portada.dia);
     setCampos(c);
@@ -132,6 +165,7 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
   function cambiar(campo: keyof typeof VACIO, valor: string) {
     setCampos((c) => ({ ...c, [campo]: valor }));
     setEjemplo(null);
+    setBusqueda("");
     setLectura(null);
   }
 
@@ -182,21 +216,23 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
       <form className="panel" onSubmit={enviar} noValidate>
         <div className="campo">
           <label htmlFor="ejemplo">Probar con un lanzamiento real</label>
-          <select
+          <input
             id="ejemplo"
-            value={ejemplo?.appid ?? ""}
-            onChange={(e) => void elegirEjemplo(e.target.value)}
-          >
-            <option value="">— Mis propios datos —</option>
+            type="search"
+            list="ejemplos-lista"
+            placeholder="Escribe el nombre de un juego"
+            autoComplete="off"
+            value={busqueda}
+            onChange={(e) => buscar(e.target.value)}
+          />
+          <datalist id="ejemplos-lista">
             {ejemplos.map((e) => (
-              <option key={e.appid} value={e.appid}>
-                {e.nombre} ({fecha(e.fecha_lanzamiento)})
-              </option>
+              <option key={e.appid} value={etiquetas.porAppid.get(e.appid)} />
             ))}
-          </select>
+          </datalist>
           <span className="nota">
-            Juegos que el modelo no vio al entrenar: puedes comparar su estimación con lo que pasó
-            de verdad.
+            {ejemplos.length} juegos que el modelo no vio al entrenar: puedes comparar su estimación
+            con lo que pasó de verdad. Bórralo para usar tus propios datos.
           </span>
         </div>
 
