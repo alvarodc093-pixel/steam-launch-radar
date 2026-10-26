@@ -184,8 +184,9 @@ la app y lo compara con dónde acabó de verdad a 30 días dentro de su cohorte:
   estima el modelo.
 - **El «por encima» acierta casi siempre, pero casi siempre es trivial:** el juego ya
   tenía, el día de la lectura, más reseñas de las que tres de cada cuatro juegos
-  parecidos alcanzan en un mes (79 de 105 el día 3, 125 de 132 el día 7, 156 de 156 el día 14). El veredicto lo confirma; el modelo apenas
-  añade información, salvo algo el día 3.
+  parecidos alcanzan en un mes (79 de 105 el día 3, 125 de 132 el día 7, 156 de 156 el
+  día 14). El veredicto lo confirma; el modelo apenas añade información, salvo algo el
+  día 3.
 - **El «en línea» acierta el 72-90 %** según el día, y es el veredicto más frecuente: el
   radar solo se pronuncia cuando todo el rango queda fuera de la mitad central.
 
@@ -239,7 +240,7 @@ el anuncio no las separa, frente a reseñas que son solo de Steam.
 
 `src/radar/rag.py` construye el índice y `app/src/lib/rag.ts` hace la recuperación.
 
-- **Corpus:** 4.114 fragmentos. 45 salen del README y de las celdas de texto de los
+- **Corpus:** 4.122 fragmentos. 53 salen del README y de las celdas de texto de los
   notebooks, cortados por secciones, y el resto son una ficha por juego descargado con
   sus cifras (precio, géneros, estudio, reseñas los días 3, 7, 14 y 30, y por qué se
   excluyó si es el caso).
@@ -552,8 +553,8 @@ steam-launch-radar/
   trabaja con proporciones, pero descarta el mes de lanzamiento como variable previa.
 - **Medir la recuperación antes de complicarla.** Con preguntas directas BM25 basta;
   con preguntas reformuladas los embeddings pasan de no encontrar la fuente en ninguna
-  a encontrarla en 3 de 5. Por eso el asistente combina las dos búsquedas cuando puede y, cuando no
-  hay embeddings, baja a BM25 y lo dice en cada respuesta.
+  a encontrarla en 3 de 5. Por eso el asistente combina las dos búsquedas cuando puede
+  y, cuando no hay embeddings, baja a BM25 y lo dice en cada respuesta.
 - **Fichas generadas, no texto libre.** Cada juego se describe con una plantilla a
   partir de las tablas procesadas, así que el asistente no puede citar una cifra que no
   esté en los datos del radar.
@@ -582,9 +583,7 @@ existen:
 
 ## Convención de commits
 
-Desde que el proyecto tiene CI y tests, los commits siguen
-[Conventional Commits](https://www.conventionalcommits.org/es/) (los primeros, de la
-construcción inicial, son frases descriptivas):
+Los commits siguen [Conventional Commits](https://www.conventionalcommits.org/es/):
 `tipo(ámbito): descripción` en imperativo o nominal, con los tipos `feat`, `fix`,
 `refactor`, `test`, `docs`, `ci` y `chore`, y ámbitos como `ingesta`, `modelo`, `app`,
 `datos` o `notebooks`. Ejemplo: `fix(modelo): estadístico de orden exacto en el

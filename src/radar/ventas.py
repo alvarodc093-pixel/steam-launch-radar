@@ -87,14 +87,16 @@ def resumen(contraste: pd.DataFrame) -> dict[str, Any]:
     def tramo(filas: pd.DataFrame) -> dict[str, Any]:
         valores = filas["copias_pc_por_resena"]
         return {
-            "juegos": len(filas),
+            "juegos": int(filas["appid"].nunique()),
             "mediana": round(float(valores.median()), 1),
             "minimo": round(float(valores.min()), 1),
             "maximo": round(float(valores.max()), 1),
         }
 
+    # Un juego puede tener varios anuncios (al estrenarse y semanas después).
     return {
-        "juegos": len(contraste),
+        "cifras": len(contraste),
+        "juegos": int(contraste["appid"].nunique()),
         "con_cifra_de_pc": len(pc),
         "lanzamiento": tramo(pc[pc["dia"] <= DIAS_LANZAMIENTO]),
         "despues_del_primer_mes": tramo(pc[pc["dia"] >= DIAS_MES]),

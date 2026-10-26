@@ -52,12 +52,14 @@ def test_contraste_cuenta_los_dias_completos():
 def test_resumen_separa_lanzamiento_y_primer_mes():
     contraste = pd.DataFrame(
         {
+            "appid": [1, 2, 3, 4, 1],
             "dia": [3, 7, 60, 90, 5],
             "copias_pc_por_resena": [200.0, 100.0, 50.0, 40.0, None],
         }
     )
     r = ventas.resumen(contraste)
-    assert r["juegos"] == 5
+    assert r["cifras"] == 5
+    assert r["juegos"] == 4
     assert r["con_cifra_de_pc"] == 4
     assert r["lanzamiento"] == {
         "juegos": 2,
@@ -98,5 +100,6 @@ def test_main_escribe_el_json(monkeypatch, tmp_path):
     texto = salida.read_text(encoding="utf-8")
     assert "NaN" not in texto  # el navegador no podría leerlo
     datos = json.loads(texto)
-    assert datos["resumen"]["juegos"] == len(datos["juegos"])
+    assert datos["resumen"]["cifras"] == len(datos["juegos"])
+    assert datos["resumen"]["juegos"] == len({j["appid"] for j in datos["juegos"]})
     assert all("url" in j for j in datos["juegos"])

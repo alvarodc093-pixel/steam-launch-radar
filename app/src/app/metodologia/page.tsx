@@ -265,10 +265,11 @@ export default async function PaginaMetodologia() {
           <div className="panel">
             <p>
               Steam no publica ventas, así que el radar trabaja con reseñas. Para comprobar que son
-              una buena aproximación, se cruzan las ventas oficiales que anunciaron los estudios de{" "}
-              {ventas.resumen.juegos} juegos de la muestra con las reseñas en inglés que llevaba
-              cada uno ese mismo día. La proporción solo se compara cuando se sabe qué parte de las
-              ventas es de PC: las de consola no dejan reseñas en Steam.
+              una buena aproximación, se cruzan las {ventas.resumen.cifras} cifras de ventas
+              oficiales que anunciaron los estudios de {ventas.resumen.juegos} juegos de la muestra
+              con las reseñas en inglés que llevaba cada juego ese mismo día. La proporción solo se
+              compara cuando se sabe qué parte de las ventas es de PC: las de consola no dejan
+              reseñas en Steam.
             </p>
             <div className="rejilla">
               <div>

@@ -150,6 +150,7 @@ interface TramoVentas {
 
 export interface DatosVentas {
   resumen: {
+    cifras: number;
     juegos: number;
     con_cifra_de_pc: number;
     lanzamiento: TramoVentas;
