@@ -5,7 +5,13 @@ hay Ollama local, así que OLLAMA_HOST apunta a Ollama Cloud
 (https://ollama.com) y OLLAMA_API_KEY lleva la clave.
 */
 
-export const CONFIG = {
+export interface Destino {
+  host: string;
+  clave: string;
+  modelo: string;
+}
+
+export const CONFIG: Destino = {
   host: (process.env.OLLAMA_HOST ?? "http://localhost:11434").replace(/\/+$/, ""),
   clave: process.env.OLLAMA_API_KEY ?? "",
   modelo: process.env.OLLAMA_MODELO ?? "qwen3.5",
@@ -16,30 +22,34 @@ export interface MensajeOllama {
   content: string;
 }
 
-function cabeceras(): HeadersInit {
+export function cabeceras(destino: Destino = CONFIG): HeadersInit {
   return {
     "Content-Type": "application/json",
-    ...(CONFIG.clave ? { Authorization: `Bearer ${CONFIG.clave}` } : {}),
+    ...(destino.clave ? { Authorization: `Bearer ${destino.clave}` } : {}),
   };
 }
 
 export class ErrorOllama extends Error {}
 
-/** Devuelve los trozos de texto de la respuesta según los genera el modelo. */
+/**
+ * Devuelve los trozos de texto de la respuesta según los genera el modelo.
+ * `destino` permite a la evaluación comparar el modelo local con el publicado.
+ */
 export async function* chat(
   mensajes: MensajeOllama[],
   cancelar?: AbortSignal,
+  destino: Destino = CONFIG,
 ): AsyncGenerator<string> {
   // Se corta si tarda demasiado o si quien preguntó cierra la página.
   const limite = AbortSignal.timeout(120_000);
   const senal = cancelar ? AbortSignal.any([limite, cancelar]) : limite;
   let r: Response;
   try {
-    r = await fetch(`${CONFIG.host}/api/chat`, {
+    r = await fetch(`${destino.host}/api/chat`, {
       method: "POST",
-      headers: cabeceras(),
+      headers: cabeceras(destino),
       body: JSON.stringify({
-        model: CONFIG.modelo,
+        model: destino.modelo,
         messages: mensajes,
         stream: true,
         // Sin el razonamiento previo de los modelos que lo tienen: tarda más y
@@ -50,13 +60,13 @@ export async function* chat(
       signal: senal,
     });
   } catch {
-    throw new ErrorOllama(`No se puede conectar con Ollama en ${CONFIG.host}.`);
+    throw new ErrorOllama(`No se puede conectar con Ollama en ${destino.host}.`);
   }
   if (!r.ok || !r.body) {
     const detalle = await r.text().catch(() => "");
     throw new ErrorOllama(
       r.status === 404
-        ? `El modelo «${CONFIG.modelo}» no está disponible en Ollama.`
+        ? `El modelo «${destino.modelo}» no está disponible en Ollama.`
         : `Ollama respondió con un error ${r.status}. ${detalle.slice(0, 200)}`,
     );
   }

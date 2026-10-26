@@ -119,13 +119,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ appi
   }
 
   const generos = radar.modelos[String(dia)].generos;
-  const { resenas, pctPositivas } = lecturaHasta(dias, dia);
+  const { resenas, pctPositivas, senales } = lecturaHasta(dias, dia);
   const entrada = {
     dia,
     resenas,
     pct_positivas: pctPositivas,
     precio_usd: ficha.precioUsd,
     genero: generos.includes(ficha.generoPrincipal) ? ficha.generoPrincipal : "Otro",
+    senales,
   };
   return NextResponse.json({ ...base, entrada, lectura: leerRadar(radar, entrada) });
 }

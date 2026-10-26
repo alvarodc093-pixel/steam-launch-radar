@@ -176,6 +176,8 @@ export default function FormularioRadar({ dias, generos, ejemplos, inicial, port
           pct_positivas: c.pct === "" ? null : Number(c.pct) / 100,
           precio_usd: Number(c.precio.replace(",", ".")),
           genero: c.genero,
+          // Las señales solo existen si el juego se leyó en directo.
+          senales: directo?.entrada?.senales,
         }),
       });
       const cuerpo = await r.json();

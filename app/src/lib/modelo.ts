@@ -13,12 +13,20 @@ type Fila = Record<string, number | string | null>;
 
 /** Variables derivadas, igual que en Python. */
 export function variablesRadar(e: EntradaRadar, generos: string[]): Fila {
+  const s = e.senales ?? {};
+  const horas = s.horas_resena;
   return {
     [`log_resenas_${e.dia}d`]: Math.log1p(e.resenas),
     [`pct_positivas_${e.dia}d`]: e.pct_positivas,
     log_precio: Math.log1p(e.precio_usd),
     gratis: e.precio_usd === 0 ? 1 : 0,
     genero: generos.includes(e.genero) ? e.genero : "Otros",
+    // Las mismas transformaciones que modelo.preparar_variables en Python.
+    [`pct_ingles_${e.dia}d`]: s.pct_ingles ?? null,
+    [`pct_compra_steam_${e.dia}d`]: s.pct_compra_steam ?? null,
+    [`pct_gratis_${e.dia}d`]: s.pct_gratis ?? null,
+    [`pct_deck_${e.dia}d`]: s.pct_deck ?? null,
+    [`log_horas_resena_${e.dia}d`]: typeof horas === "number" ? Math.log1p(horas) : null,
   };
 }
 

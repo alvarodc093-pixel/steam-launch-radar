@@ -49,6 +49,22 @@ class Variables:
         return self.numericas + self.categoricas
 
 
+# Señales de las reseñas de los primeros días (ver preparacion.senales_tempranas).
+# Se prueban como candidatos aparte: solo entran si la validación cruzada dice
+# que mejoran a los modelos sin ellas.
+SENALES = (
+    "pct_ingles",
+    "pct_compra_steam",
+    "pct_gratis",
+    "pct_deck",
+    "log_horas_resena",
+)
+
+
+def senales_radar(dia: int) -> list[str]:
+    return [f"{s}_{dia}d" for s in SENALES]
+
+
 def variables_radar(dia: int) -> Variables:
     """Lo que se sabe el día `dia` tras el lanzamiento (nada posterior)."""
     return Variables(
@@ -76,6 +92,9 @@ def preparar_variables(
     for col in [c for c in df.columns if c.startswith("resenas_") and c.endswith("d")]:
         out[f"log_{col}"] = np.log1p(out[col])
     out["log_precio"] = np.log1p(out["precio_usd"].astype(float))
+    # Las horas al reseñar son muy asimétricas: en log, como el volumen.
+    for col in [c for c in df.columns if c.startswith("horas_resena_")]:
+        out[f"log_{col}"] = np.log1p(out[col])
     # Del precio y no de `is_free`: la app solo conoce el precio que escribe
     # el usuario, y ambas cosas coinciden en la muestra.
     out["gratis"] = (out["precio_usd"] == 0).astype(float)
@@ -157,16 +176,14 @@ def _preproceso(variables: Variables, escalar: bool) -> ColumnTransformer:
     return ColumnTransformer(transformadores)
 
 
-def candidatos(
-    variables: Variables, columna_ratio: str | None
-) -> dict[str, BaseEstimator]:
-    modelos: dict[str, BaseEstimator] = {"mediana": Mediana()}
-    if columna_ratio:
-        modelos["ratio_tipico"] = RatioTipico(columna_ratio)
-    modelos["ridge"] = Pipeline(
+def _ridge(variables: Variables) -> Pipeline:
+    return Pipeline(
         [("pre", _preproceso(variables, escalar=True)), ("modelo", Ridge(alpha=1.0))]
     )
-    modelos["gradient_boosting"] = Pipeline(
+
+
+def _boosting(variables: Variables) -> Pipeline:
+    return Pipeline(
         [
             ("pre", _preproceso(variables, escalar=False)),
             (
@@ -180,6 +197,22 @@ def candidatos(
             ),
         ]
     )
+
+
+def candidatos(
+    variables: Variables,
+    columna_ratio: str | None,
+    ampliadas: Variables | None = None,
+) -> dict[str, BaseEstimator]:
+    """De menos a más complejo; con `ampliadas`, también Ridge y boosting con señales."""
+    modelos: dict[str, BaseEstimator] = {"mediana": Mediana()}
+    if columna_ratio:
+        modelos["ratio_tipico"] = RatioTipico(columna_ratio)
+    modelos["ridge"] = _ridge(variables)
+    modelos["gradient_boosting"] = _boosting(variables)
+    if ampliadas:
+        modelos["ridge_senales"] = _ridge(ampliadas)
+        modelos["gradient_boosting_senales"] = _boosting(ampliadas)
     return modelos
 
 
@@ -242,9 +275,16 @@ class Resultado:
 
 
 def entrenar(
-    df: pd.DataFrame, variables: Variables, columna_ratio: str | None = None
+    df: pd.DataFrame,
+    variables: Variables,
+    columna_ratio: str | None = None,
+    senales: list[str] | None = None,
 ) -> Resultado:
-    """Elige por CV temporal, calibra el intervalo y evalúa una vez en test."""
+    """Elige por CV temporal, calibra el intervalo y evalúa una vez en test.
+
+    Con `senales` (columnas presentes en `df`) compiten también Ridge y
+    boosting con ellas; los demás candidatos no las ven.
+    """
     train, calib, test = particion_temporal(df)
     generos = generos_frecuentes(train)
     train, calib, test = (preparar_variables(p, generos) for p in (train, calib, test))
@@ -252,11 +292,21 @@ def entrenar(
     y_tr, y_ca, y_te = (
         np.log1p(p[objetivo].to_numpy(float)) for p in (train, calib, test)
     )
-    x_tr, x_ca, x_te = (p[variables.todas] for p in (train, calib, test))
+    # Una señal que no se midió en ningún juego del train no puede aprender nada.
+    senales = [s for s in senales or [] if s in train and train[s].notna().any()]
+    ampliadas = (
+        Variables(variables.numericas + senales, variables.categoricas)
+        if senales
+        else None
+    )
+    columnas = (ampliadas or variables).todas
+    x_tr, x_ca, x_te = (p[columnas] for p in (train, calib, test))
 
-    modelos = candidatos(variables, columna_ratio)
+    modelos = candidatos(variables, columna_ratio, ampliadas)
     cv = validacion_cruzada(modelos, x_tr, y_tr)
     nombre = cv.groupby("modelo")["mae_log"].mean().idxmin()
+    if ampliadas and nombre.endswith("_senales"):
+        variables = ampliadas
 
     ajustados = {n: clone(m).fit(x_tr, y_tr) for n, m in modelos.items()}
     elegido = ajustados[nombre]

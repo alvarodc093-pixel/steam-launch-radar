@@ -5,8 +5,11 @@
 //    fragmentos que se pasan al modelo (acierto@6), con tres búsquedas: por
 //    palabras (la de la versión publicada, donde no hay embeddings), por
 //    embeddings e híbrida (la de la app en local).
-// 2. Respuestas: si contienen el dato esperado, si citan fuentes y si
-//    reconocen que no saben cuando la pregunta queda fuera del proyecto.
+// 2. Respuestas, con el modelo local y con el publicado (si hay NUBE_API_KEY):
+//    si contienen el dato esperado, si citan fuentes y si reconocen que no
+//    saben cuando la pregunta queda fuera del proyecto.
+// 3. Redacción: un juez automático puntúa fidelidad a las fuentes, pertinencia
+//    y claridad de cada respuesta.
 //
 // Las preguntas «reformuladas» evitan las palabras de la documentación. Las de
 // «reserva» se escribieron después de ajustar la búsqueda con las demás: miden
@@ -17,8 +20,14 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import { construirPrompt } from "../src/lib/asistente.ts";
 import { embeddingConsulta } from "../src/lib/embeddings.ts";
-import { chat, CONFIG } from "../src/lib/ollama.ts";
-import { Buscador, esFuenteEsperada, type IndiceRag, type ModoBusqueda } from "../src/lib/rag.ts";
+import { cabeceras, chat, CONFIG, type Destino } from "../src/lib/ollama.ts";
+import {
+  Buscador,
+  esFuenteEsperada,
+  type IndiceRag,
+  type ModoBusqueda,
+  type Recuperado,
+} from "../src/lib/rag.ts";
 
 interface Pregunta {
   pregunta: string;
@@ -94,17 +103,87 @@ const tablaRecuperacion = modos
   .join("\n");
 
 // --- respuestas ----------------------------------------------------------------
-const NO_RESPONDE = new Set<Modo>(["semantica"]);
-async function responder(modo: Modo) {
+// Las dos configuraciones reales, las dos con búsqueda híbrida: el modelo local
+// y el de Ollama Cloud que usa la versión publicada.
+const NUBE = "https://ollama.com";
+const claveNube = process.env.NUBE_API_KEY ?? "";
+const destinos: [string, Destino][] = [[`Local (${CONFIG.modelo})`, CONFIG]];
+if (claveNube) {
+  const modeloNube = process.env.NUBE_MODELO ?? "gpt-oss:120b";
+  destinos.push([
+    `Publicada (${modeloNube})`,
+    { host: NUBE, clave: claveNube, modelo: modeloNube },
+  ]);
+}
+// El juez es de otra familia que los dos modelos que responden, para que
+// ninguno se puntúe a sí mismo.
+const juez: Destino = {
+  host: NUBE,
+  clave: claveNube,
+  modelo: process.env.JUEZ_MODELO ?? "gemma4:31b",
+};
+
+interface Nota {
+  fidelidad: number;
+  pertinencia: number;
+  claridad: number;
+}
+
+const INSTRUCCIONES_JUEZ = `Evalúas las respuestas de un asistente que debe contestar SOLO con las fuentes que recibe y citarlas con su número. Puntúa de 1 a 5:
+- fidelidad: cada dato de la respuesta está en las fuentes (5 = todo respaldado; 1 = inventa datos).
+- pertinencia: responde a lo que se pregunta (5 = de lleno; 1 = no responde).
+- claridad: se entiende a la primera, sin rodeos ni texto sobrante (5 = muy clara; 1 = confusa).
+Si las fuentes no tienen la respuesta y el asistente lo dice, eso es fiel y pertinente.
+Responde solo con JSON: {"fidelidad": n, "pertinencia": n, "claridad": n}`;
+
+/** Puntuación de 1 a 5 de una respuesta, o null si el juez no responde bien. */
+async function juzgar(p: Pregunta, fuentes: Recuperado[], respuesta: string): Promise<Nota | null> {
+  const numeradas = fuentes.map((r, i) => `[${i + 1}] ${r.fragmento.texto}`).join("\n\n");
+  try {
+    const r = await fetch(`${juez.host}/api/chat`, {
+      method: "POST",
+      headers: cabeceras(juez),
+      body: JSON.stringify({
+        model: juez.modelo,
+        stream: false,
+        format: "json",
+        options: { temperature: 0 },
+        messages: [
+          { role: "system", content: INSTRUCCIONES_JUEZ },
+          {
+            role: "user",
+            content: `FUENTES:\n${numeradas}\n\nPREGUNTA: ${p.pregunta}\n\nRESPUESTA: ${respuesta}`,
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(120_000),
+    });
+    // Aunque se pida JSON, a veces llega dentro de un bloque de código.
+    const contenido: string = (await r.json()).message?.content ?? "";
+    const nota = JSON.parse(contenido.match(/\{[\s\S]*\}/)?.[0] ?? "{}") as Nota;
+    const valida = (n: unknown) => Number.isInteger(n) && (n as number) >= 1 && (n as number) <= 5;
+    return valida(nota.fidelidad) && valida(nota.pertinencia) && valida(nota.claridad)
+      ? nota
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function responder(nombre: string, destino: Destino) {
   const ok = new Map<Pregunta, boolean>();
   const textos = new Map<Pregunta, string>();
+  const notas = new Map<Pregunta, Nota | null>();
   let citadas = 0;
   let tiempo = 0;
   for (const p of preguntas) {
+    const fuentes = buscar(p, "hibrida");
     const inicio = performance.now();
     let respuesta = "";
     const mensajes = [{ rol: "usuario" as const, texto: p.pregunta }];
-    for await (const trozo of chat(construirPrompt(mensajes, buscar(p, modo)))) respuesta += trozo;
+    for await (const trozo of chat(construirPrompt(mensajes, fuentes), undefined, destino)) {
+      respuesta += trozo;
+    }
     tiempo += performance.now() - inicio;
     const minusculas = respuesta.toLowerCase();
     const bien = p.fuera_de_alcance
@@ -113,51 +192,79 @@ async function responder(modo: Modo) {
     if (!p.fuera_de_alcance && /\[\d+\]|【\d+/.test(respuesta)) citadas++;
     ok.set(p, bien);
     textos.set(p, respuesta);
-    console.log(`${modo.padEnd(9)} ${bien ? "ok   " : "FALLO"} ${p.pregunta}`);
+    if (claveNube && !p.fuera_de_alcance) notas.set(p, await juzgar(p, fuentes, respuesta));
+    console.log(`${nombre.slice(0, 12).padEnd(12)} ${bien ? "ok   " : "FALLO"} ${p.pregunta}`);
   }
   const cuenta = (g: Pregunta[]) => `${g.filter((p) => ok.get(p)).length}/${g.length}`;
-  return { ok, textos, cuenta, citadas, tiempo: tiempo / preguntas.length / 1000 };
+  return { ok, textos, notas, cuenta, citadas, tiempo: tiempo / preguntas.length / 1000 };
 }
 
-const respuestas = new Map<Modo, Awaited<ReturnType<typeof responder>>>();
-for (const m of modos) if (!NO_RESPONDE.has(m)) respuestas.set(m, await responder(m));
-const modosRespuesta = modos.filter((m) => !NO_RESPONDE.has(m));
+const respuestas = new Map<string, Awaited<ReturnType<typeof responder>>>();
+for (const [nombre, destino] of destinos) respuestas.set(nombre, await responder(nombre, destino));
+const columnas = [...respuestas.keys()];
 const dentro = preguntas.filter((p) => !p.fuera_de_alcance);
+const fila = (titulo: string, valor: (c: string) => string) =>
+  `| ${titulo} | ${columnas.map(valor).join(" | ")} |`;
 
 const filasRespuesta = [
-  ...grupos.map(
-    ([nombre, g]) =>
-      `| ${nombre} | ${modosRespuesta.map((m) => respuestas.get(m)!.cuenta(g)).join(" | ")} |`,
-  ),
-  `| Ajenas al proyecto rechazadas | ${modosRespuesta.map((m) => respuestas.get(m)!.cuenta(fuera)).join(" | ")} |`,
-  `| Respuestas que citan una fuente | ${modosRespuesta.map((m) => `${respuestas.get(m)!.citadas}/${dentro.length}`).join(" | ")} |`,
-  `| Tiempo medio de respuesta | ${modosRespuesta.map((m) => `${respuestas.get(m)!.tiempo.toFixed(1)} s`).join(" | ")} |`,
+  ...grupos.map(([nombre, g]) => fila(nombre, (c) => respuestas.get(c)!.cuenta(g))),
+  fila("Ajenas al proyecto rechazadas", (c) => respuestas.get(c)!.cuenta(fuera)),
+  fila("Respuestas que citan una fuente", (c) => `${respuestas.get(c)!.citadas}/${dentro.length}`),
+  fila("Tiempo medio de respuesta", (c) => `${respuestas.get(c)!.tiempo.toFixed(1)} s`),
 ].join("\n");
+
+// Media de cada criterio y parte de respuestas con fidelidad 4 o 5.
+function resumenNotas(notas: Map<Pregunta, Nota | null>) {
+  const validas = [...notas.values()].filter((n): n is Nota => n !== null);
+  const media = (k: keyof Nota) =>
+    (validas.reduce((s, n) => s + n[k], 0) / validas.length).toFixed(1).replace(".", ",");
+  const fieles = validas.filter((n) => n.fidelidad >= 4).length;
+  return { media, texto: `${fieles}/${validas.length}` };
+}
+const criterios = ["fidelidad", "pertinencia", "claridad"] as const;
+const tablaJuez = claveNube
+  ? `## Calidad de la redacción (juez automático)
+
+Cada respuesta la puntúa de 1 a 5 \`${juez.modelo}\`, un modelo de otra familia que los
+que responden, con las mismas fuentes que recibió el asistente.
+
+| Criterio | ${columnas.join(" | ")} |
+| --- | ${columnas.map(() => "---").join(" | ")} |
+${criterios
+  .map((k) =>
+    fila(`${k[0].toUpperCase()}${k.slice(1)} (media)`, (c) =>
+      resumenNotas(respuestas.get(c)!.notas).media(k),
+    ),
+  )
+  .join("\n")}
+${fila("Fidelidad 4 o 5", (c) => resumenNotas(respuestas.get(c)!.notas).texto)}
+
+Un juez automático también se equivoca: sirve para comparar configuraciones y
+encontrar respuestas flojas, no como nota absoluta.
+`
+  : "";
 
 const marca = (v: boolean | undefined) => (v ? "✓" : "✗");
 const celda = (t: string | undefined) =>
   (t ?? "").replace(/\s+/g, " ").replace(/\|/g, "\\|").slice(0, 180);
-const hibrida = respuestas.get("hibrida")!;
-const lexica = respuestas.get("lexica")!;
+const ultima = respuestas.get(columnas[columnas.length - 1])!;
 
 const informe = `# Evaluación del asistente
 
 Generado con \`npm run evaluar-asistente\` el ${new Date().toISOString().slice(0, 10)}.
-Modelo de lenguaje: \`${CONFIG.modelo}\`; embeddings: \`${modelo}\`; índice de
-${indice.fragmentos.length} fragmentos. ${preguntas.length} preguntas de referencia
-(\`app/tests/preguntas_asistente.json\`). Las de **ajuste** se usaron para decidir cómo
-busca el asistente; las de **reserva** se escribieron después y no intervinieron en esas
-decisiones, así que miden si generalizan. Las **reformuladas** evitan las palabras de la
-documentación. ${fuera.length} preguntas son ajenas al proyecto.
+Embeddings: \`${modelo}\`; índice de ${indice.fragmentos.length} fragmentos.
+${preguntas.length} preguntas de referencia (\`app/tests/preguntas_asistente.json\`). Las de
+**ajuste** se usaron para decidir cómo busca el asistente; las de **reserva** se
+escribieron después y no intervinieron en esas decisiones, así que miden si
+generalizan. Las **reformuladas** evitan las palabras de la documentación.
+${fuera.length} preguntas son ajenas al proyecto.
 
-La versión local usa la búsqueda híbrida; la publicada en Vercel no tiene embeddings
-(Ollama Cloud no los ofrece) y busca solo por palabras.
+La versión local y la publicada usan la misma búsqueda híbrida: la consulta se
+convierte en vector dentro de la propia app (\`app/src/lib/embeddings.ts\`). Solo
+cambia el modelo que redacta.
 
-Se probó también ampliar esa búsqueda con palabras clave que escribe el modelo de
-lenguaje antes de buscar (fusionando la búsqueda de la pregunta y la de las claves).
-No mejoró el resultado neto: ayudaba algo con las preguntas reformuladas y empeoraba
-algo las directas, dentro de la variación entre ejecuciones. Se descartó porque añade
-una llamada al modelo por pregunta sin una mejora medible.
+Se probó también ampliar la búsqueda por palabras con palabras clave que escribe el
+modelo de lenguaje antes de buscar. No mejoró el resultado neto y se descartó.
 
 ## Recuperación: la fuente esperada está entre los ${K} fragmentos
 
@@ -167,17 +274,23 @@ ${tablaRecuperacion}
 
 ## Respuestas con el dato esperado
 
-| Grupo | ${modosRespuesta.map((m) => nombres[m]).join(" | ")} |
-| --- | ${modosRespuesta.map(() => "---").join(" | ")} |
+| Grupo | ${columnas.join(" | ")} |
+| --- | ${columnas.map(() => "---").join(" | ")} |
 ${filasRespuesta}
 
-La comprobación es automática: busca la cifra o el término esperado en la
+${tablaJuez}
+La comprobación del dato es automática: busca la cifra o el término esperado en la
 respuesta, así que una respuesta correcta redactada de otra forma puede contar
-como fallo. Por eso se guardan las respuestas:
+como fallo. Por eso se guardan las respuestas (de ${columnas[columnas.length - 1]}):
 
-| Híbrida | Palabras | Pregunta | Respuesta (solo palabras, la de la versión publicada) |
-| --- | --- | --- | --- |
-${preguntas.map((p) => `| ${marca(hibrida.ok.get(p))} | ${marca(lexica.ok.get(p))} | ${p.reserva ? "(reserva) " : ""}${p.pregunta} | ${celda(lexica.textos.get(p))} |`).join("\n")}
+| ${columnas.map((c) => c.split(" ")[0]).join(" | ")} | Pregunta | Respuesta |
+| ${columnas.map(() => "---").join(" | ")} | --- | --- |
+${preguntas
+  .map(
+    (p) =>
+      `| ${columnas.map((c) => marca(respuestas.get(c)!.ok.get(p))).join(" | ")} | ${p.reserva ? "(reserva) " : ""}${p.pregunta} | ${celda(ultima.textos.get(p))} |`,
+  )
+  .join("\n")}
 `;
 writeFileSync("../docs/evaluacion_asistente.md", informe, "utf-8");
-console.log("\n" + informe.split("La comprobación")[0]);
+console.log("\n" + informe.split("La comprobación del dato")[0]);

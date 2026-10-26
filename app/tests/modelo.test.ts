@@ -18,6 +18,7 @@ interface Caso {
     dia?: number;
     resenas?: number;
     pct_positivas?: number | null;
+    senales?: Record<string, number | null>;
   };
   esperado: number;
 }
@@ -41,6 +42,7 @@ test("TypeScript reproduce las predicciones de Python (casos dorados)", async ()
         pct_positivas: c.entrada.pct_positivas ?? null,
         precio_usd: c.entrada.precio_usd,
         genero: c.entrada.genero,
+        senales: c.entrada.senales,
       };
       obtenido = predecirLog(m, variablesRadar(e, m.generos));
     }

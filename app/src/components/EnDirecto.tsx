@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { fecha } from "@/lib/formato";
 import type { LecturaRadar, Veredicto } from "@/lib/radar";
 import { appidDe, type FichaSteam } from "@/lib/steam";
+import type { Senales } from "@/lib/tipos";
 
 /** Lo que devuelve /api/en-directo/{appid}. */
 export interface RespuestaEnDirecto {
@@ -19,6 +20,7 @@ export interface RespuestaEnDirecto {
     pct_positivas: number | null;
     precio_usd: number;
     genero: string;
+    senales?: Senales;
   };
   lectura?: LecturaRadar;
 }

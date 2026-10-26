@@ -6,6 +6,8 @@ lanzamiento, género principal sin los genéricos y precio de lista en dólares.
 Así un estudio puede leer su juego sin copiar cifras a mano.
 */
 
+import type { Senales } from "./tipos.ts";
+
 export const URL_FICHA = "https://store.steampowered.com/api/appdetails";
 export const URL_RESENAS = "https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/";
 const TODO_EL_HISTORICO = "9223372036854775807";
@@ -42,6 +44,12 @@ export interface DiaResenas {
   dia: number;
   positivas: number;
   negativas: number;
+  // Señales tempranas, contadas como en radar/ingesta/resenas.py.
+  ingles: number;
+  compraSteam: number;
+  gratis: number;
+  deck: number;
+  horasLog: number; // suma de log(1 + horas jugadas al reseñar)
 }
 
 /** El appid de un número suelto o de un enlace de la tienda. */
@@ -81,6 +89,11 @@ interface ResenaSteam {
   recommendationid?: string;
   timestamp_created?: number;
   voted_up?: boolean;
+  language?: string;
+  steam_purchase?: boolean;
+  received_for_free?: boolean;
+  primarily_steam_deck?: boolean;
+  author?: { playtime_at_review?: number };
 }
 
 /** Ficha de la tienda, o null si no existe o no es un juego. */
@@ -116,9 +129,24 @@ export function agregarPorDia(resenas: ResenaSteam[], fechaLanzamiento: string):
   for (const r of resenas) {
     if (typeof r.timestamp_created !== "number" || typeof r.voted_up !== "boolean") continue;
     const dia = Math.floor((r.timestamp_created * 1000 - inicio) / DIA_MS);
-    const d = dias.get(dia) ?? { dia, positivas: 0, negativas: 0 };
+    const d = dias.get(dia) ?? {
+      dia,
+      positivas: 0,
+      negativas: 0,
+      ingles: 0,
+      compraSteam: 0,
+      gratis: 0,
+      deck: 0,
+      horasLog: 0,
+    };
     if (r.voted_up) d.positivas++;
     else d.negativas++;
+    if (r.language === "english") d.ingles++;
+    if (r.steam_purchase === true) d.compraSteam++;
+    if (r.received_for_free === true) d.gratis++;
+    if (r.primarily_steam_deck === true) d.deck++;
+    const minutos = r.author?.playtime_at_review;
+    if (typeof minutos === "number" && minutos >= 0) d.horasLog += Math.log1p(minutos / 60);
     dias.set(dia, d);
   }
   return [...dias.values()].sort((a, b) => a.dia - b.dia);
@@ -156,16 +184,32 @@ export function pctPrevias(dias: DiaResenas[]): number {
   return total > 0 ? previas / total : 0;
 }
 
-/** Suma de reseñas y proporción de positivas en los días 0 a `dia` − 1. */
+/**
+ * Reseñas, proporción de positivas y señales tempranas de los días 0 a
+ * `dia` − 1, con las mismas fórmulas que preparacion.senales_tempranas.
+ */
 export function lecturaHasta(dias: DiaResenas[], dia: number) {
-  let positivas = 0;
-  let total = 0;
+  const suma = { positivas: 0, total: 0, ingles: 0, compraSteam: 0, gratis: 0, deck: 0, horas: 0 };
   for (const d of dias) {
     if (d.dia < 0 || d.dia >= dia) continue;
-    positivas += d.positivas;
-    total += d.positivas + d.negativas;
+    suma.positivas += d.positivas;
+    suma.total += d.positivas + d.negativas;
+    suma.ingles += d.ingles;
+    suma.compraSteam += d.compraSteam;
+    suma.gratis += d.gratis;
+    suma.deck += d.deck;
+    suma.horas += d.horasLog;
   }
-  return { resenas: total, pctPositivas: total > 0 ? positivas / total : null };
+  const n = suma.total;
+  const parte = (v: number) => (n > 0 ? v / n : null);
+  const senales: Senales = {
+    pct_ingles: parte(suma.ingles),
+    pct_compra_steam: parte(suma.compraSteam),
+    pct_gratis: parte(suma.gratis),
+    pct_deck: parte(suma.deck),
+    horas_resena: n > 0 ? Math.expm1(suma.horas / n) : null,
+  };
+  return { resenas: n, pctPositivas: parte(suma.positivas), senales };
 }
 
 async function pedirJson(url: string, parametros: Record<string, string>): Promise<unknown> {

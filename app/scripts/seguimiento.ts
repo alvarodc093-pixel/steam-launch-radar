@@ -79,13 +79,14 @@ async function main() {
       pctPrevias(dias) <= MAX_PCT_PREVIAS
     ) {
       const generos = radar.modelos[String(dia)].generos;
-      const { resenas, pctPositivas } = lecturaHasta(dias, dia);
+      const { resenas, pctPositivas, senales } = lecturaHasta(dias, dia);
       const lectura = leerRadar(radar, {
         dia,
         resenas,
         pct_positivas: pctPositivas,
         precio_usd: ficha.precioUsd,
         genero: generos.includes(ficha.generoPrincipal) ? ficha.generoPrincipal : "Otro",
+        senales,
       });
       hoy = { estado: { dia, veredicto: lectura.veredicto }, ...lectura.estimacion };
     }

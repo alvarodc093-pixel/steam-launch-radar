@@ -96,3 +96,35 @@ test("día de lectura: el mayor ya completo", () => {
   assert.deepEqual(lectura("2026-10-25T08:00:00Z"), { completos: 9, dia: 7 });
   assert.deepEqual(lectura("2026-11-20T08:00:00Z"), { completos: 35, dia: 14 });
 });
+
+test("señales tempranas con las fórmulas de la preparación de Python", () => {
+  const t = Date.parse("2026-10-16T10:00:00Z") / 1000;
+  const dias = agregarPorDia(
+    [
+      {
+        timestamp_created: t,
+        voted_up: true,
+        language: "english",
+        steam_purchase: true,
+        author: { playtime_at_review: 180 },
+      },
+      {
+        timestamp_created: t,
+        voted_up: false,
+        language: "spanish",
+        received_for_free: true,
+        primarily_steam_deck: true,
+        author: { playtime_at_review: 180 },
+      },
+    ],
+    "2026-10-16",
+  );
+  const { senales } = lecturaHasta(dias, 3);
+  assert.equal(senales.pct_ingles, 0.5);
+  assert.equal(senales.pct_compra_steam, 0.5);
+  assert.equal(senales.pct_gratis, 0.5);
+  assert.equal(senales.pct_deck, 0.5);
+  // Media de log(1 + horas) devuelta en horas: 3 horas cada una.
+  assert.ok(Math.abs((senales.horas_resena ?? 0) - 3) < 1e-9);
+  assert.equal(lecturaHasta([], 3).senales.horas_resena, null);
+});

@@ -1,6 +1,6 @@
 /** Validación de las entradas de la API, con mensajes que entiende el usuario. */
 
-import type { EntradaPrevia, EntradaRadar } from "./tipos.ts";
+import { SENALES, type EntradaPrevia, type EntradaRadar, type Senales } from "./tipos.ts";
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; error: string };
 
@@ -44,11 +44,26 @@ export function validarRadar(cuerpo: unknown, diasValidos: number[]): Resultado<
   }
   const precio = numero("precio_usd", c.precio_usd, 0, 200, errores);
   const genero = texto("genero", c.genero, errores);
+  // Opcionales: proporciones entre 0 y 1, y horas jugadas al reseñar.
+  const senales: Senales = {};
+  const recibidas = objeto(c.senales);
+  for (const s of SENALES) {
+    const v = recibidas?.[s];
+    if (v === null || v === undefined) continue;
+    senales[s] = numero(s, v, 0, s === "horas_resena" ? 100_000 : 1, errores);
+  }
   if (errores.length) return { ok: false, error: errores.join("; ") };
   // Sin reseñas no hay porcentaje de positivas que valga.
   return {
     ok: true,
-    valor: { dia, resenas, pct_positivas: resenas === 0 ? null : pct, precio_usd: precio, genero },
+    valor: {
+      dia,
+      resenas,
+      pct_positivas: resenas === 0 ? null : pct,
+      precio_usd: precio,
+      genero,
+      ...(Object.keys(senales).length ? { senales } : {}),
+    },
   };
 }
 

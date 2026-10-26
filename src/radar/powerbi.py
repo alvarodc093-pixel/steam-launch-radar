@@ -173,7 +173,10 @@ def tablas_modelo(dataset: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     for dia in config.DIAS_LECTURA:
         res = m.entrenar(
-            dataset, m.variables_radar(dia), columna_ratio=f"log_resenas_{dia}d"
+            dataset,
+            m.variables_radar(dia),
+            columna_ratio=f"log_resenas_{dia}d",
+            senales=m.senales_radar(dia),
         )
         filas_metricas(dia, res)
         log = predecir_python(res, test)
