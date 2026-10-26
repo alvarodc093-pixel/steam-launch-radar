@@ -76,7 +76,7 @@ export default function PortadaRadar({
           {cobertura !== undefined && (
             <>: en la prueba, el rango acertó en el {porcentaje(cobertura)} de los juegos</>
           )}
-          . En el desplegable del radar están todos los juegos de test, aciertos y fallos.
+          . En el buscador del radar están todos los juegos de test, aciertos y fallos.
         </p>
         <div className="casos">
           {destacados.map((d) => (
