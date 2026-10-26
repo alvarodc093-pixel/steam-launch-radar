@@ -44,8 +44,8 @@ def _ficha(appid: int, fecha: str, precio: float | None = 9.99) -> dict:
     }
 
 
-def _resenas(appid: int, dias: dict[str, list[int]], completo: bool = True) -> dict:
-    total = sum(p + n for p, n in dias.values())
+def _resenas(appid: int, dias: dict[str, list[float]], completo: bool = True) -> dict:
+    total = sum(v[0] + v[1] for v in dias.values())
     return {
         "appid": appid,
         "total_api": total,
@@ -117,9 +117,9 @@ def test_dataset_lecturas_y_objetivo(datos) -> None:  # noqa: ANN001
 
 def test_positividad_vacia_sin_resenas() -> None:
     juegos = prep.construir_juegos(
-        [_ficha(9, "2025-01-01")], [_resenas(9, {"2025-01-20": [5, 0]})]
+        [_ficha(9, "2025-01-01")], [_resenas(9, {"2025-01-20": [12, 0]})]
     )
-    diarias = prep.construir_diarias([_resenas(9, {"2025-01-20": [5, 0]})], juegos)
+    diarias = prep.construir_diarias([_resenas(9, {"2025-01-20": [12, 0]})], juegos)
     ds = prep.construir_dataset(prep.marcar_aptos(juegos, diarias), diarias)
     assert ds.loc[0, "resenas_3d"] == 0
     assert np.isnan(ds.loc[0, "pct_positivas_3d"])
@@ -128,11 +128,11 @@ def test_positividad_vacia_sin_resenas() -> None:
 def test_lanzamiento_fuera_del_historico_de_la_api() -> None:
     resenas = [
         {
-            **_resenas(1, {"2025-03-01": [5, 0]}),
+            **_resenas(1, {"2025-03-01": [12, 0]}),
             "descargado_en": "2025-04-15T10:00:00+00:00",
         },
         {
-            **_resenas(2, {"2025-03-01": [5, 0]}),
+            **_resenas(2, {"2025-03-01": [12, 0]}),
             "descargado_en": "2026-04-15T10:00:00+00:00",
         },
     ]
@@ -143,3 +143,40 @@ def test_lanzamiento_fuera_del_historico_de_la_api() -> None:
         1: "apto",
         2: "fuera_del_historico_api",  # descargado 13 meses después
     }
+
+
+def test_entra_por_las_resenas_del_primer_mes() -> None:
+    # Las dos tienen hoy 40 reseñas, pero la 2 solo 6 en su primer mes: la
+    # entrada depende de la misma edad para todos, no del día de la descarga.
+    resenas = [
+        _resenas(1, {"2025-03-01": [12, 0], "2025-06-01": [28, 0]}),
+        _resenas(2, {"2025-03-01": [6, 0], "2025-06-01": [34, 0]}),
+    ]
+    fichas = [_ficha(1, "2025-03-01"), _ficha(2, "2025-03-01")]
+    juegos = prep.construir_juegos(fichas, resenas)
+    juegos = prep.marcar_aptos(juegos, prep.construir_diarias(resenas, juegos))
+    assert juegos.set_index("appid")["estado"].to_dict() == {
+        1: "apto",
+        2: "menos_de_10_en_30d",
+    }
+
+
+def test_senales_tempranas_del_formato_nuevo() -> None:
+    horas = round(10 * np.log1p(3.0), 3)  # las diez reseñas, con 3 horas cada una
+    resenas = [
+        _resenas(1, {"2025-03-01": [10, 0, 5, 8, 1, 2, horas]}),
+        _resenas(2, {"2025-03-01": [10, 0]}),  # formato antiguo
+    ]
+    fichas = [_ficha(1, "2025-03-01"), _ficha(2, "2025-03-01")]
+    juegos = prep.construir_juegos(fichas, resenas)
+    diarias = prep.construir_diarias(resenas, juegos)
+    ds = prep.construir_dataset(prep.marcar_aptos(juegos, diarias), diarias)
+    nuevo, antiguo = ds.set_index("appid").loc[1], ds.set_index("appid").loc[2]
+    assert nuevo["pct_ingles_3d"] == pytest.approx(0.5)
+    assert nuevo["pct_compra_steam_3d"] == pytest.approx(0.8)
+    assert nuevo["pct_gratis_3d"] == pytest.approx(0.1)
+    assert nuevo["pct_deck_3d"] == pytest.approx(0.2)
+    assert nuevo["horas_resena_3d"] == pytest.approx(3.0, abs=0.01)
+    # Sin señales medidas no se inventa un 0.
+    assert np.isnan(antiguo["pct_compra_steam_3d"])
+    assert np.isnan(antiguo["horas_resena_3d"])

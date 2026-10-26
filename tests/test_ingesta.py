@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from datetime import date
 
 import pytest
@@ -121,7 +122,37 @@ def test_agregar_por_dia_ignora_incompletas() -> None:
             {"timestamp_created": 1735776000},  # sin voto
         ]
     )
-    assert dias == {"2025-01-01": [1, 1], "2025-01-02": [1, 0]}
+    assert dias == {
+        "2025-01-01": [1, 1, 0, 0, 0, 0, 0],
+        "2025-01-02": [1, 0, 0, 0, 0, 0, 0],
+    }
+
+
+def test_agregar_por_dia_suma_las_senales_tempranas() -> None:
+    base = {"timestamp_created": 1735689600, "voted_up": True}
+    dias = resenas.agregar_por_dia(
+        [
+            {
+                **base,
+                "language": "english",
+                "steam_purchase": True,
+                "author": {"playtime_at_review": 60, "steamid": "76561198000000000"},
+            },
+            {
+                **base,
+                "voted_up": False,
+                "language": "spanish",
+                "received_for_free": True,
+                "primarily_steam_deck": True,
+                "author": {"playtime_at_review": 0},
+            },
+        ]
+    )
+    positivas, negativas, ingles, steam, gratis, deck, horas = dias["2025-01-01"]
+    assert (positivas, negativas, ingles, steam, gratis, deck) == (1, 1, 1, 1, 1, 1)
+    assert horas == pytest.approx(math.log1p(1), abs=1e-3)  # una hora y cero
+    # Nada que identifique al autor llega al agregado.
+    assert "76561198000000000" not in str(dias)
 
 
 @responses.activate
@@ -147,8 +178,22 @@ def test_descargar_resenas_pagina_y_deduplica() -> None:
     responses.get(resenas.URL, json=pagina([], "c3"))
     agregado = resenas.descargar_resenas(ClienteHttp(), 10, maximo=100)
     assert agregado["descargadas"] == 3
-    assert agregado["dias"] == {"2025-01-01": [3, 0]}
+    assert agregado["dias"] == {"2025-01-01": [3, 0, 0, 0, 0, 0, 0]}
     assert agregado["completo"] is True
+    assert agregado["formato"] == resenas.FORMATO
+    assert agregado["idiomas"] == "ingles"
+    assert "key=" not in responses.calls[0].request.url
+
+
+@responses.activate
+def test_con_clave_pide_todos_los_idiomas() -> None:
+    responses.get(
+        resenas.URL,
+        json={"response": {"query_summary": {"total_reviews": 0}, "reviews": []}},
+    )
+    agregado = resenas.descargar_resenas(ClienteHttp(), 10, maximo=100, clave="abc")
+    assert "key=abc" in responses.calls[0].request.url
+    assert agregado["idiomas"] == "todos"
 
 
 @responses.activate

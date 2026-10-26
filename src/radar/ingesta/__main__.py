@@ -13,7 +13,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
@@ -72,7 +74,11 @@ def paso_candidatos(hoy: date) -> list[dict[str, Any]]:
                 date.fromisoformat(fila["fecha"]) if fila.get("fecha") else None
             )
             if busqueda.es_candidato(
-                fila, desde, hasta, config.RESENAS_MIN, config.RESENAS_MAX
+                fila,
+                desde,
+                hasta,
+                config.RESENAS_MIN_TIENDA,
+                config.RESENAS_MAX_DESCARGA,
             ):
                 candidatos.setdefault(fila["appid"], fila)
         fechas = [f["fecha"] for f in filas if f["fecha"]]
@@ -120,36 +126,59 @@ def en_ventana(ficha: dict[str, Any], hoy: date) -> bool:
     return desde <= date.fromisoformat(str(fecha)) <= hasta
 
 
-def paso_resenas(hoy: date) -> None:
-    cliente = ClienteHttp(pausa_s=resenas.PAUSA_S)
+def al_dia(ruta: Path, clave: str) -> bool:
+    """Si la descarga guardada ya tiene el formato y los idiomas actuales."""
+    if not ruta.exists():
+        return False
+    guardado = _leer(ruta)
+    idiomas = "todos" if clave else "ingles"
+    return guardado.get("formato") == resenas.FORMATO and (
+        guardado.get("idiomas") == idiomas
+    )
+
+
+def paso_resenas(hoy: date, hilos: int = 1) -> None:
+    clave = config.STEAM_API_KEY
     fichas = [_leer(r) for r in sorted(DIR_FICHAS.glob("*.json"))]
     elegibles = [f for f in fichas if en_ventana(f, hoy)]
     pendientes = [
-        f for f in elegibles if not (DIR_RESENAS / f"{f['appid']}.json").exists()
+        f for f in elegibles if not al_dia(DIR_RESENAS / f"{f['appid']}.json", clave)
     ]
     logger.info(
-        "Reseñas: %d pendientes de %d juegos en ventana",
+        "Reseñas (%s): %d pendientes de %d juegos en ventana",
+        "todos los idiomas" if clave else "solo inglés",
         len(pendientes),
         len(elegibles),
     )
-    for i, f in enumerate(pendientes, 1):
+    # Un cliente por hilo, cada uno con su propia pausa entre peticiones.
+    clientes = threading.local()
+
+    def descargar(ficha: dict[str, Any]) -> None:
+        if not hasattr(clientes, "http"):
+            clientes.http = ClienteHttp(pausa_s=resenas.PAUSA_S)
         try:
             agregado = resenas.descargar_resenas(
-                cliente, f["appid"], config.RESENAS_MAX
+                clientes.http, ficha["appid"], config.RESENAS_MAX_DESCARGA, clave
             )
         except ErrorFuente as exc:
-            logger.warning("Reseñas %s sin descargar: %s", f["appid"], exc)
-            continue
-        agregado["appid"] = f["appid"]
+            logger.warning("Reseñas %s sin descargar: %s", ficha["appid"], exc)
+            return
+        agregado["appid"] = ficha["appid"]
         agregado["descargado_en"] = datetime.now(UTC).isoformat(timespec="seconds")
-        _guardar(DIR_RESENAS / f"{f['appid']}.json", agregado)
-        if i % 25 == 0:
-            logger.info("Reseñas: %d/%d", i, len(pendientes))
+        _guardar(DIR_RESENAS / f"{ficha['appid']}.json", agregado)
+
+    with ThreadPoolExecutor(max_workers=hilos) as grupo:
+        for i, _ in enumerate(grupo.map(descargar, pendientes), 1):
+            if i % 100 == 0:
+                logger.info("Reseñas: %d/%d", i, len(pendientes))
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--paso", choices=["candidatos", "fichas", "resenas"])
+    parser.add_argument(
+        "--hilos", type=int, default=1, help="descargas de reseñas en paralelo"
+    )
     args = parser.parse_args(argv)
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
@@ -167,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.paso in (None, "fichas"):
         paso_fichas(candidatos)
     if args.paso in (None, "resenas"):
-        paso_resenas(hoy)
+        paso_resenas(hoy, args.hilos)
     return 0
 
 
