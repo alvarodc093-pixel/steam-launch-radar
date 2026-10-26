@@ -172,7 +172,6 @@ def test_senales_tempranas_del_formato_nuevo() -> None:
     diarias = prep.construir_diarias(resenas, juegos)
     ds = prep.construir_dataset(prep.marcar_aptos(juegos, diarias), diarias)
     nuevo, antiguo = ds.set_index("appid").loc[1], ds.set_index("appid").loc[2]
-    assert nuevo["pct_ingles_3d"] == pytest.approx(0.5)
     assert nuevo["pct_compra_steam_3d"] == pytest.approx(0.8)
     assert nuevo["pct_gratis_3d"] == pytest.approx(0.1)
     assert nuevo["pct_deck_3d"] == pytest.approx(0.2)

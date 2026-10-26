@@ -26,4 +26,3 @@ jobs:
       - run: node scripts/seguimiento.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}

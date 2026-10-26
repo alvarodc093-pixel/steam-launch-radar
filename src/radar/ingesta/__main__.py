@@ -126,27 +126,19 @@ def en_ventana(ficha: dict[str, Any], hoy: date) -> bool:
     return desde <= date.fromisoformat(str(fecha)) <= hasta
 
 
-def al_dia(ruta: Path, clave: str) -> bool:
-    """Si la descarga guardada ya tiene el formato y los idiomas actuales."""
-    if not ruta.exists():
-        return False
-    guardado = _leer(ruta)
-    idiomas = "todos" if clave else "ingles"
-    return guardado.get("formato") == resenas.FORMATO and (
-        guardado.get("idiomas") == idiomas
-    )
+def al_dia(ruta: Path) -> bool:
+    """Si la descarga guardada ya tiene el formato actual."""
+    return ruta.exists() and _leer(ruta).get("formato") == resenas.FORMATO
 
 
 def paso_resenas(hoy: date, hilos: int = 1) -> None:
-    clave = config.STEAM_API_KEY
     fichas = [_leer(r) for r in sorted(DIR_FICHAS.glob("*.json"))]
     elegibles = [f for f in fichas if en_ventana(f, hoy)]
     pendientes = [
-        f for f in elegibles if not al_dia(DIR_RESENAS / f"{f['appid']}.json", clave)
+        f for f in elegibles if not al_dia(DIR_RESENAS / f"{f['appid']}.json")
     ]
     logger.info(
-        "Reseñas (%s): %d pendientes de %d juegos en ventana",
-        "todos los idiomas" if clave else "solo inglés",
+        "Reseñas: %d pendientes de %d juegos en ventana",
         len(pendientes),
         len(elegibles),
     )
@@ -158,7 +150,7 @@ def paso_resenas(hoy: date, hilos: int = 1) -> None:
             clientes.http = ClienteHttp(pausa_s=resenas.PAUSA_S)
         try:
             agregado = resenas.descargar_resenas(
-                clientes.http, ficha["appid"], config.RESENAS_MAX_DESCARGA, clave
+                clientes.http, ficha["appid"], config.RESENAS_MAX_DESCARGA
             )
         except ErrorFuente as exc:
             logger.warning("Reseñas %s sin descargar: %s", ficha["appid"], exc)

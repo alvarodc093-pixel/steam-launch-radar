@@ -102,7 +102,7 @@ def test_resenas_solo_de_juegos_en_ventana(raw, monkeypatch) -> None:  # noqa: A
             json.dumps({"appid": appid, "fecha_lanzamiento": fecha}), encoding="utf-8"
         )
 
-    def descargar(_cliente, appid, _maximo, _clave=""):  # noqa: ANN001, ANN202
+    def descargar(_cliente, appid, _maximo):  # noqa: ANN001, ANN202
         if appid == 3:
             raise ErrorFuente("caída")
         return {
@@ -131,24 +131,18 @@ def test_vuelve_a_descargar_las_de_un_formato_anterior(raw, monkeypatch) -> None
     # La 1 es del formato antiguo (solo voto); la 2 ya está al día.
     (raw / "resenas" / "1.json").write_text(json.dumps({"appid": 1}), encoding="utf-8")
     (raw / "resenas" / "2.json").write_text(
-        json.dumps({"appid": 2, "formato": resenas.FORMATO, "idiomas": "ingles"}),
+        json.dumps({"appid": 2, "formato": resenas.FORMATO}),
         encoding="utf-8",
     )
     pedidas = []
 
-    def descargar(_cliente, appid, _maximo, _clave=""):  # noqa: ANN001, ANN202
+    def descargar(_cliente, appid, _maximo):  # noqa: ANN001, ANN202
         pedidas.append(appid)
-        return {"formato": resenas.FORMATO, "idiomas": "ingles", "dias": {}}
+        return {"formato": resenas.FORMATO, "dias": {}}
 
     monkeypatch.setattr(resenas, "descargar_resenas", descargar)
-    monkeypatch.setattr(ingesta.config, "STEAM_API_KEY", "")
     ingesta.paso_resenas(HOY, hilos=2)
     assert pedidas == [1]
-    # Con clave, las descargas solo en inglés tampoco valen.
-    monkeypatch.setattr(ingesta.config, "STEAM_API_KEY", "abc")
-    pedidas.clear()
-    ingesta.paso_resenas(HOY)
-    assert sorted(pedidas) == [1, 2]
 
 
 def test_main_sin_candidatos_avisa_y_sale_con_error(raw, caplog) -> None:  # noqa: ANN001

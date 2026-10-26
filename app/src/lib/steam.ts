@@ -45,7 +45,6 @@ export interface DiaResenas {
   positivas: number;
   negativas: number;
   // Señales tempranas, contadas como en radar/ingesta/resenas.py.
-  ingles: number;
   compraSteam: number;
   gratis: number;
   deck: number;
@@ -89,7 +88,6 @@ interface ResenaSteam {
   recommendationid?: string;
   timestamp_created?: number;
   voted_up?: boolean;
-  language?: string;
   steam_purchase?: boolean;
   received_for_free?: boolean;
   primarily_steam_deck?: boolean;
@@ -133,7 +131,6 @@ export function agregarPorDia(resenas: ResenaSteam[], fechaLanzamiento: string):
       dia,
       positivas: 0,
       negativas: 0,
-      ingles: 0,
       compraSteam: 0,
       gratis: 0,
       deck: 0,
@@ -141,7 +138,6 @@ export function agregarPorDia(resenas: ResenaSteam[], fechaLanzamiento: string):
     };
     if (r.voted_up) d.positivas++;
     else d.negativas++;
-    if (r.language === "english") d.ingles++;
     if (r.steam_purchase === true) d.compraSteam++;
     if (r.received_for_free === true) d.gratis++;
     if (r.primarily_steam_deck === true) d.deck++;
@@ -189,12 +185,11 @@ export function pctPrevias(dias: DiaResenas[]): number {
  * `dia` − 1, con las mismas fórmulas que preparacion.senales_tempranas.
  */
 export function lecturaHasta(dias: DiaResenas[], dia: number) {
-  const suma = { positivas: 0, total: 0, ingles: 0, compraSteam: 0, gratis: 0, deck: 0, horas: 0 };
+  const suma = { positivas: 0, total: 0, compraSteam: 0, gratis: 0, deck: 0, horas: 0 };
   for (const d of dias) {
     if (d.dia < 0 || d.dia >= dia) continue;
     suma.positivas += d.positivas;
     suma.total += d.positivas + d.negativas;
-    suma.ingles += d.ingles;
     suma.compraSteam += d.compraSteam;
     suma.gratis += d.gratis;
     suma.deck += d.deck;
@@ -203,7 +198,6 @@ export function lecturaHasta(dias: DiaResenas[], dia: number) {
   const n = suma.total;
   const parte = (v: number) => (n > 0 ? v / n : null);
   const senales: Senales = {
-    pct_ingles: parte(suma.ingles),
     pct_compra_steam: parte(suma.compraSteam),
     pct_gratis: parte(suma.gratis),
     pct_deck: parte(suma.deck),
@@ -231,13 +225,12 @@ export async function descargarFicha(appid: number): Promise<FichaSteam | null> 
 
 /**
  * Todas las reseñas del juego por día. Steam no las sirve en orden estricto de
- * fecha, así que hay que recorrerlas enteras, como hace la ingesta. Sin clave,
- * la API solo devuelve las de inglés.
+ * fecha, así que hay que recorrerlas enteras, como hace la ingesta. La API
+ * solo devuelve las de inglés.
  */
 export async function descargarResenas(
   appid: number,
   fechaLanzamiento: string,
-  clave = "",
 ): Promise<{ dias: DiaResenas[]; completo: boolean }> {
   const parametros: Record<string, string> = {
     appid: String(appid),
@@ -247,7 +240,6 @@ export async function descargarResenas(
     day_range: TODO_EL_HISTORICO,
     num_per_page: "100",
     cursor: "*",
-    ...(clave ? { key: clave } : {}),
   };
   const vistas = new Map<string, ResenaSteam>();
   for (let pagina = 0; pagina < MAX_PAGINAS; pagina++) {

@@ -89,7 +89,6 @@ def construir_juegos(fichas: list[dict], resenas: list[dict]) -> pd.DataFrame:
                 "es_indie": "Indie" in generos,
                 "desarrollador": (f.get("desarrolladores") or [None])[0],
                 "editor": (f.get("editores") or [None])[0],
-                "idiomas": r.get("idiomas", "ingles"),
                 "resenas_api": r.get("total_api"),
                 "resenas_descargadas": r.get("descargadas", 0),
                 "descarga_completa": bool(r.get("completo")),
@@ -162,7 +161,7 @@ def marcar_aptos(juegos: pd.DataFrame, diarias: pd.DataFrame) -> pd.DataFrame:
 
 
 # Señales de las reseñas de los primeros días, además del volumen y el voto.
-SENALES = ("pct_ingles", "pct_compra_steam", "pct_gratis", "pct_deck", "horas_resena")
+SENALES = ("pct_compra_steam", "pct_gratis", "pct_deck", "horas_resena")
 
 
 def senales_tempranas(tramo: pd.DataFrame) -> dict[str, pd.Series]:
@@ -174,7 +173,6 @@ def senales_tempranas(tramo: pd.DataFrame) -> dict[str, pd.Series]:
     sumas = tramo.groupby("appid")[["resenas", *CAMPOS_DIA[2:]]].sum(min_count=1)
     n = sumas["resenas"].where(sumas["resenas"] > 0)
     return {
-        "pct_ingles": sumas["ingles"] / n,
         "pct_compra_steam": sumas["compra_steam"] / n,
         "pct_gratis": sumas["gratis"] / n,
         "pct_deck": sumas["deck"] / n,

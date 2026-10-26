@@ -66,11 +66,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ appi
           { status: 404 },
         );
       }
-      const descarga = await descargarResenas(
-        appid,
-        ficha.fechaLanzamiento,
-        process.env.STEAM_API_KEY ?? "",
-      );
+      const descarga = await descargarResenas(appid, ficha.fechaLanzamiento);
       guardado = { hora: Date.now(), ficha, dias: descarga.dias, completo: descarga.completo };
       cache.set(appid, guardado);
     } catch {

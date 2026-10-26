@@ -53,7 +53,6 @@ class Variables:
 # Se prueban como candidatos aparte: solo entran si la validación cruzada dice
 # que mejoran a los modelos sin ellas.
 SENALES = (
-    "pct_ingles",
     "pct_compra_steam",
     "pct_gratis",
     "pct_deck",

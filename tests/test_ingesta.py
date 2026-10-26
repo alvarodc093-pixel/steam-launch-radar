@@ -181,19 +181,6 @@ def test_descargar_resenas_pagina_y_deduplica() -> None:
     assert agregado["dias"] == {"2025-01-01": [3, 0, 0, 0, 0, 0, 0]}
     assert agregado["completo"] is True
     assert agregado["formato"] == resenas.FORMATO
-    assert agregado["idiomas"] == "ingles"
-    assert "key=" not in responses.calls[0].request.url
-
-
-@responses.activate
-def test_con_clave_pide_todos_los_idiomas() -> None:
-    responses.get(
-        resenas.URL,
-        json={"response": {"query_summary": {"total_reviews": 0}, "reviews": []}},
-    )
-    agregado = resenas.descargar_resenas(ClienteHttp(), 10, maximo=100, clave="abc")
-    assert "key=abc" in responses.calls[0].request.url
-    assert agregado["idiomas"] == "todos"
 
 
 @responses.activate

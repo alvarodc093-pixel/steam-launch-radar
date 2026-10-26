@@ -104,14 +104,12 @@ test("señales tempranas con las fórmulas de la preparación de Python", () => 
       {
         timestamp_created: t,
         voted_up: true,
-        language: "english",
         steam_purchase: true,
         author: { playtime_at_review: 180 },
       },
       {
         timestamp_created: t,
         voted_up: false,
-        language: "spanish",
         received_for_free: true,
         primarily_steam_deck: true,
         author: { playtime_at_review: 180 },
@@ -120,7 +118,6 @@ test("señales tempranas con las fórmulas de la preparación de Python", () => 
     "2026-10-16",
   );
   const { senales } = lecturaHasta(dias, 3);
-  assert.equal(senales.pct_ingles, 0.5);
   assert.equal(senales.pct_compra_steam, 0.5);
   assert.equal(senales.pct_gratis, 0.5);
   assert.equal(senales.pct_deck, 0.5);

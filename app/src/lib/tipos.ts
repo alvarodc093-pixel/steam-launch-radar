@@ -113,13 +113,7 @@ export interface DatosMercado {
 
 /** Entrada del radar tal como llega del formulario o de la API. */
 /** Señales de las reseñas de los primeros días (las mismas que en Python). */
-export const SENALES = [
-  "pct_ingles",
-  "pct_compra_steam",
-  "pct_gratis",
-  "pct_deck",
-  "horas_resena",
-] as const;
+export const SENALES = ["pct_compra_steam", "pct_gratis", "pct_deck", "horas_resena"] as const;
 export type Senal = (typeof SENALES)[number];
 export type Senales = Partial<Record<Senal, number | null>>;
 

@@ -41,8 +41,7 @@ class ClienteHttp:
             try:
                 resp = self._sesion.get(url, params=params, timeout=self._timeout_s)
             except requests.RequestException as exc:
-                # Solo el tipo: el mensaje incluye la URL y, con ella, la clave.
-                motivo = f"red: {type(exc).__name__}"
+                motivo = f"red: {exc}"
             else:
                 if resp.status_code == 429:
                     espera = _retry_after(resp) or ESPERA_BASE_S * 2 ** (intento + 1)

@@ -3,9 +3,10 @@
 Dos comportamientos de la API, comprobados en octubre de 2026, condicionan la
 descarga:
 
-- Sin clave solo devuelve reseñas escritas en inglés, sea cual sea el
-  parámetro `language`. Con una clave de la Steam Web API (`STEAM_API_KEY`)
-  se piden todas, y cada día guarda cuántas son en inglés.
+- Solo devuelve reseñas escritas en inglés, sea cual sea el parámetro
+  `language`, y también con una clave de la Steam Web API. El proyecto
+  trabaja por tanto con reseñas en inglés, tanto en la lectura del radar como
+  en el objetivo a 30 días.
 - Sin `day_range`, `filter=recent` se queda en las reseñas recientes. Con el
   máximo permitido devuelve todo el histórico, de la más nueva a la más
   antigua, así que para llegar a los primeros días hay que recorrerlo entero.
@@ -42,7 +43,7 @@ FORMATO = 2
 CAMPOS_DIA = (
     "positivas",
     "negativas",
-    "ingles",  # escritas en inglés
+    "ingles",  # escritas en inglés: comprueba que la API sigue sirviendo solo inglés
     "compra_steam",  # el autor compró el juego en Steam (no una clave)
     "gratis",  # el autor lo recibió gratis
     "deck",  # jugado sobre todo en Steam Deck
@@ -73,9 +74,7 @@ def agregar_por_dia(reviews: list[dict[str, Any]]) -> dict[str, list[float]]:
     }
 
 
-def descargar_resenas(
-    cliente: ClienteHttp, appid: int, maximo: int, clave: str = ""
-) -> dict[str, Any]:
+def descargar_resenas(cliente: ClienteHttp, appid: int, maximo: int) -> dict[str, Any]:
     """Recorre todas las páginas y devuelve el agregado diario.
 
     `completo` es False si el juego supera `maximo` reseñas (de las que sirve la
@@ -91,8 +90,6 @@ def descargar_resenas(
         "num_per_page": POR_PAGINA,
         "cursor": "*",
     }
-    if clave:
-        params["key"] = clave
     dias: dict[str, list[float]] = defaultdict(lambda: [0] * len(CAMPOS_DIA))
     vistas: set[str] = set()
     cursores: set[str] = set()
@@ -112,7 +109,6 @@ def descargar_resenas(
                 logger.info("%s: %s reseñas, por encima del máximo", appid, total_api)
                 return {
                     "formato": FORMATO,
-                    "idiomas": "todos" if clave else "ingles",
                     "total_api": total_api,
                     "descargadas": 0,
                     "dias": {},
@@ -135,7 +131,6 @@ def descargar_resenas(
 
     return {
         "formato": FORMATO,
-        "idiomas": "todos" if clave else "ingles",
         "total_api": total_api,
         "descargadas": len(vistas),
         "dias": {

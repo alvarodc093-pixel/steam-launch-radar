@@ -64,11 +64,7 @@ async function main() {
           ),
         ]
       : [];
-    const { dias, completo } = await descargarResenas(
-      appid,
-      ficha.fechaLanzamiento,
-      process.env.STEAM_API_KEY ?? "",
-    );
+    const { dias, completo } = await descargarResenas(appid, ficha.fechaLanzamiento);
     const { completos, dia } = diaDeLectura(ficha.fechaLanzamiento, new Date(), radar.dias_lectura);
     const real30d = completos >= 30 ? lecturaHasta(dias, 30).resenas : null;
     let hoy = null;

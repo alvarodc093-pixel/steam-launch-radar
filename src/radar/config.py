@@ -42,10 +42,6 @@ DIAS_VENTANA = 30
 # Días tras el lanzamiento en los que el radar hace su lectura.
 DIAS_LECTURA = (3, 7, 14)
 
-# Opcional: con una clave de la Steam Web API la descarga incluye las reseñas
-# en todos los idiomas (sin ella, la API solo sirve las de inglés).
-STEAM_API_KEY = os.getenv("STEAM_API_KEY", "").strip()
-
 CONTACTO = os.getenv("CONTACTO_USER_AGENT", "").strip()
 USER_AGENT = "steam-launch-radar/1.0" + (f" (+{CONTACTO})" if CONTACTO else "")
 
