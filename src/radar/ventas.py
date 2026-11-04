@@ -47,9 +47,17 @@ def contrastar(
     lanzamientos = pd.to_datetime(juegos.set_index("appid")["fecha_lanzamiento"])
     filas = []
     for v in ventas.itertuples():
+        # Tras una actualización de la muestra, un juego anunciado puede quedar
+        # fuera o no tener aún reseñas: se omite con un aviso en vez de romper.
+        if v.appid not in lanzamientos.index:
+            logger.warning("%s (%s) no está en la muestra: se omite", v.nombre, v.appid)
+            continue
         dia = int((v.fecha_dato - lanzamientos[v.appid]).days)
         de_juego = diarias[(diarias["appid"] == v.appid) & (diarias["dia"] >= 0)]
         resenas = int(de_juego.loc[de_juego["dia"] < dia, "resenas"].sum())
+        if resenas == 0:
+            logger.warning("%s (%s) no tiene reseñas al día %s: se omite", v.nombre, v.appid, dia)
+            continue
         unidades_pc = v.unidades * v.cuota_pc if pd.notna(v.cuota_pc) else np.nan
         filas.append(
             {
