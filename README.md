@@ -589,6 +589,10 @@ Los commits siguen [Conventional Commits](https://www.conventionalcommits.org/es
 `datos` o `notebooks`. Ejemplo: `fix(modelo): estadístico de orden exacto en el
 intervalo conformal`.
 
+## English summary
+
+Steam Launch Radar estimates how many reviews a Steam game will have after its first month, using the reviews from its first 3, 7 or 14 days, and says whether that is above, in line with or below what is normal for its genre. It is built on 3,019 real launches with time-based validation. On the 604 most recent launches, which the model never saw during training, the day-7 estimate is off by a factor of ×1.21 for the typical game (×1.09 on day 14). Its 90 % range covers 92 % of games, and when the radar says "below" on day 7 it is right 95 % of the time. The project includes a Next.js web app, a RAG assistant that cites its sources, a Power BI report and an automated monthly data refresh, with tests and CI for both Python and the app.
+
 ## Licencia
 
 Código bajo licencia [MIT](LICENSE). Los datos proceden de Steam y están sujetos a sus
