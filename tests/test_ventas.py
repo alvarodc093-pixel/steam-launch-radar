@@ -110,15 +110,23 @@ def test_contrastar_omite_juegos_fuera_de_la_muestra_o_sin_resenas():
 
     from radar.ventas import contrastar
 
-    ventas = pd.DataFrame({
-        "appid": [1, 2, 3], "nombre": ["A", "B", "C"],
-        "fecha_dato": pd.to_datetime(["2026-01-08", "2026-01-08", "2026-01-08"]),
-        "fecha_aproximada": [False] * 3, "unidades": [1000, 1000, 1000],
-        "cuota_pc": [1.0, 1.0, 1.0], "plataformas": ["Steam"] * 3,
-        "fuente": ["x"] * 3, "url": ["https://x"] * 3,
-    })
-    juegos = pd.DataFrame({"appid": [1, 2], "fecha_lanzamiento": ["2026-01-01", "2026-01-01"]})
+    ventas = pd.DataFrame(
+        {
+            "appid": [1, 2, 3],
+            "nombre": ["A", "B", "C"],
+            "fecha_dato": pd.to_datetime(["2026-01-08", "2026-01-08", "2026-01-08"]),
+            "fecha_aproximada": [False] * 3,
+            "unidades": [1000, 1000, 1000],
+            "cuota_pc": [1.0, 1.0, 1.0],
+            "plataformas": ["Steam"] * 3,
+            "fuente": ["x"] * 3,
+            "url": ["https://x"] * 3,
+        }
+    )
+    juegos = pd.DataFrame(
+        {"appid": [1, 2], "fecha_lanzamiento": ["2026-01-01", "2026-01-01"]}
+    )
     diarias = pd.DataFrame({"appid": [1, 1], "dia": [0, 1], "resenas": [5, 5]})
     resultado = contrastar(ventas, juegos, diarias)
-    assert resultado["appid"].tolist() == [1]          # 2 sin reseñas y 3 fuera de la muestra
+    assert resultado["appid"].tolist() == [1]  # 2 sin reseñas y 3 fuera de la muestra
     assert resultado["copias_por_resena"].iloc[0] == 100

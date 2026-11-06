@@ -56,7 +56,9 @@ def contrastar(
         de_juego = diarias[(diarias["appid"] == v.appid) & (diarias["dia"] >= 0)]
         resenas = int(de_juego.loc[de_juego["dia"] < dia, "resenas"].sum())
         if resenas == 0:
-            logger.warning("%s (%s) no tiene reseñas al día %s: se omite", v.nombre, v.appid, dia)
+            logger.warning(
+                "%s (%s) no tiene reseñas al día %s: se omite", v.nombre, v.appid, dia
+            )
             continue
         unidades_pc = v.unidades * v.cuota_pc if pd.notna(v.cuota_pc) else np.nan
         filas.append(
