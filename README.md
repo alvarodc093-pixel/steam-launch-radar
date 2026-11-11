@@ -222,7 +222,7 @@ el anuncio no las separa, frente a reseñas que son solo de Steam.
 - **A partir de la cuarta semana** (3 cifras): 40, 60 y 207. La proporción
   baja con el tiempo, pero varía mucho de un juego a otro. Las dos más bajas quedan cerca
   de las 30-60 copias por reseña que estima la industria
-  ([VG Insights](https://wp.vginsights.com/further-analysis-into-steam-reviews-to-sales-ratio-how-to-estimate-video-game-sales/2),
+  ([VG Insights, copia archivada](https://web.archive.org/web/20260114044416/https://wp.vginsights.com/further-analysis-into-steam-reviews-to-sales-ratio-how-to-estimate-video-game-sales/2/),
   [Gamalytic](https://gamalytic.com/blog/a-deep-dive-into-the-steam-review-ratio)), que
   cuenta reseñas en todos los idiomas; Heroes of Might and Magic: Olden Era la
   multiplica por más de tres. Una explicación probable, no comprobada, es el idioma: solo
