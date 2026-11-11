@@ -5,6 +5,8 @@ su primer mes y si eso es mucho o poco para su género.
 
 **Aplicación:** <https://steam-launch-radar.vercel.app>
 
+**▶ Demo en vídeo:** [presentación del proyecto, 20 min](https://alvarodc093-pixel.github.io/alvarodc093.github.io/video/presentacion-steam-launch-radar.mp4)
+
 ![Radar con un lanzamiento real del conjunto de test](docs/capturas/radar.png)
 
 Un estudio pequeño que publica un juego en Steam pasa el primer mes a ciegas: ve
