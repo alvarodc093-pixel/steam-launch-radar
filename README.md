@@ -465,7 +465,7 @@ Guardar como → .pbix**.
 | Dónde  | Comando                                                     | Qué cubre                                                                                                     |
 | ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Raíz   | `ruff check . && ruff format --check .`                     | Estilo y errores en `src/`, `tests/` y notebooks                                                              |
-| Raíz   | `pytest --cov`                                              | 80 tests de ingesta, preparación, modelo, exportación, EDA, ventas, asistente y panel (cobertura del 98 %)    |
+| Raíz   | `pytest --cov`                                              | 82 tests de ingesta, preparación, modelo, exportación, EDA, ventas, asistente y panel (cobertura del 98 %)    |
 | `app/` | `npm run lint && npm run format:check && npm run typecheck` | ESLint, Prettier y tipos                                                                                      |
 | `app/` | `npm test`                                                  | Inferencia en TypeScript frente a 2.416 casos calculados en Python, y recuperación y validación del asistente |
 | `app/` | `npm run evaluar-asistente`                                 | Calidad del asistente con Ollama (recuperación y respuestas)                                                  |

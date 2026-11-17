@@ -272,6 +272,15 @@ def resumen_mercado(
     }
 
 
+def cohorte_de(genero: str, tabla_cohortes: dict[str, Any]) -> dict[str, Any]:
+    """Cohorte del género si tiene una propia; si no, toda la muestra.
+
+    Misma regla que `cohorte()` en app/src/lib/radar.ts: no depende de los
+    géneros que distingue el modelo, solo de que el género tenga cohorte.
+    """
+    return tabla_cohortes["por_genero"].get(genero, tabla_cohortes["global"])
+
+
 def _posicion(valor: float, q25: float, q75: float) -> str:
     if valor > q75:
         return "por_encima"
@@ -310,10 +319,7 @@ def aciertos_veredicto(
             test["resenas_30d"],
             strict=True,
         ):
-            # La app agrupa en «Otro» los géneros que el modelo no distingue,
-            # y sin cohorte propia compara con toda la muestra.
-            clave = genero if genero in res.generos else "Otro"
-            cohorte = tabla_cohortes["por_genero"].get(clave, tabla_cohortes["global"])
+            cohorte = cohorte_de(genero, tabla_cohortes)
             q25, q75 = cohorte["30"][i25], cohorte["30"][i75]
             if sup < q25:
                 veredicto = "por_debajo"

@@ -111,3 +111,13 @@ def test_entradas_app_coinciden_con_las_variables(datos) -> None:  # noqa: ANN00
         "resenas",
         "pct_positivas",
     }
+
+
+def test_cohorte_igual_que_la_app() -> None:
+    """Un género con cohorte propia la usa aunque el modelo no lo distinga."""
+    tabla = {
+        "global": {"30": [1, 2, 3, 4, 5]},
+        "por_genero": {"Puzzle": {"n": 25, "30": [10, 20, 30, 40, 50]}},
+    }
+    assert exportar.cohorte_de("Puzzle", tabla) is tabla["por_genero"]["Puzzle"]
+    assert exportar.cohorte_de("Racing", tabla) is tabla["global"]
