@@ -376,6 +376,11 @@ export default async function PaginaMetodologia() {
             El rango del 90 % se cumple en promedio, no en cada juego: uno de cada diez puede quedar
             fuera.
           </li>
+          <li>
+            Los días se cuentan en hora UTC desde la fecha oficial de lanzamiento. Como muchos
+            juegos salen por la tarde en hora europea, el día 0 suele tener solo unas horas de
+            reseñas, y la lectura del día 3 cubre algo más de dos días reales.
+          </li>
         </ul>
       </div>
 
